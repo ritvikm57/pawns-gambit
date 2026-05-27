@@ -1,0 +1,594 @@
+import { useEffect, useState } from 'react'
+import { Plus, Trophy, Users, ChevronDown, Download, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { computeRoundUpdates } from '../lib/glicko2'
+
+const INITIAL_TOURNAMENT_FORM = {
+  name: '', date: '', format: '', rounds: '', venue: '',
+  is_online: false, entry_fee: '', prize_pool: '', max_players: '',
+  status: 'upcoming', registration_deadline: '',
+}
+
+export default function Admin() {
+  const [view, setView] = useState('tournaments') // tournaments | create | manage
+  const [tournaments, setTournaments] = useState([])
+  const [selectedTournament, setSelectedTournament] = useState(null)
+  const [registrations, setRegistrations] = useState([])
+  const [rounds, setRounds] = useState([])
+  const [pairings, setPairings] = useState({}) // roundId -> pairings[]
+  const [activeRound, setActiveRound] = useState(null)
+  const [form, setForm] = useState(INITIAL_TOURNAMENT_FORM)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState(null)
+
+  useEffect(() => {
+    fetchTournaments()
+  }, [])
+
+  async function fetchTournaments() {
+    const { data } = await supabase
+      .from('tournaments')
+      .select('*, tournament_registrations(count)')
+      .order('date', { ascending: false })
+    setTournaments(
+      (data || []).map(t => ({ ...t, registered_count: t.tournament_registrations?.[0]?.count ?? 0 }))
+    )
+  }
+
+  async function openManage(tournament) {
+    setSelectedTournament(tournament)
+    setView('manage')
+
+    const [{ data: regs }, { data: roundsData }] = await Promise.all([
+      supabase
+        .from('tournament_registrations')
+        .select('*, users(id, name, ratings(rating, rd, volatility))')
+        .eq('tournament_id', tournament.id)
+        .order('registered_at', { ascending: true }),
+      supabase
+        .from('tournament_rounds')
+        .select('*, pairings(*)')
+        .eq('tournament_id', tournament.id)
+        .order('round_number', { ascending: true }),
+    ])
+
+    setRegistrations(regs || [])
+    setRounds(roundsData || [])
+
+    const pairMap = {}
+    for (const r of roundsData || []) {
+      pairMap[r.id] = r.pairings || []
+    }
+    setPairings(pairMap)
+
+    if (roundsData?.length) setActiveRound(roundsData[roundsData.length - 1].id)
+  }
+
+  function setFormField(field, value) {
+    setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  async function handleCreateTournament(e) {
+    e.preventDefault()
+    setLoading(true)
+    setMessage(null)
+    try {
+      const { error } = await supabase.from('tournaments').insert({
+        name: form.name,
+        date: form.date,
+        format: form.format,
+        rounds: parseInt(form.rounds),
+        venue: form.venue,
+        is_online: form.is_online,
+        entry_fee: parseFloat(form.entry_fee) || 0,
+        prize_pool: form.prize_pool,
+        max_players: parseInt(form.max_players) || null,
+        status: form.status,
+        registration_deadline: form.registration_deadline || null,
+      })
+      if (error) throw error
+      setMessage({ type: 'success', text: 'Tournament created successfully!' })
+      setForm(INITIAL_TOURNAMENT_FORM)
+      fetchTournaments()
+      setTimeout(() => setView('tournaments'), 1500)
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleStatusChange(tournamentId, newStatus) {
+    await supabase.from('tournaments').update({ status: newStatus }).eq('id', tournamentId)
+    fetchTournaments()
+    if (selectedTournament?.id === tournamentId) {
+      setSelectedTournament(prev => ({ ...prev, status: newStatus }))
+    }
+  }
+
+  async function addRound() {
+    const nextNum = rounds.length + 1
+    const { data, error } = await supabase
+      .from('tournament_rounds')
+      .insert({ tournament_id: selectedTournament.id, round_number: nextNum, is_complete: false })
+      .select()
+      .single()
+    if (!error) {
+      const newRound = { ...data, pairings: [] }
+      setRounds(prev => [...prev, newRound])
+      setPairings(prev => ({ ...prev, [data.id]: [] }))
+      setActiveRound(data.id)
+    }
+  }
+
+  async function addPairing(roundId) {
+    const { data, error } = await supabase
+      .from('pairings')
+      .insert({ round_id: roundId, player1_id: null, player2_id: null, result: null })
+      .select()
+      .single()
+    if (!error) {
+      setPairings(prev => ({ ...prev, [roundId]: [...(prev[roundId] || []), data] }))
+    }
+  }
+
+  async function updatePairingField(roundId, pairingId, field, value) {
+    setPairings(prev => ({
+      ...prev,
+      [roundId]: prev[roundId].map(p => p.id === pairingId ? { ...p, [field]: value } : p),
+    }))
+    await supabase.from('pairings').update({ [field]: value }).eq('id', pairingId)
+  }
+
+  async function updateRatingsForRound(roundId) {
+    setLoading(true)
+    setMessage(null)
+    try {
+      const roundPairings = pairings[roundId] || []
+      const completePairings = roundPairings.filter(p => p.player1_id && p.player2_id && p.result !== null)
+
+      // Build players map from registrations
+      const playerMap = new Map()
+      for (const reg of registrations) {
+        const rating = reg.users?.ratings?.[0]
+        if (rating) {
+          playerMap.set(reg.user_id, {
+            r: rating.rating,
+            rd: rating.rd,
+            volatility: rating.volatility,
+          })
+        }
+      }
+
+      const pairingData = completePairings.map(p => ({
+        player1Id: p.player1_id,
+        player2Id: p.player2_id,
+        result: parseFloat(p.result),
+      }))
+
+      const updates = computeRoundUpdates(playerMap, pairingData)
+
+      // Write updates to database
+      for (const [userId, newRating] of updates) {
+        await supabase
+          .from('ratings')
+          .update({
+            rating: newRating.r,
+            rd: newRating.rd,
+            volatility: newRating.volatility,
+            games_played: supabase.rpc('increment', { x: completePairings.filter(p => p.player1_id === userId || p.player2_id === userId).length }),
+            last_updated: new Date().toISOString(),
+          })
+          .eq('user_id', userId)
+      }
+
+      // Mark round complete
+      await supabase.from('tournament_rounds').update({ is_complete: true }).eq('id', roundId)
+      setRounds(prev => prev.map(r => r.id === roundId ? { ...r, is_complete: true } : r))
+      setMessage({ type: 'success', text: `Ratings updated for ${updates.size} players!` })
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function exportCSV() {
+    if (!selectedTournament) return
+    const { data } = await supabase
+      .from('tournament_registrations')
+      .select('*, users(name, email, city, chess_com_username, fide_id), ratings!users(rating, rd)')
+      .eq('tournament_id', selectedTournament.id)
+
+    const rows = [['Name', 'Email', 'City', 'Chess.com', 'FIDE ID', 'PG Rating', 'RD', 'Score', 'Payment Status']]
+    for (const r of data || []) {
+      rows.push([
+        r.users?.name, r.users?.email, r.users?.city,
+        r.users?.chess_com_username, r.users?.fide_id,
+        r.ratings?.[0]?.rating, r.ratings?.[0]?.rd,
+        r.score, r.payment_status,
+      ])
+    }
+
+    const csv = rows.map(r => r.map(v => `"${v ?? ''}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${selectedTournament.name.replace(/\s+/g, '_')}_registrations.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const StatusSelect = ({ tournamentId, currentStatus }) => (
+    <select
+      value={currentStatus}
+      onChange={e => handleStatusChange(tournamentId, e.target.value)}
+      className="bg-navy-900 border border-navy-600 text-white text-xs rounded px-2 py-1 outline-none"
+    >
+      {['upcoming', 'registration_open', 'ongoing', 'completed'].map(s => (
+        <option key={s} value={s}>{s.replace('_', ' ')}</option>
+      ))}
+    </select>
+  )
+
+  const currentRound = rounds.find(r => r.id === activeRound)
+  const currentPairings = activeRound ? (pairings[activeRound] || []) : []
+
+  const registrationOptions = registrations.map(r => ({ value: r.user_id, label: r.users?.name }))
+
+  return (
+    <div className="min-h-screen pt-20 pb-12 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between py-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
+            <p className="text-slate-400 text-sm mt-1">Manage tournaments, results, and ratings</p>
+          </div>
+          <div className="flex gap-2">
+            {['tournaments', 'create'].map(v => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  view === v ? 'bg-navy-600 text-white' : 'text-slate-400 hover:text-white hover:bg-navy-700'
+                }`}
+              >
+                {v === 'tournaments' ? 'All Tournaments' : '+ New Tournament'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {message && (
+          <div className={`flex items-center gap-2 px-4 py-3 rounded-lg mb-6 text-sm ${
+            message.type === 'success'
+              ? 'bg-green-500/10 border border-green-500/30 text-green-300'
+              : 'bg-red-500/10 border border-red-500/30 text-red-300'
+          }`}>
+            {message.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+            {message.text}
+          </div>
+        )}
+
+        {/* Tournaments List */}
+        {view === 'tournaments' && (
+          <div className="bg-navy-800 border border-navy-700 rounded-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-slate-500 border-b border-navy-700 bg-navy-900/40">
+                    <th className="px-6 py-3 font-medium">Tournament</th>
+                    <th className="px-4 py-3 font-medium">Date</th>
+                    <th className="px-4 py-3 font-medium">Registered</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tournaments.length === 0 ? (
+                    <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No tournaments yet.</td></tr>
+                  ) : tournaments.map(t => (
+                    <tr key={t.id} className="border-b border-navy-700/50 hover:bg-navy-700/20 transition-colors">
+                      <td className="px-6 py-4 text-white font-medium">{t.name}</td>
+                      <td className="px-4 py-4 text-slate-400 text-xs">
+                        {new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="px-4 py-4 text-slate-400">{t.registered_count}</td>
+                      <td className="px-4 py-4">
+                        <StatusSelect tournamentId={t.id} currentStatus={t.status} />
+                      </td>
+                      <td className="px-4 py-4">
+                        <button
+                          onClick={() => openManage(t)}
+                          className="px-3 py-1 bg-navy-700 hover:bg-navy-600 text-white text-xs rounded-lg transition-colors"
+                        >
+                          Manage
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Create Tournament Form */}
+        {view === 'create' && (
+          <div className="max-w-2xl">
+            <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8">
+              <h2 className="text-xl font-semibold text-white mb-6">Create Tournament</h2>
+              <form onSubmit={handleCreateTournament} className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Field label="Tournament Name" value={form.name} onChange={v => setFormField('name', v)} placeholder="PG Open #12" required />
+                  <Field label="Date & Time" type="datetime-local" value={form.date} onChange={v => setFormField('date', v)} required />
+                  <Field label="Format" value={form.format} onChange={v => setFormField('format', v)} placeholder="Swiss, Rapid 15+10" required />
+                  <Field label="Rounds" type="number" value={form.rounds} onChange={v => setFormField('rounds', v)} placeholder="5" required />
+                  <Field label="Entry Fee (₹)" type="number" value={form.entry_fee} onChange={v => setFormField('entry_fee', v)} placeholder="200" />
+                  <Field label="Max Players" type="number" value={form.max_players} onChange={v => setFormField('max_players', v)} placeholder="64" />
+                  <Field label="Registration Deadline" type="datetime-local" value={form.registration_deadline} onChange={v => setFormField('registration_deadline', v)} />
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Initial Status</label>
+                    <select
+                      value={form.status}
+                      onChange={e => setFormField('status', e.target.value)}
+                      className="w-full bg-navy-900 border border-navy-600 text-white text-sm rounded-lg px-4 py-3 outline-none"
+                    >
+                      <option value="upcoming">Upcoming</option>
+                      <option value="registration_open">Registration Open</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Field label="Prize Pool" value={form.prize_pool} onChange={v => setFormField('prize_pool', v)} placeholder="1st: ₹2000, 2nd: ₹1000" />
+                  <div className="flex items-center gap-3 pt-5">
+                    <input
+                      type="checkbox"
+                      id="is_online"
+                      checked={form.is_online}
+                      onChange={e => setFormField('is_online', e.target.checked)}
+                      className="accent-blue-500 w-4 h-4"
+                    />
+                    <label htmlFor="is_online" className="text-slate-300 text-sm">Online tournament</label>
+                  </div>
+                </div>
+                {!form.is_online && (
+                  <Field label="Venue" value={form.venue} onChange={v => setFormField('venue', v)} placeholder="Chess Club, Hyderabad" />
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setView('tournaments')}
+                    className="px-5 py-2.5 border border-navy-600 text-slate-300 hover:text-white rounded-lg text-sm transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-medium rounded-lg text-sm transition-colors"
+                  >
+                    {loading ? 'Creating...' : 'Create Tournament'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Manage Tournament */}
+        {view === 'manage' && selectedTournament && (
+          <div>
+            <button
+              onClick={() => setView('tournaments')}
+              className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1 mb-6"
+            >
+              ← All Tournaments
+            </button>
+
+            <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-white">{selectedTournament.name}</h2>
+                <p className="text-slate-400 text-sm mt-0.5">
+                  {new Date(selectedTournament.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <StatusSelect tournamentId={selectedTournament.id} currentStatus={selectedTournament.status} />
+                <button
+                  onClick={exportCSV}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-navy-700 hover:bg-navy-600 text-white text-sm rounded-lg transition-colors"
+                >
+                  <Download size={14} /> Export CSV
+                </button>
+              </div>
+            </div>
+
+            {/* Registrations */}
+            <section className="mb-8">
+              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <Users size={18} /> Registrations ({registrations.length})
+              </h3>
+              <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-slate-500 border-b border-navy-700 bg-navy-900/40">
+                        <th className="px-5 py-3">Player</th>
+                        <th className="px-4 py-3 text-right">PG Rating</th>
+                        <th className="px-4 py-3 text-right">Payment</th>
+                        <th className="px-4 py-3 text-right">Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {registrations.length === 0 ? (
+                        <tr><td colSpan={4} className="px-5 py-6 text-center text-slate-500">No registrations yet.</td></tr>
+                      ) : registrations.map(reg => (
+                        <tr key={reg.id} className="border-b border-navy-700/40">
+                          <td className="px-5 py-3 text-white">{reg.users?.name ?? '—'}</td>
+                          <td className="px-4 py-3 text-right text-slate-400 font-mono">{reg.users?.ratings?.[0]?.rating ?? '—'}</td>
+                          <td className="px-4 py-3 text-right">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              reg.payment_status === 'paid'
+                                ? 'bg-green-500/20 text-green-300'
+                                : 'bg-yellow-500/20 text-yellow-300'
+                            }`}>
+                              {reg.payment_status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <input
+                              type="number"
+                              step="0.5"
+                              min="0"
+                              defaultValue={reg.score ?? ''}
+                              onBlur={async e => {
+                                const val = parseFloat(e.target.value)
+                                if (!isNaN(val)) {
+                                  await supabase
+                                    .from('tournament_registrations')
+                                    .update({ score: val })
+                                    .eq('id', reg.id)
+                                }
+                              }}
+                              className="w-16 bg-navy-900 border border-navy-600 text-white text-xs rounded px-2 py-1 text-right outline-none"
+                              placeholder="—"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            {/* Rounds & Pairings */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Trophy size={18} /> Rounds
+                </h3>
+                <button
+                  onClick={addRound}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors"
+                >
+                  <Plus size={14} /> Add Round
+                </button>
+              </div>
+
+              {rounds.length > 0 && (
+                <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+                  {rounds.map(round => (
+                    <button
+                      key={round.id}
+                      onClick={() => setActiveRound(round.id)}
+                      className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
+                        activeRound === round.id ? 'bg-navy-600 text-white' : 'text-slate-400 hover:text-white hover:bg-navy-700'
+                      }`}
+                    >
+                      Round {round.round_number}
+                      {round.is_complete && <CheckCircle size={12} className="text-green-400" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {currentRound && (
+                <div className="bg-navy-800 border border-navy-700 rounded-xl p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-white font-medium">Round {currentRound.round_number} Pairings</h4>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => addPairing(currentRound.id)}
+                        className="flex items-center gap-1 px-3 py-1 bg-navy-700 hover:bg-navy-600 text-white text-xs rounded-lg"
+                      >
+                        <Plus size={12} /> Add Pairing
+                      </button>
+                      {!currentRound.is_complete && (
+                        <button
+                          onClick={() => updateRatingsForRound(currentRound.id)}
+                          disabled={loading}
+                          className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-500 disabled:bg-green-900 text-white text-xs rounded-lg"
+                        >
+                          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                          Update Ratings
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {currentPairings.length === 0 ? (
+                    <p className="text-slate-500 text-sm text-center py-4">No pairings. Click "Add Pairing" to start.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {currentPairings.map(pairing => (
+                        <div key={pairing.id} className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center bg-navy-900/50 rounded-lg p-3">
+                          <select
+                            value={pairing.player1_id || ''}
+                            onChange={e => updatePairingField(currentRound.id, pairing.id, 'player1_id', e.target.value || null)}
+                            className="bg-navy-900 border border-navy-600 text-white text-sm rounded px-3 py-1.5 outline-none w-full"
+                          >
+                            <option value="">White (Player 1)</option>
+                            {registrationOptions.map(o => (
+                              <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                          </select>
+                          <select
+                            value={pairing.result ?? ''}
+                            onChange={e => updatePairingField(currentRound.id, pairing.id, 'result', e.target.value === '' ? null : parseFloat(e.target.value))}
+                            className="bg-navy-900 border border-navy-600 text-white text-sm rounded px-2 py-1.5 outline-none"
+                          >
+                            <option value="">—</option>
+                            <option value="1">1 – 0</option>
+                            <option value="0.5">½ – ½</option>
+                            <option value="0">0 – 1</option>
+                          </select>
+                          <select
+                            value={pairing.player2_id || ''}
+                            onChange={e => updatePairingField(currentRound.id, pairing.id, 'player2_id', e.target.value || null)}
+                            className="bg-navy-900 border border-navy-600 text-white text-sm rounded px-3 py-1.5 outline-none w-full"
+                          >
+                            <option value="">Black (Player 2)</option>
+                            {registrationOptions.map(o => (
+                              <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {rounds.length === 0 && (
+                <div className="bg-navy-800 border border-navy-700 rounded-xl p-8 text-center text-slate-500">
+                  <Trophy size={32} className="mx-auto mb-2 opacity-30" />
+                  <p>No rounds yet. Add the first round above.</p>
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Field({ label, type = 'text', value, onChange, placeholder, required = false }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-1.5">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        required={required}
+        className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
+      />
+    </div>
+  )
+}
