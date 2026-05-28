@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Plus, Trophy, Users, ChevronDown, Download, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+import { Plus, Trophy, Users, Download, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { computeRoundUpdates } from '../lib/glicko2'
 
 const INITIAL_TOURNAMENT_FORM = {
   name: '', date: '', format: '', rounds: '', venue: '',
@@ -144,48 +143,12 @@ export default function Admin() {
     setLoading(true)
     setMessage(null)
     try {
-      const roundPairings = pairings[roundId] || []
-      const completePairings = roundPairings.filter(p => p.player1_id && p.player2_id && p.result !== null)
-
-      // Build players map from registrations
-      const playerMap = new Map()
-      for (const reg of registrations) {
-        const rating = reg.users?.ratings?.[0]
-        if (rating) {
-          playerMap.set(reg.user_id, {
-            r: rating.rating,
-            rd: rating.rd,
-            volatility: rating.volatility,
-          })
-        }
-      }
-
-      const pairingData = completePairings.map(p => ({
-        player1Id: p.player1_id,
-        player2Id: p.player2_id,
-        result: parseFloat(p.result),
-      }))
-
-      const updates = computeRoundUpdates(playerMap, pairingData)
-
-      // Write updates to database
-      for (const [userId, newRating] of updates) {
-        await supabase
-          .from('ratings')
-          .update({
-            rating: newRating.r,
-            rd: newRating.rd,
-            volatility: newRating.volatility,
-            games_played: supabase.rpc('increment', { x: completePairings.filter(p => p.player1_id === userId || p.player2_id === userId).length }),
-            last_updated: new Date().toISOString(),
-          })
-          .eq('user_id', userId)
-      }
-
-      // Mark round complete
-      await supabase.from('tournament_rounds').update({ is_complete: true }).eq('id', roundId)
+      const { data, error } = await supabase.functions.invoke('update-ratings', {
+        body: { roundId, tournamentId: selectedTournament.id },
+      })
+      if (error) throw error
       setRounds(prev => prev.map(r => r.id === roundId ? { ...r, is_complete: true } : r))
-      setMessage({ type: 'success', text: `Ratings updated for ${updates.size} players!` })
+      setMessage({ type: 'success', text: `Ratings updated for ${data.updatedPlayers} players!` })
     } catch (err) {
       setMessage({ type: 'error', text: err.message })
     } finally {

@@ -66,11 +66,14 @@ CREATE POLICY "Only service role can update ratings"
   ON public.ratings FOR UPDATE
   USING (false);  -- Updated server-side only
 
--- Helper function for incrementing games_played
-CREATE OR REPLACE FUNCTION public.increment(x INTEGER)
-RETURNS INTEGER AS $$
-  SELECT COALESCE($1, 0) + 1;
-$$ LANGUAGE SQL;
+-- Helper: increment games_played by a given delta (used in rating updates)
+CREATE OR REPLACE FUNCTION public.increment_games(user_id UUID, delta INTEGER)
+RETURNS VOID AS $$
+  UPDATE public.ratings
+  SET games_played = games_played + delta,
+      last_updated = NOW()
+  WHERE ratings.user_id = increment_games.user_id;
+$$ LANGUAGE SQL SECURITY DEFINER;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- TOURNAMENTS
@@ -140,6 +143,17 @@ CREATE POLICY "Users can insert own registration"
 CREATE POLICY "Count registrations is public"
   ON public.tournament_registrations FOR SELECT
   USING (true);
+
+CREATE POLICY "Users can update own registration payment status"
+  ON public.tournament_registrations FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Admins can update any registration"
+  ON public.tournament_registrations FOR UPDATE
+  USING (
+    EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+  );
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- TOURNAMENT ROUNDS
@@ -232,10 +246,15 @@ CREATE INDEX IF NOT EXISTS idx_pairings_round      ON public.pairings(round_id);
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Only insert if not already present (frontend may have already done it)
   INSERT INTO public.users (id, name, email)
   VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'name', 'New Player'), NEW.email)
   ON CONFLICT (id) DO NOTHING;
+
+  -- Guarantee a ratings row exists (frontend also does this, but belt-and-suspenders)
+  INSERT INTO public.ratings (user_id, rating, rd, volatility, games_played)
+  VALUES (NEW.id, 1500, 350, 0.060000, 0)
+  ON CONFLICT (user_id) DO NOTHING;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

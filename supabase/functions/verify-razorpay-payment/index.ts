@@ -1,14 +1,17 @@
-// Supabase Edge Function — verifies Razorpay payment signature and confirms registration
+// Supabase Edge Function — verifies Razorpay payment signature, confirms registration, sends emails
 // Deploy: supabase functions deploy verify-razorpay-payment
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { createHmac } from 'https://deno.land/std@0.177.0/node/crypto.ts'
+import { sendEmail, registrationConfirmationEmail, adminRegistrationEmail } from '../_shared/emails.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'admin@pgchess.in'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
@@ -16,20 +19,22 @@ serve(async (req) => {
   try {
     const { paymentId, orderId, signature, registrationId } = await req.json()
 
+    // Verify Razorpay HMAC signature
     const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET')!
-    const body = `${orderId}|${paymentId}`
-    const expectedSignature = createHmac('sha256', keySecret).update(body).digest('hex')
+    const expectedSignature = createHmac('sha256', keySecret)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex')
 
     if (expectedSignature !== signature) {
       throw new Error('Payment signature verification failed')
     }
 
-    // Update registration in Supabase
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // Confirm registration as paid
     const { error } = await supabase
       .from('tournament_registrations')
       .update({
@@ -40,6 +45,48 @@ serve(async (req) => {
       .eq('id', registrationId)
 
     if (error) throw error
+
+    // Fetch registration details for emails
+    const { data: reg } = await supabase
+      .from('tournament_registrations')
+      .select('*, users(name, email), tournaments(name, date, venue, is_online, entry_fee)')
+      .eq('id', registrationId)
+      .single()
+
+    if (reg) {
+      const tournament = reg.tournaments
+      const player = reg.users
+      const date = new Date(tournament.date).toLocaleDateString('en-IN', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      })
+      const venue = tournament.is_online ? 'Online' : (tournament.venue ?? 'TBD')
+
+      // Send confirmation to player and notification to admin in parallel
+      await Promise.allSettled([
+        sendEmail({
+          to: player.email,
+          subject: `You're registered for ${tournament.name} — Pawn's Gambit`,
+          html: registrationConfirmationEmail({
+            playerName: player.name,
+            tournamentName: tournament.name,
+            tournamentDate: date,
+            venue,
+            entryFee: tournament.entry_fee,
+          }),
+        }),
+        sendEmail({
+          to: ADMIN_EMAIL,
+          subject: `New registration: ${player.name} → ${tournament.name}`,
+          html: adminRegistrationEmail({
+            playerName: player.name,
+            playerEmail: player.email,
+            tournamentName: tournament.name,
+            paymentId,
+          }),
+        }),
+      ])
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
