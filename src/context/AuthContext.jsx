@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { PROVISIONAL_RATINGS } from '../lib/glicko2'
 
 const AuthContext = createContext({})
 
@@ -36,34 +35,17 @@ export function AuthProvider({ children }) {
   }
 
   async function signUp({ email, password, name, city, chessComUsername, fideId, phone, skillLevel }) {
+    // Pass all profile data via options.data so the DB trigger can create
+    // the users + ratings rows immediately — even before email confirmation,
+    // when auth.uid() is still null and frontend inserts would be RLS-blocked.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: {
+        data: { name, city, chess_com_username: chessComUsername, fide_id: fideId, phone, skill_level: skillLevel },
+      },
     })
     if (error) throw error
-
-    const provisional = PROVISIONAL_RATINGS[skillLevel]
-
-    await supabase.from('users').insert({
-      id: data.user.id,
-      name,
-      email,
-      city,
-      chess_com_username: chessComUsername,
-      fide_id: fideId,
-      phone,
-      skill_level: skillLevel,
-    })
-
-    await supabase.from('ratings').insert({
-      user_id: data.user.id,
-      rating: provisional.r,
-      rd: provisional.rd,
-      volatility: provisional.volatility,
-      games_played: 0,
-    })
-
     return data
   }
 
