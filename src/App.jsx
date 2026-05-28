@@ -12,6 +12,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Profile from './pages/Profile'
 import Admin from './pages/Admin'
+import ResetPassword from './pages/ResetPassword'
 
 function NotFound() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route
                 path="/profile"
                 element={
