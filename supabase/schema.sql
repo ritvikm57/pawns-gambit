@@ -26,6 +26,10 @@ CREATE POLICY "Users can view own profile"
   ON public.users FOR SELECT
   USING (auth.uid() = id);
 
+CREATE POLICY "Users can insert own profile"
+  ON public.users FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
 CREATE POLICY "Users can update own profile"
   ON public.users FOR UPDATE
   USING (auth.uid() = id);
@@ -53,6 +57,10 @@ ALTER TABLE public.ratings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Ratings are public"
   ON public.ratings FOR SELECT
   USING (true);
+
+CREATE POLICY "Users can insert own rating"
+  ON public.ratings FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Only service role can update ratings"
   ON public.ratings FOR UPDATE
