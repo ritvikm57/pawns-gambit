@@ -36,7 +36,11 @@ export function AuthProvider({ children }) {
   }
 
   async function signUp({ email, password, name, city, chessComUsername, fideId, phone, skillLevel }) {
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
+    })
     if (error) throw error
 
     const provisional = PROVISIONAL_RATINGS[skillLevel]
