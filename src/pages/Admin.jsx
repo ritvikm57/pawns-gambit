@@ -139,6 +139,24 @@ export default function Admin() {
     await supabase.from('pairings').update({ [field]: value }).eq('id', pairingId)
   }
 
+  async function markRoundComplete(roundId) {
+    setLoading(true)
+    setMessage(null)
+    try {
+      const { error } = await supabase
+        .from('tournament_rounds')
+        .update({ is_complete: true })
+        .eq('id', roundId)
+      if (error) throw error
+      setRounds(prev => prev.map(r => r.id === roundId ? { ...r, is_complete: true } : r))
+      setMessage({ type: 'success', text: 'Round marked as complete.' })
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function updateRatingsForRound(roundId) {
     setLoading(true)
     setMessage(null)
@@ -416,7 +434,7 @@ export default function Admin() {
                                     .eq('id', reg.id)
                                 }
                               }}
-                              className="w-16 bg-navy-900 border border-navy-600 text-white text-xs rounded px-2 py-1 text-right outline-none"
+                              className="w-16 bg-white border border-gray-200 text-slate-900 text-xs rounded px-2 py-1 text-right outline-none"
                               placeholder="—"
                             />
                           </td>
@@ -460,25 +478,37 @@ export default function Admin() {
               )}
 
               {currentRound && (
-                <div className="bg-navy-800 border border-navy-700 rounded-xl p-5">
+                <div className="bg-white border border-gray-200 rounded-xl p-5">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-white font-medium">Round {currentRound.round_number} Pairings</h4>
+                    <h4 className="text-slate-900 font-medium">Round {currentRound.round_number} Pairings</h4>
                     <div className="flex gap-2">
                       <button
                         onClick={() => addPairing(currentRound.id)}
-                        className="flex items-center gap-1 px-3 py-1 bg-navy-700 hover:bg-navy-600 text-white text-xs rounded-lg"
+                        className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-slate-700 text-xs rounded-lg border border-gray-200"
                       >
                         <Plus size={12} /> Add Pairing
                       </button>
                       {!currentRound.is_complete && (
-                        <button
-                          onClick={() => updateRatingsForRound(currentRound.id)}
-                          disabled={loading}
-                          className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-500 disabled:bg-green-900 text-white text-xs rounded-lg"
-                        >
-                          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-                          Update Ratings
-                        </button>
+                        <>
+                          <button
+                            onClick={() => markRoundComplete(currentRound.id)}
+                            disabled={loading}
+                            className="flex items-center gap-1 px-3 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-xs rounded-lg"
+                            title="Close the round without recalculating ratings"
+                          >
+                            <CheckCircle size={12} />
+                            Mark Complete
+                          </button>
+                          <button
+                            onClick={() => updateRatingsForRound(currentRound.id)}
+                            disabled={loading}
+                            className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-xs rounded-lg"
+                            title="Close the round and recalculate Glicko-2 ratings"
+                          >
+                            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                            Finalise & Update Ratings
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -488,11 +518,11 @@ export default function Admin() {
                   ) : (
                     <div className="space-y-2">
                       {currentPairings.map(pairing => (
-                        <div key={pairing.id} className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center bg-navy-900/50 rounded-lg p-3">
+                        <div key={pairing.id} className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center bg-gray-50 rounded-lg p-3 border border-gray-100">
                           <select
                             value={pairing.player1_id || ''}
                             onChange={e => updatePairingField(currentRound.id, pairing.id, 'player1_id', e.target.value || null)}
-                            className="bg-navy-900 border border-navy-600 text-white text-sm rounded px-3 py-1.5 outline-none w-full"
+                            className="bg-white border border-gray-200 text-slate-900 text-sm rounded px-3 py-1.5 outline-none w-full"
                           >
                             <option value="">White (Player 1)</option>
                             {registrationOptions.map(o => (
@@ -502,7 +532,7 @@ export default function Admin() {
                           <select
                             value={pairing.result ?? ''}
                             onChange={e => updatePairingField(currentRound.id, pairing.id, 'result', e.target.value === '' ? null : parseFloat(e.target.value))}
-                            className="bg-navy-900 border border-navy-600 text-white text-sm rounded px-2 py-1.5 outline-none"
+                            className="bg-white border border-gray-200 text-slate-900 text-sm rounded px-2 py-1.5 outline-none"
                           >
                             <option value="">—</option>
                             <option value="1">1 – 0</option>
@@ -512,7 +542,7 @@ export default function Admin() {
                           <select
                             value={pairing.player2_id || ''}
                             onChange={e => updatePairingField(currentRound.id, pairing.id, 'player2_id', e.target.value || null)}
-                            className="bg-navy-900 border border-navy-600 text-white text-sm rounded px-3 py-1.5 outline-none w-full"
+                            className="bg-white border border-gray-200 text-slate-900 text-sm rounded px-3 py-1.5 outline-none w-full"
                           >
                             <option value="">Black (Player 2)</option>
                             {registrationOptions.map(o => (
@@ -527,7 +557,7 @@ export default function Admin() {
               )}
 
               {rounds.length === 0 && (
-                <div className="bg-navy-800 border border-navy-700 rounded-xl p-8 text-center text-slate-500">
+                <div className="bg-white border border-gray-200 rounded-xl p-8 text-center text-slate-500">
                   <Trophy size={32} className="mx-auto mb-2 opacity-30" />
                   <p>No rounds yet. Add the first round above.</p>
                 </div>

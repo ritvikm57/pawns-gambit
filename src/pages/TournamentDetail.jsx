@@ -33,8 +33,7 @@ export default function TournamentDetail() {
         supabase
           .from('tournament_registrations')
           .select('*', { count: 'exact', head: true })
-          .eq('tournament_id', id)
-          .eq('payment_status', 'paid'),
+          .eq('tournament_id', id),
       ])
 
       setTournament(t)
@@ -174,11 +173,12 @@ export default function TournamentDetail() {
           )}
         </div>
 
-        {/* ── Standings (completed) ───────────────────────────────── */}
-        {tournament.status === 'completed' && standings.length > 0 && (
+        {/* ── Standings ───────────────────────────────────────────── */}
+        {(tournament.status === 'completed' || tournament.status === 'ongoing') && standings.length > 0 && (
           <section className="mb-8">
             <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <Trophy size={18} className="text-slate-400" /> Final Standings
+              <Trophy size={18} className="text-slate-400" />
+              {tournament.status === 'completed' ? 'Final Standings' : 'Current Standings'}
             </h2>
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
               <table className="w-full text-sm">
