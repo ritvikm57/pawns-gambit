@@ -186,7 +186,7 @@ export default function Home() {
         >
           <div className="relative max-w-lg">
             <FadeIn>
-              <p className="text-[11px] font-semibold tracking-[0.28em] uppercase mb-1"
+              <p className="text-[13px] font-semibold tracking-[0.28em] uppercase mb-6"
                  style={{ color: C.glow }}>
                 Hyderabad's Chess Community
               </p>
