@@ -4,6 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
+        pg: {
+          blue:   '#1565c0',  // logo royal-blue background
+          glow:   '#4a9eff',  // logo radial-glow highlight
+          silver: '#c8d8ed',  // logo piece silhouette
+          dark:   '#0d3a7a',  // logo pawn body
+          bg:     '#070f24',  // deep royal-blue site background
+        },
         navy: {
           50:  '#e8edf3',
           100: '#c5d0de',

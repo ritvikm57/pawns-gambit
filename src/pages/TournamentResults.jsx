@@ -79,7 +79,7 @@ export default function TournamentResults() {
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs px-2 py-0.5 bg-slate-500/20 text-slate-400 rounded-full">Completed</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white">{tournament.name}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900">{tournament.name}</h1>
           <p className="text-slate-400 mt-1">
             {new Date(tournament.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             {' · '}{tournament.format} · {tournament.rounds} rounds
@@ -88,14 +88,14 @@ export default function TournamentResults() {
 
         {/* Final Standings */}
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-            <Trophy size={20} className="text-yellow-400" /> Final Standings
+          <h2 className="text-xl font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <Trophy size={20} className="text-yellow-500" /> Final Standings
           </h2>
-          <div className="bg-navy-800 border border-navy-700 rounded-2xl overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-slate-500 border-b border-navy-700 bg-navy-900/40">
+                  <tr className="text-left text-slate-500 border-b border-gray-200 bg-gray-50">
                     <th className="px-6 py-3 font-medium">Rank</th>
                     <th className="px-4 py-3 font-medium">Player</th>
                     <th className="px-4 py-3 font-medium text-right">Score</th>
@@ -110,16 +110,16 @@ export default function TournamentResults() {
                     const after = player.rating_after
                     const delta = after && before ? after - before : null
                     return (
-                      <tr key={player.id} className="border-b border-navy-700/50 hover:bg-navy-700/20 transition-colors">
+                      <tr key={player.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 text-slate-400 font-mono">
                           {index < 3
                             ? ['🥇','🥈','🥉'][index]
                             : `#${index + 1}`}
                         </td>
-                        <td className="px-4 py-4 text-white font-medium">{player.users?.name ?? '—'}</td>
-                        <td className="px-4 py-4 text-right text-white font-mono">{player.score ?? '—'}</td>
+                        <td className="px-4 py-4 text-slate-900 font-medium">{player.users?.name ?? '—'}</td>
+                        <td className="px-4 py-4 text-right text-slate-900 font-mono">{player.score ?? '—'}</td>
                         <td className="px-4 py-4 text-right text-slate-400 font-mono">{before ?? '—'}</td>
-                        <td className="px-4 py-4 text-right text-white font-mono">{after ?? '—'}</td>
+                        <td className="px-4 py-4 text-right text-slate-900 font-mono">{after ?? '—'}</td>
                         <td className="px-4 py-4 text-right font-mono">
                           {delta !== null ? (
                             <span className={delta >= 0 ? 'text-green-400' : 'text-red-400'}>
@@ -139,7 +139,7 @@ export default function TournamentResults() {
         {/* Round-by-round pairings */}
         {rounds.length > 0 && (
           <section>
-            <h2 className="text-xl font-semibold text-white mb-4">Round Results</h2>
+            <h2 className="text-xl font-semibold text-slate-900 mb-4">Round Results</h2>
             <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
               {rounds.map(round => (
                 <button
@@ -147,8 +147,8 @@ export default function TournamentResults() {
                   onClick={() => setActiveRound(round.id)}
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                     activeRound === round.id
-                      ? 'bg-navy-600 text-white'
-                      : 'text-slate-400 hover:text-white hover:bg-navy-700'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100'
                   }`}
                 >
                   Round {round.round_number}
@@ -156,14 +156,14 @@ export default function TournamentResults() {
               ))}
             </div>
 
-            <div className="bg-navy-800 border border-navy-700 rounded-2xl overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
               {pairings.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">No pairings for this round.</div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-left text-slate-500 border-b border-navy-700 bg-navy-900/40">
+                      <tr className="text-left text-slate-500 border-b border-gray-200 bg-gray-50">
                         <th className="px-6 py-3 font-medium">White</th>
                         <th className="px-4 py-3 font-medium text-center">Result</th>
                         <th className="px-4 py-3 font-medium text-right">Black</th>
@@ -173,12 +173,12 @@ export default function TournamentResults() {
                       {pairings.map((pairing) => {
                         const res = resultLabel(pairing.result)
                         return (
-                          <tr key={pairing.id} className="border-b border-navy-700/50">
-                            <td className="px-6 py-4 text-white">{pairing.player1?.name ?? 'Bye'}</td>
-                            <td className="px-4 py-4 text-center font-mono text-slate-300">
+                          <tr key={pairing.id} className="border-b border-gray-100">
+                            <td className="px-6 py-4 text-slate-900">{pairing.player1?.name ?? 'Bye'}</td>
+                            <td className="px-4 py-4 text-center font-mono text-slate-500">
                               {res.p1} – {res.p2}
                             </td>
-                            <td className="px-4 py-4 text-right text-white">{pairing.player2?.name ?? 'Bye'}</td>
+                            <td className="px-4 py-4 text-right text-slate-900">{pairing.player2?.name ?? 'Bye'}</td>
                           </tr>
                         )
                       })}

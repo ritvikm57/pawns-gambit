@@ -72,20 +72,20 @@ export default function Tournaments() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="py-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-white">Tournaments</h1>
-          <p className="text-slate-400 mt-2 text-lg">Compete, earn Glicko-2 ratings, and climb the leaderboard.</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900">Tournaments</h1>
+          <p className="text-slate-500 mt-2 text-lg">Compete, earn Pawn's Gambit (PG) ratings, and climb the leaderboard.</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-navy-800 border border-navy-700 rounded-xl p-1 mb-8 overflow-x-auto">
+        <div className="flex gap-1 bg-gray-100 border border-gray-200 rounded-xl p-1 mb-8 overflow-x-auto">
           {TABS.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-5 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-1 min-w-max ${
                 activeTab === tab.key
-                  ? 'bg-navy-600 text-white shadow'
-                  : 'text-slate-400 hover:text-white hover:bg-navy-700'
+                  ? 'bg-blue-600 text-white shadow'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-gray-200'
               }`}
             >
               {tab.label}
@@ -104,12 +104,12 @@ export default function Tournaments() {
         ) : loading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-navy-800 border border-navy-700 rounded-xl p-6 animate-pulse">
-                <div className="h-5 bg-navy-700 rounded mb-4 w-3/4" />
+              <div key={i} className="bg-white border border-gray-200 rounded-xl p-6 animate-pulse">
+                <div className="h-5 bg-gray-200 rounded mb-4 w-3/4" />
                 <div className="space-y-3">
-                  <div className="h-3 bg-navy-700 rounded w-2/3" />
-                  <div className="h-3 bg-navy-700 rounded w-1/2" />
-                  <div className="h-3 bg-navy-700 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200 rounded w-2/3" />
+                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+                  <div className="h-3 bg-gray-200 rounded w-3/4" />
                 </div>
               </div>
             ))}
@@ -123,7 +123,7 @@ export default function Tournaments() {
         ) : (
           <div className="text-center py-20 text-slate-400">
             <Trophy size={52} className="mx-auto mb-4 opacity-20" />
-            <p className="text-xl text-slate-300 font-medium">No {activeTab} tournaments</p>
+            <p className="text-xl text-slate-700 font-medium">No {activeTab} tournaments</p>
             <p className="text-sm mt-2">
               {activeTab === 'upcoming'
                 ? 'Check back soon for upcoming events!'
@@ -153,8 +153,8 @@ function LeaderboardView({ players, loading, filter, onFilterChange }) {
               onClick={() => onFilterChange(f)}
               className={`px-4 py-1.5 rounded-lg text-sm transition-colors ${
                 filter === f
-                  ? 'bg-navy-600 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-navy-700'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100'
               }`}
             >
               {f === 'all' ? 'All Players' : 'Active (6mo)'}
@@ -163,7 +163,7 @@ function LeaderboardView({ players, loading, filter, onFilterChange }) {
         </div>
       </div>
 
-      <div className="bg-navy-800 border border-navy-700 rounded-2xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-slate-500">Loading leaderboard...</div>
         ) : players.length === 0 ? (
@@ -175,7 +175,7 @@ function LeaderboardView({ players, loading, filter, onFilterChange }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-500 border-b border-navy-700 bg-navy-900/50">
+                <tr className="text-left text-slate-500 border-b border-gray-200 bg-gray-50">
                   <th className="px-6 py-3 font-medium w-12">Rank</th>
                   <th className="px-4 py-3 font-medium">Player</th>
                   <th className="px-4 py-3 font-medium text-right">PG Rating</th>
@@ -188,29 +188,29 @@ function LeaderboardView({ players, loading, filter, onFilterChange }) {
                 {players.map((player, index) => (
                   <tr
                     key={player.user_id}
-                    className={`border-b border-navy-700/50 hover:bg-navy-700/30 transition-colors ${
+                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                       index < 3 ? 'font-medium' : ''
                     }`}
                   >
                     <td className="px-6 py-4">
                       <span className={`text-sm ${
-                        index === 0 ? 'text-yellow-400' :
-                        index === 1 ? 'text-slate-300' :
-                        index === 2 ? 'text-amber-600' :
+                        index === 0 ? 'text-yellow-600' :
+                        index === 1 ? 'text-slate-500' :
+                        index === 2 ? 'text-amber-700' :
                         'text-slate-500'
                       }`}>
                         {index < 3 ? ['🥇','🥈','🥉'][index] : `#${index + 1}`}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-white">{player.users?.name ?? 'Unknown'}</div>
+                      <div className="text-slate-900">{player.users?.name ?? 'Unknown'}</div>
                       {player.users?.city && (
                         <div className="text-slate-500 text-xs">{player.users.city}</div>
                       )}
                     </td>
                     <td className="px-4 py-4 text-right">
                       <span className={`font-mono text-lg ${
-                        index === 0 ? 'text-yellow-400' : 'text-white'
+                        index === 0 ? 'text-yellow-600' : 'text-slate-900'
                       }`}>
                         {player.rating}
                       </span>

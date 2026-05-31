@@ -45,10 +45,10 @@ export default function TournamentCard({ tournament, compact = false }) {
   const isCompleted = status === 'completed'
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-xl p-6 flex flex-col gap-4 hover:border-navy-500 transition-colors">
+    <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-4 hover:border-gray-400 transition-colors">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-white font-semibold text-lg leading-snug">{name}</h3>
+        <h3 className="text-slate-900 font-semibold text-lg leading-snug">{name}</h3>
         <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${STATUS_STYLES[status] || STATUS_STYLES.upcoming}`}>
           {STATUS_LABELS[status] || 'Upcoming'}
         </span>
@@ -97,14 +97,14 @@ export default function TournamentCard({ tournament, compact = false }) {
         ) : isCompleted ? (
           <Link
             to={`/tournaments/${id}/results`}
-            className="block w-full text-center px-4 py-2 border border-navy-600 hover:border-navy-500 text-slate-300 hover:text-white text-sm font-medium rounded-lg transition-colors"
+            className="block w-full text-center px-4 py-2 border border-gray-300 hover:border-gray-400 text-slate-600 hover:text-slate-900 text-sm font-medium rounded-lg transition-colors"
           >
             View Results
           </Link>
         ) : (
           <Link
             to={`/tournaments/${id}`}
-            className="block w-full text-center px-4 py-2 border border-navy-600 hover:border-navy-500 text-slate-300 hover:text-white text-sm font-medium rounded-lg transition-colors"
+            className="block w-full text-center px-4 py-2 border border-gray-300 hover:border-gray-400 text-slate-600 hover:text-slate-900 text-sm font-medium rounded-lg transition-colors"
           >
             View Details
           </Link>

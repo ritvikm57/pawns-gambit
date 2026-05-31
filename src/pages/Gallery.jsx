@@ -55,7 +55,7 @@ export default function Gallery() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="py-10 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Gallery</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">Gallery</h1>
           <p className="text-slate-400 text-lg max-w-xl mx-auto">
             Snapshots from our tournaments, events, and chess community in Hyderabad
           </p>
@@ -92,7 +92,7 @@ export default function Gallery() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-slate-400">
             <Camera size={56} className="mx-auto mb-4 opacity-20" />
-            <p className="text-xl text-slate-300 font-medium mb-2">
+            <p className="text-xl text-slate-700 font-medium mb-2">
               {photos.length === 0 ? 'Photos coming soon' : 'No photos in this category'}
             </p>
             <p className="text-sm text-slate-500">

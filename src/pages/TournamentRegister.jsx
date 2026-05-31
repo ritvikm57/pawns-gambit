@@ -133,13 +133,13 @@ export default function TournamentRegister() {
           <div className="w-20 h-20 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center mx-auto mb-6">
             <CheckCircle size={40} className="text-green-400" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">You're registered!</h2>
-          <p className="text-slate-400 mb-2">
-            You've successfully registered for <strong className="text-white">{tournament.name}</strong>.
+          <h2 className="text-2xl font-bold text-slate-900 mb-3">You're registered!</h2>
+          <p className="text-slate-500 mb-2">
+            You've successfully registered for <strong className="text-slate-900">{tournament.name}</strong>.
           </p>
           <p className="text-slate-500 text-sm mb-8">A confirmation email has been sent to {user.email}.</p>
           <div className="flex gap-3 justify-center">
-            <Link to="/tournaments" className="px-5 py-2.5 border border-navy-600 text-slate-300 hover:text-white rounded-lg text-sm transition-colors">
+            <Link to="/tournaments" className="px-5 py-2.5 border border-gray-300 text-slate-600 hover:text-slate-900 rounded-lg text-sm transition-colors">
               All Tournaments
             </Link>
             <Link to="/profile" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors">
@@ -156,8 +156,8 @@ export default function TournamentRegister() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <CheckCircle size={48} className="mx-auto mb-4 text-green-400" />
-          <h2 className="text-2xl font-bold text-white mb-3">Already registered</h2>
-          <p className="text-slate-400 mb-6">You're already registered for <strong className="text-white">{tournament.name}</strong>.</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-3">Already registered</h2>
+          <p className="text-slate-500 mb-6">You're already registered for <strong className="text-slate-900">{tournament.name}</strong>.</p>
           <Link to="/profile" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors">
             View My Profile
           </Link>
@@ -173,7 +173,7 @@ export default function TournamentRegister() {
           ← All Tournaments
         </Link>
 
-        <h1 className="text-3xl font-bold text-white mb-2">Register</h1>
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">Register</h1>
         <p className="text-slate-400 mb-8">Confirm your spot in this tournament</p>
 
         {/* Tournament Summary */}

@@ -19,69 +19,61 @@ function YouTubeIcon() {
   )
 }
 
+const BORDER = 'rgba(74,158,255,0.1)'
+const MUTED  = 'rgba(200,216,237,0.45)'
+
 export default function Footer() {
   return (
-    <footer className="bg-navy-950 border-t border-navy-800 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Column 1 — Brand */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Logo size={32} />
-              <span className="font-semibold text-white text-sm">Pawn's Gambit</span>
+    <footer className="mt-auto" style={{ background: '#070f24', borderTop: `1px solid ${BORDER}` }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {/* Brand */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-2.5">
+              <Logo size={30} />
+              <span className="font-bold text-white text-sm tracking-wide">Pawn's Gambit</span>
             </div>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Hyderabad's Largest Chess Club
+            <p className="text-sm leading-relaxed" style={{ color: MUTED }}>
+              Hyderabad's chess community — where the board starts the conversation.
             </p>
             <div className="flex items-center gap-3">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-white transition-colors"
-                aria-label="Instagram"
-              >
-                <InstagramIcon />
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-white transition-colors"
-                aria-label="YouTube"
-              >
-                <YouTubeIcon />
-              </a>
+              {[
+                { href: 'https://instagram.com', label: 'Instagram', icon: <InstagramIcon /> },
+                { href: 'https://youtube.com',   label: 'YouTube',   icon: <YouTubeIcon />   },
+              ].map(s => (
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                   aria-label={s.label}
+                   className="transition-colors hover:text-white"
+                   style={{ color: MUTED }}>
+                  {s.icon}
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Column 2 — Quick Links */}
+          {/* Links */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <h3 className="text-white font-semibold text-xs tracking-widest uppercase mb-5">Navigate</h3>
+            <ul className="space-y-2.5">
               {[
-                { label: 'Home', path: '/' },
+                { label: 'Home',        path: '/' },
                 { label: 'Tournaments', path: '/tournaments' },
-                { label: 'Gallery', path: '/gallery' },
+                { label: 'Gallery',     path: '/gallery' },
               ].map(link => (
                 <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="text-slate-400 hover:text-white text-sm transition-colors"
-                  >
-                    {link.label}
-                  </Link>
+                  <Link to={link.path} className="text-sm transition-colors hover:text-white"
+                        style={{ color: MUTED }}>{link.label}</Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 3 — Contact */}
+          {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-4">Contact</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
+            <h3 className="text-white font-semibold text-xs tracking-widest uppercase mb-5">Contact</h3>
+            <ul className="space-y-2.5 text-sm" style={{ color: MUTED }}>
               <li>
-                <a href="mailto:contact@pgchess.in" className="hover:text-white transition-colors">
+                <a href="mailto:contact@pgchess.in" className="transition-colors hover:text-white">
                   contact@pgchess.in
                 </a>
               </li>
@@ -90,8 +82,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-navy-800 mt-10 pt-6 text-center">
-          <p className="text-slate-500 text-xs">
+        <div className="mt-12 pt-6 text-center" style={{ borderTop: `1px solid ${BORDER}` }}>
+          <p className="text-xs" style={{ color: `${MUTED.slice(0, -4)}0.3)` }}>
             © 2026 Pawn's Gambit. All rights reserved.
           </p>
         </div>

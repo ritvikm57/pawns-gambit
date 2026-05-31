@@ -91,9 +91,9 @@ export default function Profile() {
 
         {/* Rating Deviation Explainer */}
         {rdValue && (
-          <div className="bg-navy-800/50 border border-navy-700 rounded-xl p-4 mb-8 text-sm text-slate-400">
-            <strong className="text-slate-300">Rating confidence:</strong> Your rating range is{' '}
-            <span className="text-white font-mono">
+          <div className="bg-gray-100 border border-gray-200 rounded-xl p-4 mb-8 text-sm text-slate-600">
+            <strong className="text-slate-700">Rating confidence:</strong> Your rating range is{' '}
+            <span className="text-slate-900 font-mono">
               {ratingValue - rdValue * 2}–{ratingValue + rdValue * 2}
             </span>
             . The ±{rdValue} deviation decreases as you play more rated games.

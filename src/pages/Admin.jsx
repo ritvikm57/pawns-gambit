@@ -205,7 +205,7 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between py-8">
           <div>
-            <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
+            <h1 className="text-3xl font-bold text-slate-900">Admin Panel</h1>
             <p className="text-slate-400 text-sm mt-1">Manage tournaments, results, and ratings</p>
           </div>
           <div className="flex gap-2">
@@ -214,7 +214,7 @@ export default function Admin() {
                 key={v}
                 onClick={() => setView(v)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  view === v ? 'bg-navy-600 text-white' : 'text-slate-400 hover:text-white hover:bg-navy-700'
+                  view === v ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100'
                 }`}
               >
                 {v === 'tournaments' ? 'All Tournaments' : '+ New Tournament'}
@@ -285,12 +285,12 @@ export default function Admin() {
               <form onSubmit={handleCreateTournament} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label="Tournament Name" value={form.name} onChange={v => setFormField('name', v)} placeholder="PG Open #12" required />
-                  <Field label="Date & Time" type="datetime-local" value={form.date} onChange={v => setFormField('date', v)} required />
+                  <Field label="Date & Time" type="datetime-local" value={form.date} onChange={v => setFormField('date', v)} required min={new Date().toISOString().slice(0, 16)} />
                   <Field label="Format" value={form.format} onChange={v => setFormField('format', v)} placeholder="Swiss, Rapid 15+10" required />
                   <Field label="Rounds" type="number" value={form.rounds} onChange={v => setFormField('rounds', v)} placeholder="5" required />
                   <Field label="Entry Fee (₹)" type="number" value={form.entry_fee} onChange={v => setFormField('entry_fee', v)} placeholder="200" />
                   <Field label="Max Players" type="number" value={form.max_players} onChange={v => setFormField('max_players', v)} placeholder="64" />
-                  <Field label="Registration Deadline" type="datetime-local" value={form.registration_deadline} onChange={v => setFormField('registration_deadline', v)} />
+                  <Field label="Registration Deadline" type="datetime-local" value={form.registration_deadline} onChange={v => setFormField('registration_deadline', v)} min={new Date().toISOString().slice(0, 16)} />
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1.5">Initial Status</label>
                     <select
@@ -324,7 +324,7 @@ export default function Admin() {
                   <button
                     type="button"
                     onClick={() => setView('tournaments')}
-                    className="px-5 py-2.5 border border-navy-600 text-slate-300 hover:text-white rounded-lg text-sm transition-colors"
+                    className="px-5 py-2.5 border border-gray-300 text-slate-600 hover:text-slate-900 rounded-lg text-sm transition-colors"
                   >
                     Cancel
                   </button>
@@ -353,7 +353,7 @@ export default function Admin() {
 
             <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-white">{selectedTournament.name}</h2>
+                <h2 className="text-2xl font-bold text-slate-900">{selectedTournament.name}</h2>
                 <p className="text-slate-400 text-sm mt-0.5">
                   {new Date(selectedTournament.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
@@ -371,7 +371,7 @@ export default function Admin() {
 
             {/* Registrations */}
             <section className="mb-8">
-              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
                 <Users size={18} /> Registrations ({registrations.length})
               </h3>
               <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
@@ -431,7 +431,7 @@ export default function Admin() {
             {/* Rounds & Pairings */}
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                   <Trophy size={18} /> Rounds
                 </h3>
                 <button
@@ -449,7 +449,7 @@ export default function Admin() {
                       key={round.id}
                       onClick={() => setActiveRound(round.id)}
                       className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
-                        activeRound === round.id ? 'bg-navy-600 text-white' : 'text-slate-400 hover:text-white hover:bg-navy-700'
+                        activeRound === round.id ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100'
                       }`}
                     >
                       Round {round.round_number}
@@ -540,7 +540,7 @@ export default function Admin() {
   )
 }
 
-function Field({ label, type = 'text', value, onChange, placeholder, required = false }) {
+function Field({ label, type = 'text', value, onChange, placeholder, required = false, min }) {
   return (
     <div>
       <label className="block text-sm font-medium text-slate-300 mb-1.5">{label}</label>
@@ -550,6 +550,7 @@ function Field({ label, type = 'text', value, onChange, placeholder, required = 
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
+        min={min}
         className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
       />
     </div>

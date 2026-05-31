@@ -68,7 +68,7 @@ export default function ResetPassword() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Logo size={48} className="mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white">Set new password</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Set new password</h1>
           <p className="text-slate-400 mt-1">Choose a strong password for your account</p>
         </div>
 
