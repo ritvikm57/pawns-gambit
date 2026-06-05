@@ -16,6 +16,7 @@ export default function Navbar() {
     { label: 'Home',        path: '/' },
     { label: 'Tournaments', path: '/tournaments' },
     { label: 'Gallery',     path: '/gallery' },
+    { label: 'Contact',     path: '/contact' },
   ]
 
   const isActive = (path) =>

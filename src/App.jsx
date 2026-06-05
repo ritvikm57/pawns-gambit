@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AuthProvider } from './context/AuthContext'
+import { autoUpdateTournamentStatuses } from './lib/autoUpdateTournaments'
 import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -14,6 +16,7 @@ import Signup from './pages/Signup'
 import Profile from './pages/Profile'
 import Admin from './pages/Admin'
 import ResetPassword from './pages/ResetPassword'
+import Contact from './pages/Contact'
 
 function NotFound() {
   return (
@@ -31,6 +34,9 @@ function NotFound() {
 }
 
 export default function App() {
+  // Silently promote any tournament whose start time has passed → ongoing
+  useEffect(() => { autoUpdateTournamentStatuses() }, [])
+
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -44,6 +50,7 @@ export default function App() {
               <Route path="/tournaments/:id/register" element={<TournamentRegister />} />
               <Route path="/tournaments/:id/results" element={<TournamentResults />} />
               <Route path="/gallery" element={<Gallery />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/reset-password" element={<ResetPassword />} />

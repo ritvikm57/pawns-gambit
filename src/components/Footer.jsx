@@ -24,7 +24,7 @@ const MUTED  = 'rgba(200,216,237,0.45)'
 
 export default function Footer() {
   return (
-    <footer className="mt-auto" style={{ background: '#070f24', borderTop: `1px solid ${BORDER}` }}>
+    <footer className="mt-auto" style={{ background: '#070f24', borderTop: `1px solid ${BORDER}`, scrollSnapAlign: 'start', scrollSnapStop: 'always', fontFamily: "'Times New Roman', Times, serif" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Brand */}

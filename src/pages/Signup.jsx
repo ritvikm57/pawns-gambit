@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import Logo from '../components/Logo'
 import { useAuth } from '../context/AuthContext'
+import PageDecor from '../components/PageDecor'
 
 const SKILL_LEVELS = [
   { value: 'beginner',     label: 'Beginner',             desc: 'I know the rules but not much strategy',            rating: 800 },
@@ -11,6 +12,25 @@ const SKILL_LEVELS = [
   { value: 'expert',       label: 'Expert / Club Player',  desc: 'Strong understanding, 1800+ elsewhere',            rating: 1800 },
   { value: 'titled',       label: 'Titled Player',         desc: 'CM, FM, IM, GM, or national-level',                rating: 2200 },
 ]
+
+function InputField({ label, value, onChange, type = 'text', placeholder, optional = false, hint }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-1.5">
+        {label} {optional && <span className="text-slate-500 font-normal">(optional)</span>}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={!optional}
+        className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
+      />
+      {hint && <p className="text-slate-500 text-xs mt-1">{hint}</p>}
+    </div>
+  )
+}
 
 export default function Signup() {
   const [step, setStep] = useState(1)
@@ -65,26 +85,10 @@ export default function Signup() {
     }
   }
 
-  const InputField = ({ label, field, type = 'text', placeholder, optional = false, hint }) => (
-    <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">
-        {label} {optional && <span className="text-slate-500 font-normal">(optional)</span>}
-      </label>
-      <input
-        type={type}
-        value={form[field]}
-        onChange={set(field)}
-        placeholder={placeholder}
-        required={!optional}
-        className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
-      />
-      {hint && <p className="text-slate-500 text-xs mt-1">{hint}</p>}
-    </div>
-  )
-
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-12">
+      <PageDecor />
+      <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
           <Logo size={48} className="mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
@@ -120,8 +124,8 @@ export default function Signup() {
 
           {step === 1 && (
             <form onSubmit={handleNext} className="space-y-4">
-              <InputField label="Full Name" field="name" placeholder="Ritvik Mittal" />
-              <InputField label="Email" field="email" type="email" placeholder="chess@example.com" />
+              <InputField label="Full Name" value={form.name} onChange={set('name')} placeholder="Ritvik Mittal" />
+              <InputField label="Email" value={form.email} onChange={set('email')} type="email" placeholder="chess@example.com" />
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
                 <div className="relative">
@@ -149,10 +153,10 @@ export default function Signup() {
                   className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
                 />
               </div>
-              <InputField label="City" field="city" placeholder="Hyderabad" />
-              <InputField label="Chess.com Username" field="chessComUsername" placeholder="RitvikM" optional />
-              <InputField label="FIDE ID" field="fideId" type="text" placeholder="25048123" optional />
-              <InputField label="Phone" field="phone" type="tel" placeholder="+91 98765 43210" optional hint="For event notifications" />
+              <InputField label="City" value={form.city} onChange={set('city')} placeholder="Hyderabad" />
+              <InputField label="Chess.com Username" value={form.chessComUsername} onChange={set('chessComUsername')} placeholder="RitvikM" optional />
+              <InputField label="FIDE ID" value={form.fideId} onChange={set('fideId')} type="text" placeholder="25048123" optional />
+              <InputField label="Phone" value={form.phone} onChange={set('phone')} type="tel" placeholder="+91 98765 43210" optional hint="For event notifications" />
 
               <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-sm mt-2">
                 Continue →

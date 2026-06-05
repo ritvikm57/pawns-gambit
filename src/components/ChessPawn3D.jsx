@@ -54,22 +54,21 @@ function PawnRig() {
   const posRef  = useRef()
   const tiltRef = useRef()
 
-  const clock        = useRef(0)
-  const scrollVh     = useRef(0)   // scrollY / innerHeight — which section we're in
-  const pageProgress = useRef(0)   // 0…1 overall — for end-of-page fade
+  const clock    = useRef(0)
+  const scrollVh = useRef(
+    typeof window !== 'undefined' ? window.scrollY / (window.innerHeight || 1) : 0
+  )
 
   const cur = useRef({ posX: 0, posY: 0, tiltZ: 0, op: 1 })
+  const initialized = useRef(false)
 
   useEffect(() => {
     const onScroll = () => {
-      const vh  = window.innerHeight || 1
-      const max = document.documentElement.scrollHeight - vh
-      scrollVh.current     = window.scrollY / vh
-      pageProgress.current = max > 0 ? Math.min(window.scrollY / max, 1) : 0
+      scrollVh.current = window.scrollY / (window.innerHeight || 1)
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => { window.removeEventListener('scroll', onScroll); initialized.current = false }
   }, [])
 
   useFrame((_, delta) => {
@@ -78,31 +77,36 @@ function PawnRig() {
     clock.current += delta
 
     const sp = scrollVh.current
-    const pp = pageProgress.current
 
-    // Targets switch at sp=0.5 (S1→S2) and sp=1.5 (S2→S3)
+    // S1(sp<0.5)  S2(0.5–1.5)  S3(sp≥1.5 — stays here)
     const X0 = Math.min(viewport.width * 0.4, 0)
     const targX     = sp < 0.5 ? X0
                     : sp < 1.5 ? -2
-                    : -Math.min(viewport.width * 0.25,3)   // top-left in S3
+                    : -Math.min(viewport.width * 0.25, 3)
 
     const targTiltZ = sp < 0.5 ? 0
                     : sp < 1.5 ? -(Math.PI / 6)
-                    : (Math.PI / 12)                                  // upright in S3
+                    : (Math.PI / 12)
 
-    // Fade out in the last 12% of the page
-    const targOp = pp < 0.80 ? 1
-                 : pp > 0.92 ? 0
-                 : 1 - (pp - 0.80) / 0.12
+    const targOp = 1
 
+    // Exits upward the instant you scroll past S3; multiplier makes it vanish fast
     const targY = sp < 0.5 ? 0
                 : sp < 1.5 ? 1
-                : -0.2                                         // left middle-top in S3
+                : -0.2 + Math.max(0, sp - 2.0) * viewport.height * 2
 
-    cur.current.posX  += (targX     - cur.current.posX)  * k
-    cur.current.posY  += (targY     - cur.current.posY)  * k
-    cur.current.tiltZ += (targTiltZ - cur.current.tiltZ) * k
-    cur.current.op    += (targOp    - cur.current.op)    * k
+    if (!initialized.current) {
+      cur.current.posX  = targX
+      cur.current.posY  = targY
+      cur.current.tiltZ = targTiltZ
+      cur.current.op    = targOp
+      initialized.current = true
+    } else {
+      cur.current.posX  += (targX     - cur.current.posX)  * k
+      cur.current.posY  += (targY     - cur.current.posY)  * k
+      cur.current.tiltZ += (targTiltZ - cur.current.tiltZ) * k
+      cur.current.op    += (targOp    - cur.current.op)    * k
+    }
 
     // Float tied to tilt: full when upright (section 1), zero when tilted (section 2)
     const floatScale = Math.max(0, 1 - Math.abs(cur.current.tiltZ) / (Math.PI / 6))

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Calendar, MapPin, Trophy, Users, IndianRupee, ArrowLeft, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { Calendar, MapPin, Trophy, Users, IndianRupee, ArrowLeft, Clock } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import PageDecor from '../components/PageDecor'
 
 const STATUS_STYLES = {
   upcoming:          'bg-blue-50 text-blue-700 border border-blue-200',
@@ -19,12 +20,12 @@ const STATUS_LABELS = {
 
 export default function TournamentDetail() {
   const { id } = useParams()
-  const [tournament, setTournament]     = useState(null)
+  const [tournament, setTournament]         = useState(null)
   const [registeredCount, setRegisteredCount] = useState(0)
-  const [rounds, setRounds]             = useState([])
-  const [standings, setStandings]       = useState([])
-  const [loading, setLoading]           = useState(true)
-  const [openRound, setOpenRound]       = useState(null)
+  const [rounds, setRounds]                 = useState([])
+  const [standings, setStandings]           = useState([])
+  const [loading, setLoading]               = useState(true)
+  const [view, setView]                     = useState('standings') // 'standings' | 'rounds'
 
   useEffect(() => {
     async function fetchData() {
@@ -53,10 +54,8 @@ export default function TournamentDetail() {
             .eq('payment_status', 'paid')
             .order('score', { ascending: false }),
         ])
-        const filled = (roundsData || []).map(r => ({ ...r, pairings: r.pairings || [] }))
-        setRounds(filled)
+        setRounds(roundsData || [])
         setStandings(regs || [])
-        if (filled.length) setOpenRound(filled[filled.length - 1].id)
       }
 
       setLoading(false)
@@ -99,216 +98,240 @@ export default function TournamentDetail() {
     ? tournament.max_players - registeredCount
     : null
 
-  const showPairings = tournament.status === 'ongoing' || tournament.status === 'completed'
+  const showResults = tournament.status === 'ongoing' || tournament.status === 'completed'
+
+  // Build round-result lookup:  userId → { [roundId]: 1 | 0 | 0.5 }
+  // Note: Supabase may return NUMERIC columns as strings, so coerce with Number().
+  const roundResults = {}
+  standings.forEach(reg => { roundResults[reg.user_id] = {} })
+  rounds.forEach(round => {
+    round.pairings?.forEach(p => {
+      if (p.result == null) return
+      const r = Number(p.result)   // "1" → 1, "0.5" → 0.5, 1 → 1
+      const wRes = r === 1 ? 1 : r === 0 ? 0 : 0.5
+      const bRes = r === 1 ? 0 : r === 0 ? 1 : 0.5
+      if (roundResults[p.player1_id] !== undefined)
+        roundResults[p.player1_id][round.id] = wRes
+      if (roundResults[p.player2_id] !== undefined)
+        roundResults[p.player2_id][round.id] = bRes
+    })
+  })
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Link to="/tournaments" className="inline-flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-600 mb-8">
+    <div className="relative min-h-screen pt-20 pb-16 px-4" style={{ background: '#f8f9fb' }}>
+      <PageDecor />
+      <div className="relative z-10 max-w-6xl mx-auto">
+
+        <Link to="/tournaments" className="inline-flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-600 mb-6">
           <ArrowLeft size={14} /> All Tournaments
         </Link>
 
-        {/* Status + Title */}
-        <div className="mb-8">
-          <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 ${STATUS_STYLES[tournament.status] || STATUS_STYLES.upcoming}`}>
-            {STATUS_LABELS[tournament.status] || 'Upcoming'}
-          </span>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">{tournament.name}</h1>
-        </div>
+        <div className="grid md:grid-cols-[340px_1fr] gap-8 items-start">
 
-        {/* Details card */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6 space-y-4">
-          <Row icon={<Calendar size={16} />} label="Date & Time" value={formattedDate} />
-          <Row icon={<MapPin size={16} />} label="Location" value={tournament.is_online ? 'Online' : tournament.venue || 'TBD'} />
-          <Row icon={<Trophy size={16} />} label="Format" value={`${tournament.format}${tournament.rounds ? ` — ${tournament.rounds} rounds` : ''}`} />
-          <Row
-            icon={<IndianRupee size={16} />}
-            label="Entry Fee"
-            value={tournament.entry_fee ? `₹${tournament.entry_fee.toLocaleString('en-IN')}` : 'Free'}
-          />
-          {tournament.prize_pool && (
-            <Row icon={<Trophy size={16} />} label="Prize Pool" value={tournament.prize_pool} highlight />
-          )}
-          <Row
-            icon={<Users size={16} />}
-            label="Registered"
-            value={
-              tournament.max_players != null
-                ? `${registeredCount} / ${tournament.max_players}${spotsLeft != null ? ` (${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left)` : ''}`
-                : `${registeredCount} players`
-            }
-          />
-          {formattedDeadline && (
-            <Row icon={<Clock size={16} />} label="Reg. Deadline" value={formattedDeadline} />
-          )}
-        </div>
+          {/* ══ LEFT — tournament details ════════════════════════════════ */}
+          <div className="space-y-4">
 
-        {/* CTA */}
-        <div className="mb-10">
-          {tournament.status === 'registration_open' && (
-            <Link
-              to={`/tournaments/${id}/register`}
-              className="block w-full text-center py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition-colors"
-            >
-              Register Now
-            </Link>
-          )}
-          {tournament.status === 'upcoming' && (
-            <div className="w-full text-center py-3 bg-gray-100 text-slate-500 font-semibold rounded-xl text-sm">
-              Registration not yet open
+            {/* Status + Title */}
+            <div>
+              <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 ${STATUS_STYLES[tournament.status] || STATUS_STYLES.upcoming}`}>
+                {STATUS_LABELS[tournament.status] || 'Upcoming'}
+              </span>
+              <h1 className="text-2xl font-bold text-slate-900 leading-tight">{tournament.name}</h1>
             </div>
-          )}
-          {tournament.status === 'ongoing' && (
-            <div className="w-full text-center py-3 bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold rounded-xl text-sm">
-              Tournament in progress
+
+            {/* Details card */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-3.5 shadow-sm">
+              <Row icon={<Calendar size={15} />} label="Date & Time"  value={formattedDate} />
+              <Row icon={<MapPin size={15} />}   label="Location"     value={tournament.is_online ? 'Online' : tournament.venue || 'TBD'} />
+              <Row icon={<Trophy size={15} />}   label="Format"       value={`${tournament.format}${tournament.rounds ? ` — ${tournament.rounds} rounds` : ''}`} />
+              <Row
+                icon={<IndianRupee size={15} />}
+                label="Entry Fee"
+                value={tournament.entry_fee ? `₹${tournament.entry_fee.toLocaleString('en-IN')}` : 'Free'}
+              />
+              {tournament.prize_pool && (
+                <Row icon={<Trophy size={15} />} label="Prize Pool" value={tournament.prize_pool} highlight />
+              )}
+              <Row
+                icon={<Users size={15} />}
+                label="Registered"
+                value={
+                  tournament.max_players != null
+                    ? `${registeredCount} / ${tournament.max_players}${spotsLeft != null ? ` (${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left)` : ''}`
+                    : `${registeredCount} players`
+                }
+              />
+              {formattedDeadline && (
+                <Row icon={<Clock size={15} />} label="Reg. Deadline" value={formattedDeadline} />
+              )}
             </div>
-          )}
-          {tournament.status === 'completed' && (
-            <Link
-              to={`/tournaments/${id}/results`}
-              className="block w-full text-center py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-sm transition-colors"
-            >
-              View Full Results
-            </Link>
-          )}
-        </div>
 
-        {/* ── Standings ───────────────────────────────────────────── */}
-        {(tournament.status === 'completed' || tournament.status === 'ongoing') && standings.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <Trophy size={18} className="text-slate-400" />
-              {tournament.status === 'completed' ? 'Final Standings' : 'Current Standings'}
-            </h2>
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-slate-500 border-b border-gray-200 bg-gray-50">
-                    <th className="px-4 py-3 font-medium">Rank</th>
-                    <th className="px-4 py-3 font-medium">Player</th>
-                    <th className="px-4 py-3 font-medium text-right">Score</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {standings.map((reg, i) => (
-                    <tr key={reg.id} className="border-b border-gray-100 last:border-0">
-                      <td className="px-4 py-3 text-slate-500 font-mono text-xs">
-                        {i < 3 ? ['🥇','🥈','🥉'][i] : `#${i + 1}`}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-slate-900">{reg.users?.name ?? '—'}</td>
-                      <td className="px-4 py-3 text-right font-mono text-slate-700">{reg.score ?? '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
+            {/* CTA */}
+            {tournament.status === 'registration_open' && (
+              <Link
+                to={`/tournaments/${id}/register`}
+                className="block w-full text-center py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition-colors"
+              >
+                Register Now
+              </Link>
+            )}
+            {tournament.status === 'upcoming' && (
+              <div className="w-full text-center py-3 bg-gray-100 text-slate-500 font-semibold rounded-xl text-sm">
+                Registration not yet open
+              </div>
+            )}
+            {tournament.status === 'ongoing' && (
+              <div className="w-full text-center py-3 bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold rounded-xl text-sm">
+                Tournament in progress
+              </div>
+            )}
+            {tournament.status === 'completed' && (
+              <Link
+                to={`/tournaments/${id}/results`}
+                className="block w-full text-center py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-sm transition-colors"
+              >
+                View Full Results
+              </Link>
+            )}
+          </div>
 
-        {/* ── Round-by-round pairings ─────────────────────────────── */}
-        {showPairings && rounds.length > 0 && (
-          <section>
-            <h2 className="text-lg font-semibold text-slate-900 mb-3">
-              {tournament.status === 'ongoing' ? 'Rounds' : 'Round Results'}
-            </h2>
-            <div className="space-y-3">
-              {rounds.map(round => {
-                const isOpen = openRound === round.id
-                return (
-                  <div key={round.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-                    <button
-                      className="w-full flex items-center justify-between px-5 py-4 text-left"
-                      onClick={() => setOpenRound(isOpen ? null : round.id)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="font-semibold text-slate-900 text-sm">Round {round.round_number}</span>
-                        {round.is_complete && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 font-medium">
-                            Complete
-                          </span>
-                        )}
-                        {!round.is_complete && tournament.status === 'ongoing' && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium">
-                            In Progress
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-slate-400">
-                        {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </span>
-                    </button>
+          {/* ══ RIGHT — points / round-by-round ═════════════════════════ */}
+          {showResults && standings.length > 0 ? (
+            <div>
+              {/* View toggle */}
+              <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mb-4 shadow-sm w-fit">
+                <button
+                  onClick={() => setView('standings')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    view === 'standings'
+                      ? 'bg-blue-600 text-white shadow'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-gray-50'
+                  }`}
+                >
+                  Standings
+                </button>
+                <button
+                  onClick={() => setView('rounds')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    view === 'rounds'
+                      ? 'bg-blue-600 text-white shadow'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-gray-50'
+                  }`}
+                >
+                  Round Results
+                </button>
+              </div>
 
-                    {isOpen && (
-                      <div className="border-t border-gray-100">
-                        {round.pairings.length === 0 ? (
-                          <p className="px-5 py-4 text-sm text-slate-400">No pairings yet.</p>
-                        ) : (
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="text-left text-slate-400 border-b border-gray-100 bg-gray-50">
-                                <th className="px-5 py-2.5 font-medium">White</th>
-                                <th className="px-3 py-2.5 font-medium text-center w-20">Result</th>
-                                <th className="px-5 py-2.5 font-medium text-right">Black</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {round.pairings.map(p => {
-                                const { p1Label, p2Label, p1Style, p2Style } = resultLabels(p.result)
-                                return (
-                                  <tr key={p.id} className="border-b border-gray-50 last:border-0">
-                                    <td className="px-5 py-3">
-                                      <div className="flex items-center gap-2">
-                                        <ResultPill label={p1Label} style={p1Style} />
-                                        <span className="text-slate-900 font-medium">{p.player1?.name ?? 'TBD'}</span>
-                                      </div>
-                                    </td>
-                                    <td className="px-3 py-3 text-center font-mono text-slate-400 text-xs">
-                                      {p.result != null ? `${p.result === 1 ? '1' : p.result === 0 ? '0' : '½'} – ${p.result === 1 ? '0' : p.result === 0 ? '1' : '½'}` : '—'}
-                                    </td>
-                                    <td className="px-5 py-3">
-                                      <div className="flex items-center justify-end gap-2">
-                                        <span className="text-slate-900 font-medium">{p.player2?.name ?? 'TBD'}</span>
-                                        <ResultPill label={p2Label} style={p2Style} />
-                                      </div>
-                                    </td>
-                                  </tr>
-                                )
-                              })}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
-                    )}
+              <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                {view === 'standings' ? (
+
+                  /* ── Standings ─────────────────────────────────────── */
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                          <th className="px-5 py-3 text-left w-16">Rank</th>
+                          <th className="px-4 py-3 text-left">Player</th>
+                          <th className="px-4 py-3 text-right">Points</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {standings.map((reg, i) => (
+                          <tr key={reg.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
+                            <td className="px-5 py-3.5 font-mono text-sm text-slate-500">
+                              {i < 3 ? ['🥇','🥈','🥉'][i] : `#${i + 1}`}
+                            </td>
+                            <td className="px-4 py-3.5 font-medium text-slate-900">{reg.users?.name ?? '—'}</td>
+                            <td className="px-4 py-3.5 text-right font-mono font-bold text-slate-900 tabular-nums">{reg.score ?? '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                )
-              })}
+
+                ) : rounds.length === 0 ? (
+
+                  <div className="py-12 text-center text-slate-400 text-sm">
+                    No rounds have been created yet.
+                  </div>
+
+                ) : (
+
+                  /* ── Round-by-round ─────────────────────────────────── */
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="border-b border-gray-200 bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                          <th className="px-4 py-3 text-left w-14">Rank</th>
+                          <th className="px-4 py-3 text-left">Player</th>
+                          <th className="px-4 py-3 text-center border-r border-gray-200 bg-slate-50">Points</th>
+                          {rounds.map(r => (
+                            <th key={r.id} className="px-3 py-3 text-center whitespace-nowrap font-bold">
+                              Round {r.round_number}
+                              {r.is_complete && (
+                                <span className="block text-[9px] normal-case tracking-normal text-green-500 font-medium mt-0.5">complete</span>
+                              )}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {standings.map((reg, i) => (
+                          <tr key={reg.id} className={`border-b border-gray-100 last:border-0 transition-colors ${
+                            i % 2 === 0 ? 'hover:bg-blue-50/20' : 'bg-gray-50/40 hover:bg-blue-50/20'
+                          }`}>
+                            <td className="px-4 py-3 font-mono text-xs text-slate-500">
+                              {i < 3 ? ['🥇','🥈','🥉'][i] : `#${i + 1}`}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-slate-900">{reg.users?.name ?? '—'}</td>
+
+                            {/* Total points (highlighted) */}
+                            <td className="px-4 py-3 text-center border-r border-gray-200 bg-slate-50/60">
+                              <span className="font-mono font-bold text-blue-600 tabular-nums">{reg.score ?? '—'}</span>
+                            </td>
+
+                            {/* Per-round result */}
+                            {rounds.map(r => {
+                              const res = roundResults[reg.user_id]?.[r.id]
+                              const label =
+                                res === 1   ? '1'
+                                : res === 0   ? '0'
+                                : res === 0.5 ? '½'
+                                : '–'
+                              const cls =
+                                res === 1   ? 'text-green-600 font-bold'
+                                : res === 0   ? 'text-red-400 font-medium'
+                                : res === 0.5 ? 'text-slate-500'
+                                : 'text-slate-300'
+                              return (
+                                <td key={r.id} className="px-3 py-3 text-center">
+                                  <span className={`font-mono tabular-nums text-sm ${cls}`}>{label}</span>
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                )}
+              </div>
             </div>
-          </section>
-        )}
+
+          ) : !showResults ? (
+            /* Placeholder for upcoming/open tournaments */
+            <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
+              <Trophy size={44} className="mx-auto mb-4 text-slate-200" />
+              <p className="font-semibold text-slate-600">No results yet</p>
+              <p className="text-sm text-slate-400 mt-1">Standings will appear once the tournament begins.</p>
+            </div>
+
+          ) : null}
+
+        </div>
       </div>
     </div>
-  )
-}
-
-function resultLabels(result) {
-  if (result == null) return { p1Label: null, p2Label: null, p1Style: null, p2Style: null }
-  if (result === 1)   return { p1Label: 'W', p2Label: 'L', p1Style: 'win',  p2Style: 'loss' }
-  if (result === 0)   return { p1Label: 'L', p2Label: 'W', p1Style: 'loss', p2Style: 'win'  }
-  return                     { p1Label: 'D', p2Label: 'D', p1Style: 'draw', p2Style: 'draw' }
-}
-
-const PILL_STYLES = {
-  win:  'bg-green-50 text-green-700 border border-green-200',
-  loss: 'bg-red-50 text-red-600 border border-red-200',
-  draw: 'bg-slate-100 text-slate-500 border border-slate-200',
-}
-
-function ResultPill({ label, style }) {
-  if (!label) return null
-  return (
-    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${PILL_STYLES[style]}`}>
-      {label}
-    </span>
   )
 }
 

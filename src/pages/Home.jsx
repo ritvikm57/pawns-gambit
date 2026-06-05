@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef, lazy, Suspense } from 'react'
+import { useEffect, useLayoutEffect, useState, useRef, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import PageDecor from '../components/PageDecor'
 import carouselPic1 from '../assets/carousel-home-s3/pic1.jpeg'
 import carouselPic2 from '../assets/carousel-home-s3/pic2.jpeg'
 import carouselPic3 from '../assets/carousel-home-s3/pic3.jpeg'
@@ -74,8 +75,8 @@ function Photo({ label, className = '', aspect = 'aspect-[4/3]', rounded = 'roun
 // ─── Photo carousel ───────────────────────────────────────────────────────────
 const CAROUSEL_SLIDES = [carouselPic1, carouselPic2, carouselPic3]
 
-function Carousel() {
-  const [idx, setIdx] = useState(0)
+function Carousel({ startIdx = 0 }) {
+  const [idx, setIdx] = useState(startIdx)
 
   useEffect(() => {
     const id = setInterval(() => setIdx(i => (i + 1) % CAROUSEL_SLIDES.length), 3200)
@@ -134,12 +135,12 @@ function LearnMore({ children, align = 'left' }) {
     <div className={`mt-8 ${align === 'right' ? 'text-right' : ''}`}>
       <button
         onClick={() => setOpen(o => !o)}
-        className="inline-flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.20em] uppercase transition-opacity hover:opacity-60"
+        className="inline-flex items-center gap-2.5 text-[13px] font-semibold tracking-[0.20em] uppercase transition-opacity hover:opacity-60"
         style={{ color: C.blue }}
       >
         <span>{open ? 'Close' : 'Learn more'}</span>
         <ArrowRight
-          size={12}
+          size={14}
           style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 300ms ease' }}
         />
       </button>
@@ -149,7 +150,7 @@ function LearnMore({ children, align = 'left' }) {
         maxHeight: open ? '600px' : '0px',
         transition: 'max-height 480ms cubic-bezier(0.22,1,0.36,1)',
       }}>
-        <div className="pg-desc pt-6 space-y-3 text-sm leading-[1.85]" style={{ color: C.body }}>
+        <div className="pg-desc pt-6 space-y-3 text-base leading-[1.85]" style={{ color: C.body }}>
           {children}
         </div>
       </div>
@@ -157,9 +158,347 @@ function LearnMore({ children, align = 'left' }) {
   )
 }
 
+// ─── Member stories data ──────────────────────────────────────────────────────
+const MEMBER_STORIES = [
+  {
+    story: "I joined Pawn's Gambit because I missed playing chess. What I didn't expect was how quickly familiar faces would turn into friends. Somewhere between post-game discussions, cups of chai, and conversations that had nothing to do with chess, weekends stopped feeling routine. Today, I don't show up just to play — I show up because it's where some of my favourite people are.",
+    name: 'Suraj',
+    initials: 'S',
+  },
+  {
+    story: "Moving to a new city can feel surprisingly lonely as an adult. I came to Pawn's Gambit looking for a hobby and found something much more valuable — a community. The chess brought us to the same table, but it was the shared stories, laughter, and friendships that kept me coming back. It's one of the few places where I arrived as a stranger and genuinely felt welcomed.",
+    name: 'Sravani',
+    initials: 'Sr',
+  },
+]
+
+// ─── Member stories carousel ──────────────────────────────────────────────────
+function StoryCarousel() {
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setIdx(i => (i + 1) % MEMBER_STORIES.length), 5200)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+        {MEMBER_STORIES.map((m, i) => (
+          <div
+            key={m.name}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              opacity: i === idx ? 1 : 0,
+              transition: 'opacity 700ms ease',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ fontSize: '3rem', lineHeight: 1, marginBottom: '0.5rem', color: `${C.blue}40`, fontFamily: 'Georgia, serif', userSelect: 'none', flexShrink: 0 }}>"</div>
+            <p
+              className="pg-desc text-sm leading-relaxed"
+              style={{
+                color: C.body,
+                flex: 1,
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 6,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
+              {m.story}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${C.line}`, flexShrink: 0 }}>
+              <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'white', flexShrink: 0, background: `linear-gradient(135deg, ${C.blue}, ${C.glow})` }}>
+                {m.initials}
+              </div>
+              <div>
+                <p style={{ fontWeight: 600, fontSize: '0.875rem', color: C.ink }}>{m.name}</p>
+                <p style={{ fontSize: '0.75rem', color: C.faint }}>Pawn's Gambit Member</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: '0.375rem', marginTop: '1rem', flexShrink: 0 }}>
+        {MEMBER_STORIES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setIdx(i)}
+            style={{
+              height: '0.375rem',
+              width: i === idx ? '1.1rem' : '0.375rem',
+              borderRadius: '9999px',
+              background: i === idx ? C.blue : C.line,
+              transition: 'all 300ms',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Team ─────────────────────────────────────────────────────────────────────
+const SHOW_SPONSORS = false
+
+const TEAM = [
+  { name: 'Sairam Kolaganti', piece: 'King',   symbol: '♔', role: 'Founder',     quote: '"The game was always about the people around the board."',    description: "The visionary behind Pawn's Gambit, building a community where chess is the beginning of something much bigger.", initials: 'SK' },
+  { name: 'Parth Thakkar',   piece: 'Rook',   symbol: '♖', role: 'Co-Founder',  quote: '"Steady, reliable — the kind of presence every team needs."', description: 'The operational backbone ensuring every event and every experience runs exactly as it should.',               initials: 'PT' },
+  { name: 'Anirudh',         piece: 'Knight', symbol: '♘', role: 'Team Member', quote: '"Sometimes the best move is the one no one expects."',         description: 'Creative and unpredictable in the best way — always finding the angle others miss.',                         initials: 'A'  },
+  { name: 'Sai Teja',        piece: 'Bishop', symbol: '♗', role: 'Team Member', quote: '"Long-range thinking, one diagonal at a time."',               description: "Strategic and forward-looking, focused on where the community is headed rather than where it's been.",       initials: 'ST' },
+]
+
+function TeamSection() {
+  const [idx, setIdx]           = useState(0)
+  const [visible, setVisible]   = useState(true)
+  const [rotation, setRotation] = useState(0)   // cumulative degrees — never resets
+  const [wheelR, setWheelR]     = useState(320)
+  const idxRef            = useRef(0)
+  const pieceContainerRef = useRef(null)
+
+  useEffect(() => {
+    const advance = () => {
+      const next = (idxRef.current + 1) % TEAM.length
+      setVisible(false)
+      setRotation(r => r - 90)          // always counter-clockwise, never wraps
+      setTimeout(() => {
+        idxRef.current = next
+        setIdx(next)
+        setVisible(true)
+      }, 280)
+    }
+    const id = setInterval(advance, 4500)
+    return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    const el = pieceContainerRef.current
+    if (!el) return
+    const update = () => setWheelR(el.offsetWidth / 2 + 60)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  const goTo = (i) => {
+    if (i === idxRef.current) return
+    const steps = (i - idxRef.current + TEAM.length) % TEAM.length
+    setVisible(false)
+    setRotation(r => r - steps * 90)   // always spin counter-clockwise to reach target
+    setTimeout(() => {
+      idxRef.current = i
+      setIdx(i)
+      setVisible(true)
+    }, 280)
+  }
+
+  const m = TEAM[idx]
+
+  return (
+    <>
+      <section
+        className="relative"
+        style={{
+          background: C.bgAlt,
+          height: '100vh',
+          scrollSnapAlign: 'start',
+          scrollSnapStop: 'always',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: '1fr 1fr',
+          borderTop: `1px solid ${C.line}`,
+        }}
+      >
+        {/* Left: team carousel, full height */}
+        <div
+          style={{
+            gridColumn: 1, gridRow: '1 / 3',
+            background: C.bg,
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            gap: '1.25rem',
+            padding: '5rem 3.5rem 2.5rem',
+            overflow: 'hidden',
+          }}
+        >
+          <div className="flex items-center gap-3" style={{ flexShrink: 0 }}>
+            <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>06</span>
+            <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
+            <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Team</span>
+          </div>
+
+          {/* Photo */}
+          <div
+            style={{
+              height: '18rem', borderRadius: '1rem 0 0 1rem', overflow: 'hidden', flexShrink: 0,
+              marginRight: '-3.5rem',
+              background: C.bgAlt, border: `1px solid ${C.line}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              opacity: visible ? 1 : 0, transition: 'opacity 280ms ease',
+            }}
+          >
+            <div style={{ textAlign: 'center', color: C.faint }}>
+              <div style={{
+                width: '4.5rem', height: '4.5rem', borderRadius: '50%',
+                background: `linear-gradient(135deg, ${C.blue}, ${C.glow})`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.5rem', fontWeight: 700, color: 'white', margin: '0 auto 0.75rem',
+              }}>{m.initials}</div>
+              <p style={{ fontSize: '0.7rem', opacity: 0.55, letterSpacing: '0.05em' }}>Photo coming soon</p>
+            </div>
+          </div>
+
+          {/* Name, role, quote, description */}
+          <div style={{ opacity: visible ? 1 : 0, transition: 'opacity 280ms ease' }}>
+            <div className="flex items-center gap-2.5 mb-2">
+              <p className="font-bold" style={{ fontSize: 'clamp(1rem, 1.5vw, 1.4rem)', color: C.ink, letterSpacing: '-0.02em' }}>{m.name}</p>
+              <span style={{ fontSize: '0.65rem', fontWeight: 700, color: C.blue, background: `${C.blue}14`, padding: '0.2rem 0.65rem', borderRadius: '999px', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{m.role}</span>
+            </div>
+            <p className="pg-desc" style={{ fontSize: '0.875rem', color: C.blue, fontStyle: 'italic', marginBottom: '0.6rem', lineHeight: 1.55 }}>{m.quote}</p>
+            <p style={{ fontSize: '0.8rem', color: C.body, lineHeight: 1.75 }}>{m.description}</p>
+          </div>
+
+          {/* Dot navigation */}
+          <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+            {TEAM.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                style={{
+                  height: '0.375rem', width: i === idx ? '1.5rem' : '0.375rem',
+                  borderRadius: '9999px', background: i === idx ? C.blue : C.line,
+                  transition: 'all 300ms', border: 'none', cursor: 'pointer', padding: 0,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Top right: Sponsors (toggleable) + Partners (always) */}
+        <div
+          style={{
+            gridColumn: 2, gridRow: 1,
+            background: C.bgAlt,
+            padding: '2rem 2.5rem',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            gap: '1.25rem',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Sponsors — toggle the SHOW_SPONSORS constant to show/hide */}
+          {SHOW_SPONSORS && (
+            <>
+              <div>
+                <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.faint, marginBottom: '0.75rem' }}>
+                  Sponsors
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem' }}>
+                  {/* Add sponsor logo cards here */}
+                  <div style={{ borderRadius: '0.75rem', padding: '0.75rem 1rem', background: C.bg, border: `1px dashed ${C.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '5rem', minHeight: '3rem' }}>
+                    <p style={{ fontSize: '0.6rem', color: C.faint }}>Sponsor logo</p>
+                  </div>
+                </div>
+              </div>
+              <div style={{ height: 1, background: C.line }} />
+            </>
+          )}
+
+          {/* Partners — always visible */}
+          <div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem', marginBottom: '0.75rem' }}>
+              <div style={{ borderRadius: '0.875rem', padding: '0.75rem 1.25rem', background: C.bg, border: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                <span style={{ fontSize: '1.5rem' }}>🐼</span>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: '0.75rem', color: C.ink }}>Panda Chess Academy</p>
+                  <p style={{ fontSize: '0.65rem', color: C.faint, marginTop: '0.1rem' }}>Official Coaching Partner</p>
+                </div>
+              </div>
+            </div>
+            <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.faint }}>
+              Partners
+            </p>
+          </div>
+        </div>
+
+        {/* Chess piece wheel — always bottom-right */}
+        <div
+          ref={pieceContainerRef}
+          style={{
+            gridColumn: 2,
+            gridRow: 2,
+            background: `linear-gradient(145deg, ${C.blue} 0%, ${C.glow} 100%)`,
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Wheel pivot — centered horizontally, offset below container center by wheelR */}
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: `calc(50% + ${wheelR}px)`,
+              width: 0, height: 0,
+              transform: `rotate(${rotation}deg)`,
+              transition: 'transform 600ms cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+          >
+            {TEAM.map((member, i) => {
+              const a  = i * Math.PI / 2
+              const px = Math.round(Math.sin(a) * wheelR)
+              const py = Math.round(-Math.cos(a) * wheelR)
+              return (
+                <div
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    left: `${px}px`,
+                    top: `${py}px`,
+                    transform: `translate(-50%, -50%) rotate(${-rotation}deg)`,
+                    transition: 'transform 600ms cubic-bezier(0.22, 1, 0.36, 1)',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: 'clamp(6rem, 10vw, 9rem)', color: 'rgba(255,255,255,0.92)', lineHeight: 1, marginBottom: '0.5rem', userSelect: 'none' }}>
+                    {member.symbol}
+                  </div>
+                  <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap' }}>
+                    {member.piece}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Dividers — vertical always, horizontal always (right column always split) */}
+        <div className="absolute inset-y-0 left-1/2 pointer-events-none" style={{ width: 1, background: C.line }} />
+        <div className="absolute right-0 top-1/2 pointer-events-none" style={{ left: '50%', height: 1, background: C.line }} />
+      </section>
+    </>
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Home() {
   const [upcoming, setUpcoming] = useState([])
+
+  useLayoutEffect(() => {
+    const saved = sessionStorage.getItem('pg-home-scroll')
+    if (saved) window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+  }, [])
+
+  useEffect(() => {
+    const html = document.documentElement
+    html.style.scrollSnapType = 'y mandatory'
+    return () => {
+      sessionStorage.setItem('pg-home-scroll', String(window.scrollY))
+      html.style.scrollSnapType = ''
+    }
+  }, [])
 
   useEffect(() => {
     supabase.from('tournaments')
@@ -184,7 +523,8 @@ export default function Home() {
           className="relative flex flex-col justify-center overflow-hidden px-10 md:px-40"
           style={{ background: C.bg, height: '100vh', scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
         >
-          <div className="relative max-w-lg">
+          <PageDecor />
+          <div className="relative z-10 max-w-lg">
             <FadeIn>
               <p className="text-[13px] font-semibold tracking-[0.28em] uppercase mb-6"
                  style={{ color: C.glow }}>
@@ -394,7 +734,7 @@ export default function Home() {
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>What Is Pawn's Gambit</span>
               </div>
-              <p className="pg-desc mb-1 text-sm leading-relaxed" style={{ color: C.body }}>
+              <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
                 We're building more than just a community.
               </p>
               <LearnMore>
@@ -415,7 +755,7 @@ export default function Home() {
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Experiences</span>
               </div>
-              <p className="pg-desc mb-1 text-sm leading-relaxed" style={{ color: C.body }}>
+              <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
                 Something for everyone.
               </p>
               <LearnMore>
@@ -447,121 +787,101 @@ export default function Home() {
         </section>
 
         {/* ════════════════════════════════════════════════════════════════════
-            4 · MEMBER STORIES
+            4 · COMMUNITY  —  white, 4-quadrant snap
+            TL: Community text  |  TR: Carousel A
+            BL: Carousel B      |  BR: Member Stories carousel
         ════════════════════════════════════════════════════════════════════ */}
-        <section className="px-6 py-28 md:py-36" style={{ background: C.bg }}>
-          <div className="max-w-6xl mx-auto">
-            <FadeIn className="mb-16">
-              <Eyebrow n="04">Member Stories</Eyebrow>
-              <h2 className="font-bold tracking-tight leading-[1.05]"
-                  style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.02em' }}>
-                Stories from the community.
-              </h2>
-            </FadeIn>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                { story: "I joined Pawn's Gambit because I missed playing chess. What I didn't expect was how quickly familiar faces would turn into friends. Somewhere between post-game discussions, cups of chai, and conversations that had nothing to do with chess, weekends stopped feeling routine. Today, I don't show up just to play — I show up because it's where some of my favourite people are.", name: 'Suraj', initials: 'S' },
-                { story: "Moving to a new city can feel surprisingly lonely as an adult. I came to Pawn's Gambit looking for a hobby and found something much more valuable — a community. The chess brought us to the same table, but it was the shared stories, laughter, and friendships that kept me coming back. It's one of the few places where I arrived as a stranger and genuinely felt welcomed.", name: 'Sravani', initials: 'Sr' },
-              ].map((m, i) => (
-                <FadeIn key={m.name} delay={i * 150}>
-                  <div className="rounded-2xl p-9 md:p-11 flex flex-col h-full"
-                       style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
-                    <div className="text-6xl font-serif leading-none mb-5 select-none" style={{ color: `${C.blue}40` }}>"</div>
-                    <p className="pg-desc text-lg leading-relaxed flex-1 mb-8" style={{ color: C.body }}>{m.story}</p>
-                    <div className="flex items-center gap-4 pt-6" style={{ borderTop: `1px solid ${C.line}` }}>
-                      <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                           style={{ background: `linear-gradient(135deg, ${C.blue}, ${C.glow})` }}>
-                        {m.initials}
-                      </div>
-                      <div>
-                        <p className="font-semibold" style={{ color: C.ink }}>{m.name}</p>
-                        <p className="text-sm mt-0.5" style={{ color: C.faint }}>Pawn's Gambit Member</p>
-                      </div>
-                    </div>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════════
-            5 · TEAM
-        ════════════════════════════════════════════════════════════════════ */}
-        <section className="px-6 py-28 md:py-36" style={{ background: C.bgAlt }}>
-          <div className="max-w-6xl mx-auto">
-            <FadeIn className="mb-16">
-              <Eyebrow n="05">Team</Eyebrow>
-              <h2 className="font-bold tracking-tight leading-[1.05]"
-                  style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.02em' }}>
-                The people behind the movement.
-              </h2>
-            </FadeIn>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[0, 1, 2].map((i) => (
-                <FadeIn key={i} delay={i * 80}>
-                  <div className="rounded-2xl p-8 flex flex-col items-center text-center gap-4"
-                       style={{ background: C.bg, border: `1px dashed ${C.line}` }}>
-                    <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: C.bgAlt }}>
-                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={C.faint} strokeWidth="1.5">
-                        <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                      </svg>
-                    </div>
-                    <p className="text-sm" style={{ color: C.faint }}>Team member info coming soon</p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-            <FadeIn delay={200} className="mt-7">
-              <p className="text-xs" style={{ color: C.faint }}>Photos and bios will be added shortly.</p>
-            </FadeIn>
-          </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════════
-            8 · PARTNERS
-        ════════════════════════════════════════════════════════════════════ */}
-        <section className="px-6 py-24" style={{ background: C.bg, borderTop: `1px solid ${C.line}` }}>
-          <div className="max-w-5xl mx-auto">
-            <FadeIn className="text-center mb-14">
-              <p className="text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: C.faint }}>Trusted By</p>
-            </FadeIn>
-
-            <FadeIn delay={100}>
-              <div className="flex flex-wrap justify-center items-stretch gap-4">
-                <div className="rounded-2xl px-12 py-8 flex flex-col items-center gap-3 min-w-[210px]"
-                     style={{ background: C.bgAlt, border: `1px solid ${C.line}` }}>
-                  <span className="text-4xl">🐼</span>
-                  <div className="text-center">
-                    <p className="font-semibold text-sm" style={{ color: C.ink }}>Panda Chess Academy</p>
-                    <p className="text-xs mt-1" style={{ color: C.faint }}>Official Coaching Partner</p>
-                  </div>
-                </div>
-                {[1, 2].map(i => (
-                  <div key={i} className="rounded-2xl px-12 py-8 flex flex-col items-center justify-center gap-2 min-w-[170px]"
-                       style={{ background: C.bg, border: `1px dashed ${C.line}` }}>
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl"
-                         style={{ border: `1px solid ${C.line}`, color: C.faint }}>+</div>
-                    <p className="text-xs text-center" style={{ color: C.faint }}>Partner slot</p>
-                  </div>
-                ))}
+        <section
+          className="relative"
+          style={{
+            background: C.bg,
+            height: '100vh',
+            scrollSnapAlign: 'start',
+            scrollSnapStop: 'always',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gridTemplateRows: '1fr 1fr',
+            borderTop: `1px solid ${C.line}`,
+          }}
+        >
+          {/* TL · Community */}
+          <div
+            className="flex flex-col justify-center overflow-hidden"
+            style={{ gridColumn: 1, gridRow: 1, padding: '2.5rem 3.5rem' }}
+          >
+            <FadeIn>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>05</span>
+                <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
+                <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Community</span>
               </div>
-            </FadeIn>
-
-            <FadeIn delay={200} className="text-center mt-8">
-              <a href="mailto:contact@pgchess.in" className="text-sm transition-colors hover:opacity-70" style={{ color: C.faint }}>
-                Interested in partnering? contact@pgchess.in
-              </a>
+              <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
+                Where Chess Becomes Community.
+              </p>
+              <LearnMore>
+                <p>We believe the best chess experiences aren't measured only by ratings or results. They're measured by the people you meet, the conversations you have, and the feeling of belonging that keeps you coming back.</p>
+              </LearnMore>
             </FadeIn>
           </div>
+
+          {/* TR · Carousel A */}
+          <div
+            className="overflow-hidden"
+            style={{ gridColumn: 2, gridRow: 1, padding: '1rem' }}
+          >
+            <Carousel />
+          </div>
+
+          {/* BL · Carousel B */}
+          <div
+            className="overflow-hidden"
+            style={{ gridColumn: 1, gridRow: 2, padding: '1rem' }}
+          >
+            <Carousel startIdx={1} />
+          </div>
+
+          {/* BR · Member Stories */}
+          <div
+            className="overflow-hidden"
+            style={{ gridColumn: 2, gridRow: 2, padding: '2rem 3rem', display: 'flex', flexDirection: 'column' }}
+          >
+            <p
+              className="text-[11px] font-semibold tracking-[0.22em] uppercase flex items-center gap-3"
+              style={{ color: C.faint, marginBottom: '1.25rem', flexShrink: 0 }}
+            >
+              <span className="h-px w-8 inline-block" style={{ background: C.line }} />
+              From the community
+            </p>
+            <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+              <StoryCarousel />
+            </div>
+          </div>
+
+          {/* Hair-line dividers */}
+          <div className="absolute inset-x-0 top-1/2 pointer-events-none" style={{ height: 1, background: C.line }} />
+          <div className="absolute inset-y-0 left-1/2 pointer-events-none" style={{ width: 1, background: C.line }} />
         </section>
+
+        {/* ════════════════════════════════════════════════════════════════════
+            5 · TEAM  (Partners toggleable via SHOW_SPONSORS constant above)
+        ════════════════════════════════════════════════════════════════════ */}
+        <TeamSection />
 
         {/* ════════════════════════════════════════════════════════════════════
             9 · CTA
         ════════════════════════════════════════════════════════════════════ */}
-        <section className="px-6 py-32 md:py-44" style={{ background: C.ink }}>
+        <section
+          className="px-6"
+          style={{
+            background: C.ink,
+            height: '100vh',
+            scrollSnapAlign: 'start',
+            scrollSnapStop: 'always',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <div className="max-w-3xl mx-auto text-center">
             <FadeIn>
               <h2 className="font-bold tracking-tight leading-[1.08] mb-8 text-white"
