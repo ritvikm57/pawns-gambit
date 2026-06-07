@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Calendar, MapPin, Trophy, Users, IndianRupee, ArrowLeft, Clock } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import PageDecor from '../components/PageDecor'
 
 const STATUS_STYLES = {
   upcoming:          'bg-blue-50 text-blue-700 border border-blue-200',
@@ -119,7 +118,6 @@ export default function TournamentDetail() {
 
   return (
     <div className="relative min-h-screen pt-20 pb-16 px-4" style={{ background: '#f8f9fb' }}>
-      <PageDecor />
       <div className="relative z-10 max-w-6xl mx-auto">
 
         <Link to="/tournaments" className="inline-flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-600 mb-6">

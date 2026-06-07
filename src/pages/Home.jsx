@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useState, useRef, lazy, Suspense } from 're
 import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import PageDecor from '../components/PageDecor'
 import carouselPic1 from '../assets/carousel-home-s3/pic1.jpeg'
 import carouselPic2 from '../assets/carousel-home-s3/pic2.jpeg'
 import carouselPic3 from '../assets/carousel-home-s3/pic3.jpeg'
@@ -128,29 +127,28 @@ function Carousel({ startIdx = 0 }) {
   )
 }
 
-// ─── Expandable "Learn more" block ─────────────────────────────────────────────
-function LearnMore({ children, align = 'left' }) {
-  const [open, setOpen] = useState(false)
+// ─── Expandable "Learn more" block (controlled — parent owns open state) ──────
+function LearnMore({ children, align = 'left', isOpen = false, onToggle }) {
   return (
-    <div className={`mt-8 ${align === 'right' ? 'text-right' : ''}`}>
+    <div className={`mt-6 ${align === 'right' ? 'text-right' : ''}`}>
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={onToggle}
         className="inline-flex items-center gap-2.5 text-[13px] font-semibold tracking-[0.20em] uppercase transition-opacity hover:opacity-60"
         style={{ color: C.blue }}
       >
-        <span>{open ? 'Close' : 'Learn more'}</span>
+        <span>{isOpen ? 'Close' : 'Learn more'}</span>
         <ArrowRight
           size={14}
-          style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 300ms ease' }}
+          style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 300ms ease' }}
         />
       </button>
 
       <div style={{
         overflow: 'hidden',
-        maxHeight: open ? '600px' : '0px',
+        maxHeight: isOpen ? '600px' : '0px',
         transition: 'max-height 480ms cubic-bezier(0.22,1,0.36,1)',
       }}>
-        <div className="pg-desc pt-6 space-y-3 text-base leading-[1.85]" style={{ color: C.body }}>
+        <div className="pg-desc pt-5 space-y-3 text-base leading-[1.85]" style={{ color: C.body }}>
           {children}
         </div>
       </div>
@@ -243,6 +241,28 @@ function StoryCarousel() {
   )
 }
 
+// ─── PCA background image ─────────────────────────────────────────────────────
+function PcaBg({ dark = false, zIndex = -1 }) {
+  return (
+    <img
+      src="/PCA.png"
+      alt=""
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        objectPosition: 'center',
+        filter: dark ? 'none' : 'invert(1) brightness(1)',
+        opacity: dark ? 0.07 : 0.1,
+        pointerEvents: 'none',
+        zIndex,
+      }}
+    />
+  )
+}
+
 // ─── Team ─────────────────────────────────────────────────────────────────────
 const SHOW_SPONSORS = false
 
@@ -312,8 +332,10 @@ function TeamSection() {
           gridTemplateColumns: '1fr 1fr',
           gridTemplateRows: '1fr 1fr',
           borderTop: `1px solid ${C.line}`,
+          isolation: 'isolate',
         }}
       >
+        <PcaBg />
         {/* Left: team carousel, full height */}
         <div
           style={{
@@ -485,6 +507,9 @@ function TeamSection() {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Home() {
   const [upcoming, setUpcoming] = useState([])
+  // Only one "Learn more" can be open at a time across the whole page
+  const [openLearn, setOpenLearn] = useState(null)
+  const tog = (key) => setOpenLearn(prev => prev === key ? null : key)
 
   useLayoutEffect(() => {
     const saved = sessionStorage.getItem('pg-home-scroll')
@@ -520,11 +545,21 @@ export default function Home() {
             1 · HERO  —  white, full-viewport, pawn floats right
         ════════════════════════════════════════════════════════════════════ */}
         <section
-          className="relative flex flex-col justify-center overflow-hidden px-10 md:px-40"
-          style={{ background: C.bg, height: '100vh', scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
+          className="relative flex items-center overflow-hidden"
+          style={{
+            background: C.bg,
+            height: '100vh',
+            scrollSnapAlign: 'start',
+            scrollSnapStop: 'always',
+            paddingLeft: 'clamp(2.5rem, 10vw, 10rem)',
+            paddingRight: 'clamp(1.5rem, 3vw, 3rem)',
+            gap: 'clamp(2rem, 4vw, 4rem)',
+          }}
         >
-          <PageDecor />
-          <div className="relative z-10 max-w-lg">
+          <PcaBg zIndex={0} />
+
+          {/* ── Left: text ─────────────────────────────────────────────── */}
+          <div className="relative z-10 flex-shrink-0 max-w-lg">
             <FadeIn>
               <p className="text-[13px] font-semibold tracking-[0.28em] uppercase mb-6"
                  style={{ color: C.glow }}>
@@ -572,6 +607,14 @@ export default function Home() {
               </div>
             </FadeIn>
           </div>
+
+          {/* ── Right: photo carousel (hidden on mobile) ────────────────── */}
+          <div
+            className="relative flex-1 min-w-0 hidden md:block"
+            style={{ height: '68vh', borderRadius: '1.5rem', overflow: 'hidden', zIndex: 11 }}
+          >
+            <Carousel />
+          </div>
         </section>
 
         {/* ════════════════════════════════════════════════════════════════════
@@ -589,8 +632,10 @@ export default function Home() {
             gridTemplateColumns: '1fr 1fr 1fr',
             gridTemplateRows: '1fr 1fr',
             borderTop: `1px solid ${C.line}`,
+            isolation: 'isolate',
           }}
         >
+          <PcaBg />
           {/* ── Q2 · The Problem (top-left, left-aligned) ───────────────── */}
           <div
             className="flex items-center"
@@ -618,7 +663,7 @@ export default function Home() {
                 We are more connected than ever. and somehow more alone
               </p>
 
-              <LearnMore>
+              <LearnMore isOpen={openLearn === 'problem'} onToggle={() => tog('problem')}>
                 <p>Most adults don't struggle to find content. They struggle to find community.</p>
                 <p>They have a hard time connecting with another person.<br />
                    Awkward silences during meets. No reason to return.</p>
@@ -662,7 +707,7 @@ export default function Home() {
                 Chess creates something rare
               </p>
 
-              <LearnMore align="right">
+              <LearnMore align="right" isOpen={openLearn === 'chess'} onToggle={() => tog('chess')}>
                 <p>A reason for strangers to sit together.</p>
                 <p>A reason to think together.</p>
                 <p>A reason to return.</p>
@@ -696,8 +741,10 @@ export default function Home() {
             gridTemplateColumns: '1fr 1fr',
             gridTemplateRows: '1fr 1fr',
             borderTop: `1px solid ${C.line}`,
+            isolation: 'isolate',
           }}
         >
+          <PcaBg />
           {/* Left column — spans full height; pawn floats top, carousel crosses midline, CTA below */}
           <div
             className="flex flex-col overflow-hidden"
@@ -723,54 +770,53 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Q2 · top-right · What Is Pawn's Gambit */}
+          {/* Right column: 03 + 04 merged — right-aligned, no horizontal partition */}
           <div
-            className="flex flex-col justify-center overflow-hidden"
-            style={{ gridColumn: 2, gridRow: 1, padding: '2.5rem 3.5rem' }}
+            className="flex flex-col justify-center overflow-y-auto text-right"
+            style={{ gridColumn: 2, gridRow: '1 / 3', padding: '2.5rem 3.5rem' }}
           >
+            {/* 03 · What Is Pawn's Gambit */}
             <FadeIn>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>03</span>
-                <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
+              <div className="flex items-center justify-end gap-3 mb-4">
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>What Is Pawn's Gambit</span>
+                <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>03</span>
               </div>
               <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
                 We're building more than just a community.
               </p>
-              <LearnMore>
+              <LearnMore align="right" isOpen={openLearn === 'pg'} onToggle={() => tog('pg')}>
                 <p>A gathering space for students, professionals, former competitors, and curious minds — connected through chess, staying for the people.</p>
                 <p>We host events that give strangers a reason to sit together, think together, and return.</p>
               </LearnMore>
             </FadeIn>
-          </div>
 
-          {/* Q4 · bottom-right · Experiences */}
-          <div
-            className="flex flex-col justify-center overflow-hidden"
-            style={{ gridColumn: 2, gridRow: 2, padding: '2.5rem 3.5rem' }}
-          >
+            {/* Divider between 03 and 04 */}
+            <div style={{ height: 1, background: C.line, margin: '2.5rem 0' }} />
+
+            {/* 04 · Experiences */}
             <FadeIn delay={140}>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>04</span>
-                <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
+              <div className="flex items-center justify-end gap-3 mb-4">
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Experiences</span>
+                <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>04</span>
               </div>
               <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
                 Something for everyone.
               </p>
-              <LearnMore>
+              <LearnMore align="right" isOpen={openLearn === 'exp'} onToggle={() => tog('exp')}>
                 <div className="mt-2">
                   {[
                     { tag: 'Casual',      title: 'Chess & Chai',       body: 'Relaxed play — no pressure, no rating required. Brew in hand, board on the table.' },
                     { tag: 'Competitive', title: 'Weekend Tournaments', body: 'Rated Swiss-format events. Compete at your level, earn your rating, improve.' },
                     { tag: 'Learning',    title: 'Weekly Workshops',    body: 'Structured sessions on openings, endgames, and tactics. Think deeper, get better.' },
                   ].map(ev => (
-                    <div key={ev.title} className="py-3 flex gap-4 items-start" style={{ borderTop: `1px solid ${C.line}` }}>
+                    <div key={ev.title} className="py-3 flex flex-row-reverse gap-4 items-start" style={{ borderTop: `1px solid ${C.line}` }}>
                       <span
                         className="mt-0.5 text-[9px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0"
                         style={{ color: C.blue, background: `${C.blue}12` }}
                       >{ev.tag}</span>
-                      <div>
+                      <div className="text-right">
                         <p className="font-semibold text-sm leading-snug" style={{ color: C.ink }}>{ev.title}</p>
                         <p className="text-sm leading-relaxed mt-0.5" style={{ color: C.body }}>{ev.body}</p>
                       </div>
@@ -781,9 +827,8 @@ export default function Home() {
             </FadeIn>
           </div>
 
-          {/* Hair-line dividers */}
+          {/* Only the vertical divider between left and right columns */}
           <div className="absolute inset-y-0 left-1/2 pointer-events-none" style={{ width: 1, background: C.line }} />
-          <div className="absolute top-1/2 right-0 pointer-events-none" style={{ left: '50%', height: 1, background: C.line }} />
         </section>
 
         {/* ════════════════════════════════════════════════════════════════════
@@ -802,8 +847,10 @@ export default function Home() {
             gridTemplateColumns: '1fr 1fr',
             gridTemplateRows: '1fr 1fr',
             borderTop: `1px solid ${C.line}`,
+            isolation: 'isolate',
           }}
         >
+          <PcaBg />
           {/* TL · Community */}
           <div
             className="flex flex-col justify-center overflow-hidden"
@@ -818,7 +865,7 @@ export default function Home() {
               <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
                 Where Chess Becomes Community.
               </p>
-              <LearnMore>
+              <LearnMore isOpen={openLearn === 'community'} onToggle={() => tog('community')}>
                 <p>We believe the best chess experiences aren't measured only by ratings or results. They're measured by the people you meet, the conversations you have, and the feeling of belonging that keeps you coming back.</p>
               </LearnMore>
             </FadeIn>
@@ -871,7 +918,7 @@ export default function Home() {
             9 · CTA
         ════════════════════════════════════════════════════════════════════ */}
         <section
-          className="px-6"
+          className="relative px-6"
           style={{
             background: C.ink,
             height: '100vh',
@@ -880,9 +927,11 @@ export default function Home() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            isolation: 'isolate',
           }}
         >
-          <div className="max-w-3xl mx-auto text-center">
+          <PcaBg dark />
+          <div className="relative z-10 max-w-3xl mx-auto text-center">
             <FadeIn>
               <h2 className="font-bold tracking-tight leading-[1.08] mb-8 text-white"
                   style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', letterSpacing: '-0.02em' }}>

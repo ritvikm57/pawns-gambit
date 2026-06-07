@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import Logo from '../components/Logo'
 import { useAuth } from '../context/AuthContext'
-import PageDecor from '../components/PageDecor'
 
 const SKILL_LEVELS = [
   { value: 'beginner',     label: 'Beginner',             desc: 'I know the rules but not much strategy',            rating: 800 },
@@ -87,7 +86,6 @@ export default function Signup() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 py-12">
-      <PageDecor />
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
           <Logo size={48} className="mx-auto mb-4" />

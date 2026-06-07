@@ -53,7 +53,7 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h3 className="text-white font-semibold text-xs tracking-widest uppercase mb-5">Navigate</h3>
+            <h3 className="text-white font-semibold text-xs tracking-widest uppercase mb-5" style={{ fontFamily: "'Times New Roman', Times, serif" }}>Navigate</h3>
             <ul className="space-y-2.5">
               {[
                 { label: 'Home',        path: '/' },
@@ -70,7 +70,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold text-xs tracking-widest uppercase mb-5">Contact</h3>
+            <h3 className="text-white font-semibold text-xs tracking-widest uppercase mb-5" style={{ fontFamily: "'Times New Roman', Times, serif" }}>Contact</h3>
             <ul className="space-y-2.5 text-sm" style={{ color: MUTED }}>
               <li>
                 <a href="mailto:contact@pgchess.in" className="transition-colors hover:text-white">

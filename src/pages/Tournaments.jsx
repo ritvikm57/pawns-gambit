@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Trophy, TrendingUp, Users, Calendar, MapPin, IndianRupee, ChevronRight } from 'lucide-react'
+import { Trophy, Users, Calendar, MapPin, IndianRupee, ChevronRight, ChevronDown } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import PageDecor from '../components/PageDecor'
 
 const TABS = [
-  { key: 'upcoming',    label: 'Upcoming',    statuses: ['upcoming', 'registration_open'] },
-  { key: 'ongoing',     label: 'Ongoing',     statuses: ['ongoing'] },
-  { key: 'past',        label: 'Past',        statuses: ['completed'] },
-  { key: 'leaderboard', label: 'Leaderboard', statuses: [] },
+  { key: 'upcoming', label: 'Upcoming', statuses: ['upcoming', 'registration_open'] },
+  { key: 'ongoing',  label: 'Ongoing',  statuses: ['ongoing'] },
+  { key: 'past',     label: 'Past',     statuses: ['completed'] },
 ]
 
 const STATUS_META = {
@@ -18,15 +16,129 @@ const STATUS_META = {
   completed:         { label: 'Completed',         cls: 'bg-slate-100 text-slate-400 border-slate-200' },
 }
 
+// ─── Info accordion ───────────────────────────────────────────────────────────
+const INFO_SECTIONS = [
+  {
+    key: 'about',
+    title: 'About Pawn\'s Gambit',
+    content: (
+      <div className="space-y-4 text-sm leading-relaxed text-slate-600">
+        <p className="text-base font-semibold text-slate-800">More Than a Tournament</p>
+        <p>Every Pawn's Gambit tournament is an opportunity to compete, learn, and become part of something that extends beyond a single day.</p>
+        <p>Of course, people come to test themselves. They come for the challenge, the thrill of a well-played game, and the satisfaction of performing under pressure.</p>
+        <p>But what keeps players returning isn't just the competition.</p>
+        <p>It's seeing familiar faces across the board. Following rivalries that develop over time. Celebrating personal milestones. Watching new players become regulars. Being part of a chess culture that grows stronger with every event.</p>
+        <p>Each tournament stands on its own. Together, they create the ongoing life of Pawn's Gambit.</p>
+      </div>
+    ),
+  },
+  {
+    key: 'rating',
+    title: 'What is PG Rating?',
+    content: (
+      <div className="space-y-5 text-sm leading-relaxed text-slate-600">
+        <div>
+          <p className="text-base font-semibold text-slate-800 mb-2">A Rating That Lives Inside Pawn's Gambit</p>
+          <p>PG Rating is our own rating system, designed to connect every Pawn's Gambit tournament into a single ongoing record. Every event contributes to your standing, giving players a way to track their presence within the community over time.</p>
+        </div>
+        <div>
+          <p className="text-base font-semibold text-slate-800 mb-2">Why PG Rating?</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Because Tournaments Shouldn't Exist In Isolation</p>
+          <p>A great game is memorable. A great rivalry is unforgettable.</p>
+          <p className="mt-2">PG Rating gives players a reason to follow familiar names, celebrate milestones, and return for the next chapter. It transforms separate tournaments into a living competitive culture that grows with every event.</p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: 'benefits',
+    title: 'What do you get from each tournament?',
+    content: (
+      <div className="text-sm leading-relaxed text-slate-600">
+        <p className="mb-4">Every tournament is something to look forward to.</p>
+        <ol className="space-y-2.5">
+          {[
+            'A day of casual, competitive chess.',
+            'A complimentary beverage.',
+            'Access to a pre-event workshop designed to help you prepare, learn, and get more out of the tournament.',
+            'A tactics practice PDF you can continue using long after the event ends.',
+            'A PG Rating that carries your participation into future Pawn\'s Gambit tournaments.',
+            'The chance to win trophies, prize money, and one of three premium chess boards through our lucky draw.',
+            'New ideas from players who think differently than you.',
+            'A few memorable games.',
+            'And perhaps a reason to come back next month.',
+            'Every tournament offers a chance to compete. We aim to offer something worth looking forward to.',
+          ].map((item, i) => (
+            <li key={i} className="flex gap-3 items-start">
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                {i + 1}
+              </span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    ),
+  },
+]
+
+function InfoAccordions() {
+  const [open, setOpen] = useState(null)
+  const tog = (key) => setOpen(prev => prev === key ? null : key)
+
+  return (
+    <div className="mb-8">
+      {/* Buttons — side by side on desktop, stacked on mobile */}
+      <div className="flex flex-col sm:flex-row gap-2 mb-2">
+        {INFO_SECTIONS.map(sec => (
+          <button
+            key={sec.key}
+            onClick={() => tog(sec.key)}
+            className={`flex-1 flex items-center justify-between gap-3 px-5 py-4 rounded-2xl text-left border shadow-sm transition-all text-sm font-semibold ${
+              open === sec.key
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-slate-800 border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <span>{sec.title}</span>
+            <ChevronDown
+              size={15}
+              className="flex-shrink-0 transition-transform duration-300"
+              style={{
+                transform: open === sec.key ? 'rotate(180deg)' : 'rotate(0deg)',
+                color: open === sec.key ? 'rgba(255,255,255,0.7)' : '#94a3b8',
+              }}
+            />
+          </button>
+        ))}
+      </div>
+
+      {/* Shared content panel — opens below all 3 buttons */}
+      <div
+        style={{
+          overflow: 'hidden',
+          maxHeight: open ? '900px' : '0px',
+          transition: 'max-height 420ms cubic-bezier(0.22,1,0.36,1)',
+        }}
+      >
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          {INFO_SECTIONS.map(sec => (
+            <div key={sec.key} style={{ display: open === sec.key ? 'block' : 'none' }}>
+              {sec.content}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Tournaments() {
-  const [activeTab, setActiveTab]   = useState('upcoming')
+  const [activeTab, setActiveTab]     = useState('upcoming')
   const [tournaments, setTournaments] = useState([])
-  const [leaderboard, setLeaderboard] = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [lbFilter, setLbFilter]     = useState('all')
+  const [loading, setLoading]         = useState(true)
 
   useEffect(() => {
-    if (activeTab === 'leaderboard') { fetchLeaderboard(); return }
     const tab = TABS.find(t => t.key === activeTab)
     fetchTournaments(tab.statuses)
   }, [activeTab])
@@ -47,37 +159,18 @@ export default function Tournaments() {
     setLoading(false)
   }
 
-  async function fetchLeaderboard() {
-    setLoading(true)
-    let query = supabase
-      .from('ratings')
-      .select('*, users(name, city)')
-      .order('rating', { ascending: false })
-      .limit(100)
-    if (lbFilter === 'active') {
-      const cutoff = new Date()
-      cutoff.setMonth(cutoff.getMonth() - 6)
-      query = query.gte('last_updated', cutoff.toISOString())
-    }
-    const { data } = await query
-    setLeaderboard(data || [])
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    if (activeTab === 'leaderboard') fetchLeaderboard()
-  }, [lbFilter])
-
   return (
     <div className="relative min-h-screen pt-20 pb-16 px-4" style={{ background: '#f8f9fb' }}>
-      <PageDecor />
       <div className="relative z-10 max-w-5xl mx-auto">
 
         {/* Header */}
         <div className="py-10">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900">Tournaments</h1>
-          <p className="text-slate-500 mt-2 text-lg">Compete, earn PG ratings, and climb the leaderboard.</p>
+          <p className="text-slate-500 mt-2 text-lg">Compete, earn PG ratings, and be part of something bigger.</p>
         </div>
+
+        {/* Info accordions */}
+        <InfoAccordions />
 
         {/* Tabs */}
         <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mb-6 overflow-x-auto shadow-sm">
@@ -97,9 +190,7 @@ export default function Tournaments() {
         </div>
 
         {/* Content */}
-        {activeTab === 'leaderboard' ? (
-          <LeaderboardView players={leaderboard} loading={loading} filter={lbFilter} onFilterChange={setLbFilter} />
-        ) : loading ? (
+        {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
               <div key={i} className="bg-white border border-gray-200 rounded-2xl p-5 animate-pulse">
@@ -231,78 +322,3 @@ function TournamentRow({ tournament }) {
   )
 }
 
-// ─── Leaderboard ──────────────────────────────────────────────────────────────
-function LeaderboardView({ players, loading, filter, onFilterChange }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-slate-400">
-          <TrendingUp size={18} />
-          <span className="text-sm">{players.length} players ranked</span>
-        </div>
-        <div className="flex gap-2">
-          {['all', 'active'].map(f => (
-            <button
-              key={f}
-              onClick={() => onFilterChange(f)}
-              className={`px-4 py-1.5 rounded-lg text-sm transition-colors ${
-                filter === f ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100'
-              }`}
-            >
-              {f === 'all' ? 'All Players' : 'Active (6mo)'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center text-slate-500">Loading leaderboard...</div>
-        ) : players.length === 0 ? (
-          <div className="p-12 text-center text-slate-500">
-            <Users size={40} className="mx-auto mb-3 opacity-30" />
-            <p>No players yet.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-500 border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider font-semibold">
-                  <th className="px-6 py-3 w-16">Rank</th>
-                  <th className="px-4 py-3">Player</th>
-                  <th className="px-4 py-3 text-right">PG Rating</th>
-                  <th className="px-4 py-3 text-right">±RD</th>
-                  <th className="px-4 py-3 text-right">Games</th>
-                  <th className="px-4 py-3 text-right">Last Active</th>
-                </tr>
-              </thead>
-              <tbody>
-                {players.map((player, index) => (
-                  <tr key={player.user_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-sm">
-                      <span className={index === 0 ? 'text-yellow-500' : index === 1 ? 'text-slate-400' : index === 2 ? 'text-amber-600' : 'text-slate-400'}>
-                        {index < 3 ? ['🥇','🥈','🥉'][index] : `#${index + 1}`}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="font-medium text-slate-900">{player.users?.name ?? '—'}</div>
-                      {player.users?.city && <div className="text-slate-400 text-xs">{player.users.city}</div>}
-                    </td>
-                    <td className="px-4 py-4 text-right font-mono text-lg font-semibold text-slate-900">{player.rating}</td>
-                    <td className="px-4 py-4 text-right font-mono text-xs text-slate-400">±{player.rd}</td>
-                    <td className="px-4 py-4 text-right text-slate-400">{player.games_played}</td>
-                    <td className="px-4 py-4 text-right text-slate-400 text-xs">
-                      {player.last_updated
-                        ? new Date(player.last_updated).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                        : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, MapPin, ArrowRight, Send } from 'lucide-react'
-import PageDecor from '../components/PageDecor'
 
 const C = {
   ink:   '#0f1115',
@@ -55,7 +54,6 @@ export default function Contact() {
 
   return (
     <div className="relative min-h-screen pt-24 pb-20" style={{ background: C.bgAlt, color: C.ink }}>
-      <PageDecor />
       <div className="relative z-10 max-w-5xl mx-auto px-6">
 
         {/* Header */}

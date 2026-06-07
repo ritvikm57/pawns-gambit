@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Trophy, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import PageDecor from '../components/PageDecor'
 
 // ─── Chess-standard pairing table ─────────────────────────────────────────────
 // Bo. | No. | White | Rtg | Pts. | Result | Pts. | Black | Rtg | No.
@@ -179,7 +178,6 @@ export default function TournamentResults() {
 
   return (
     <div className="relative min-h-screen pt-20 pb-16 px-4" style={{ background: '#f8f9fb' }}>
-      <PageDecor />
       <div className="relative z-10 max-w-5xl mx-auto">
 
         <Link to="/tournaments" className="inline-flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-600 mb-6">

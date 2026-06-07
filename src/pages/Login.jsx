@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import Logo from '../components/Logo'
 import { useAuth } from '../context/AuthContext'
-import PageDecor from '../components/PageDecor'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -50,7 +49,6 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 py-12">
-      <PageDecor />
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
           <Logo size={48} className="mx-auto mb-4" />
