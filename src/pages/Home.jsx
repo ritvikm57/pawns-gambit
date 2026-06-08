@@ -10,14 +10,14 @@ const ChessPawn3D = lazy(() => import('../components/ChessPawn3D'))
 
 // ─── Site-wide palette ─────────────────────────────────────────────────────────
 const C = {
-  ink:    '#0f1115',
-  body:   '#454b57',
-  faint:  '#8a909c',
-  blue:   '#1565c0',
-  glow:   '#4a9eff',
-  line:   'rgba(15,17,21,0.08)',
-  bg:     '#ffffff',
-  bgAlt:  '#f6f7f9',
+  ink:    '#ffffff',
+  body:   '#ffffff',
+  faint:  '#e0e0e0',
+  blue:   '#069494',
+  glow:   '#069494',
+  line:   'rgba(255,255,255,0.2)',
+  bg:     '#069494',
+  bgAlt:  '#057a7a',
 }
 
 // ─── Fade / rise on scroll ─────────────────────────────────────────────────────
@@ -134,7 +134,7 @@ function LearnMore({ children, align = 'left', isOpen = false, onToggle }) {
       <button
         onClick={onToggle}
         className="inline-flex items-center gap-2.5 text-[13px] font-semibold tracking-[0.20em] uppercase transition-opacity hover:opacity-60"
-        style={{ color: C.blue }}
+        style={{ color: '#ffffff' }}
       >
         <span>{isOpen ? 'Close' : 'Learn more'}</span>
         <ArrowRight
@@ -254,8 +254,8 @@ function PcaBg({ dark = false, zIndex = -1 }) {
         height: '100%',
         objectFit: 'cover',
         objectPosition: 'center',
-        filter: dark ? 'none' : 'invert(1) brightness(1)',
-        opacity: dark ? 0.07 : 0.1,
+        filter: 'none',
+        opacity: 0.1,
         pointerEvents: 'none',
         zIndex,
       }}
@@ -354,7 +354,7 @@ function TeamSection() {
             {/* LEFT: header + name/role/quote/description — vertically centered */}
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1rem' }}>
               <div className="flex items-center gap-3" style={{ paddingBottom: '0.75rem' }}>
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>06</span>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}>06</span>
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Team</span>
               </div>
@@ -364,7 +364,7 @@ function TeamSection() {
                   <p className="font-bold" style={{ fontSize: '1.05rem', color: C.ink, letterSpacing: '-0.01em' }}>{m.name}</p>
                   <span style={{ fontSize: '0.62rem', fontWeight: 700, color: C.blue, background: `${C.blue}14`, padding: '0.2rem 0.6rem', borderRadius: '999px', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{m.role}</span>
                 </div>
-                <p className="pg-desc" style={{ fontSize: '0.85rem', color: C.blue, fontStyle: 'italic', marginBottom: '0.5rem', lineHeight: 1.55 }}>{m.quote}</p>
+                <p className="pg-desc" style={{ fontSize: '0.85rem', color: '#ffffff', fontStyle: 'italic', marginBottom: '0.5rem', lineHeight: 1.55 }}>{m.quote}</p>
                 <p style={{ fontSize: '0.8rem', color: C.body, lineHeight: 1.75 }}>{m.description}</p>
               </div>
             </div>
@@ -456,14 +456,14 @@ function TeamSection() {
           </p>
 
           {[
-            { role: 'Coaching Partner', name: 'Panda Chess Academy', logo: '/panda-chess.png', dark: true  },
-            { role: 'Venue Partner',    name: 'RMZ',                 logo: '/rmz.png',         dark: false },
+            { role: 'Coaching Partner', name: 'Panda School of Chess', logo: '/panda-chess.png', dark: true  },
+            { role: 'Venue Partner',    name: 'RMZ Real Estate Developers and Investment Experts',                 logo: '/rmz.png',         dark: false },
           ].map(p => (
             <div key={p.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.faint }}>{p.role}</p>
               <div style={{
                 borderRadius: '1rem',
-                background: p.dark ? '#111' : C.bg,
+                background: p.dark ? '#111' : '#ffffff',
                 border: `1px solid ${C.line}`,
                 padding: '1.25rem 1.5rem',
                 display: 'flex', alignItems: 'center', gap: '1rem',
@@ -473,7 +473,7 @@ function TeamSection() {
                   alt={p.name}
                   style={{ width: '3.5rem', height: '3.5rem', objectFit: 'contain', borderRadius: '0.5rem', flexShrink: 0 }}
                 />
-                <p style={{ fontWeight: 600, fontSize: '0.875rem', color: p.dark ? '#fff' : C.ink, lineHeight: 1.3 }}>{p.name}</p>
+                <p style={{ fontWeight: 600, fontSize: '0.875rem', color: p.dark ? '#fff' : '#000000', lineHeight: 1.3 }}>{p.name}</p>
               </div>
             </div>
           ))}
@@ -545,7 +545,7 @@ export default function Home() {
           <div className="relative z-10 flex-shrink-0 max-w-lg">
             <FadeIn>
               <p className="text-[13px] font-semibold tracking-[0.28em] uppercase mb-6"
-                 style={{ color: C.glow }}>
+                 style={{ color: '#ffffff' }}>
                 Hyderabad's Chess Community
               </p>
             </FadeIn>
@@ -559,7 +559,7 @@ export default function Home() {
                   Chess is never
                 </span><br />
                 the point.<br />
-                <span style={{ color: C.blue }}>People are.</span>
+                <span style={{ color: '#000000' }}>People are.</span>
               </h1>
             </FadeIn>
 
@@ -575,7 +575,7 @@ export default function Home() {
                 <Link
                   to="/signup"
                   className="group inline-flex items-center gap-2.5 px-7 py-3.5 font-semibold text-white rounded-full text-sm transition-all duration-200 hover:brightness-110"
-                  style={{ background: 'linear-gradient(135deg, #1565c0, #4a9eff)' }}
+                  style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}
                 >
                   Join Pawn's Gambit
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -599,115 +599,7 @@ export default function Home() {
             <Carousel />
           </div>
         </section>
-
-        {/* ════════════════════════════════════════════════════════════════════
-            2 · THE PROBLEM  +  WHY CHESS
-            3-column grid: problem top-left (Q2) | pawn centre | chess bottom-right (Q4)
-        ════════════════════════════════════════════════════════════════════ */}
-        <section
-          className="relative overflow-hidden"
-          style={{
-            background: C.bg,
-            height: '100vh',
-            scrollSnapAlign: 'start',
-            scrollSnapStop: 'always',
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr',
-            gridTemplateRows: '1fr 1fr',
-            borderTop: `1px solid ${C.line}`,
-            isolation: 'isolate',
-          }}
-        >
-          <PcaBg />
-          {/* ── Q2 · The Problem (top-left, left-aligned) ───────────────── */}
-          <div
-            className="flex items-center"
-            style={{ gridColumn: 1, gridRow: '1 / 3', padding: '0 3.5rem' }}
-          >
-            <FadeIn className="max-w-[380px]">
-              {/* Big display header: 01 ——— The Problem */}
-              <div className="flex items-center gap-4 mb-6">
-                <span
-                  className="font-bold tabular-nums"
-                  style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}
-                >
-                  01
-                </span>
-                <span style={{ flex: '0 0 32px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-                <span
-                  className="font-bold pg-heading"
-                  style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05, whiteSpace: 'nowrap' }}
-                >
-                  The Problem
-                </span>
-              </div>
-
-              <p className="pg-desc text-lg leading-relaxed mb-2" style={{ color: C.body }}>
-                We are more connected than ever. and somehow more alone
-              </p>
-
-              <LearnMore isOpen={openLearn === 'problem'} onToggle={() => tog('problem')}>
-                <p>Most adults don't struggle to find content. They struggle to find community.</p>
-                <p>They have a hard time connecting with another person.<br />
-                   Awkward silences during meets. No reason to return.</p>
-                <p>We've replaced gathering with scrolling.<br />
-                   Friendship with notifications.<br />
-                   Conversation with comments.</p>
-                <p style={{ color: C.ink, fontWeight: 600 }}>
-                  Pawn's Gambit exists because we think people deserve better.
-                </p>
-              </LearnMore>
-            </FadeIn>
-          </div>
-
-          {/* ── Centre column: pawn floats here (canvas overlay handles it) ── */}
-          <div style={{ gridColumn: 2, gridRow: '1 / 3' }} />
-
-          {/* ── Q4 · Why Chess (bottom-right, right-aligned) ────────────── */}
-          <div
-            className="flex items-center justify-end"
-            style={{ gridColumn: 3, gridRow: '1 / 3', padding: '0 3.5rem' }}
-          >
-            <FadeIn delay={140} className="max-w-[380px] text-right">
-              {/* Big display header: 02 ——— Why Chess */}
-              <div className="flex items-center justify-end gap-4 mb-6">
-                <span
-                  className="font-bold pg-heading"
-                  style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 , whiteSpace: 'nowrap'}}
-                >
-                  Why Chess
-                </span>
-                <span style={{ flex: '0 0 32px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-                <span
-                  className="font-bold tabular-nums"
-                  style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}
-                >
-                  02
-                </span>
-              </div>
-
-              <p className="pg-desc text-lg leading-relaxed mb-2" style={{ color: C.body }}>
-                Chess creates something rare
-              </p>
-
-              <LearnMore align="right" isOpen={openLearn === 'chess'} onToggle={() => tog('chess')}>
-                <p>A reason for strangers to sit together.</p>
-                <p>A reason to think together.</p>
-                <p>A reason to return.</p>
-                <p>The board starts the conversation.<br />The community keeps it going.</p>
-              </LearnMore>
-            </FadeIn>
-          </div>
-
-          {/* Hair-line dividers */}
-          <div className="absolute inset-x-0 top-1/2 pointer-events-none"
-               style={{ height: 1, background: C.line }} />
-          <div className="absolute inset-y-0 left-1/3 pointer-events-none"
-               style={{ width: 1, background: C.line }} />
-          <div className="absolute inset-y-0 right-1/3 pointer-events-none"
-               style={{ width: 1, background: C.line }} />
-        </section>
-
+        
         {/* ════════════════════════════════════════════════════════════════════
             3 · PAWN'S GAMBIT  +  EXPERIENCES
             Q1 top-left : pawn space        |  Q2 top-right : What is PG
@@ -745,7 +637,7 @@ export default function Home() {
               <Link
                 to="/signup"
                 className="group inline-flex items-center gap-2.5 px-6 py-3 font-semibold text-white rounded-full text-sm transition-all duration-200 hover:brightness-110"
-                style={{ background: 'linear-gradient(135deg, #1565c0, #4a9eff)' }}
+                style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}
               >
                 Join Pawn's Gambit
                 <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
@@ -763,9 +655,9 @@ export default function Home() {
               <div className="flex items-center justify-end gap-3 mb-4">
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>What Is Pawn's Gambit</span>
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>03</span>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}>01</span>
               </div>
-              <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
+              <p className="pg-desc mb-1 leading-relaxed" style={{ color: C.body, fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)' }}>
                 We're building more than just a community.
               </p>
               <LearnMore align="right" isOpen={openLearn === 'pg'} onToggle={() => tog('pg')}>
@@ -782,9 +674,9 @@ export default function Home() {
               <div className="flex items-center justify-end gap-3 mb-4">
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Experiences</span>
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>04</span>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}>02</span>
               </div>
-              <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
+              <p className="pg-desc mb-1 leading-relaxed" style={{ color: C.body, fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)' }}>
                 Something for everyone.
               </p>
               <LearnMore align="right" isOpen={openLearn === 'exp'} onToggle={() => tog('exp')}>
@@ -812,6 +704,115 @@ export default function Home() {
 
           {/* Only the vertical divider between left and right columns */}
           <div className="absolute inset-y-0 left-1/2 pointer-events-none" style={{ width: 1, background: C.line }} />
+        </section>
+
+
+        {/* ════════════════════════════════════════════════════════════════════
+            2 · THE PROBLEM  +  WHY CHESS
+            3-column grid: problem top-left (Q2) | pawn centre | chess bottom-right (Q4)
+        ════════════════════════════════════════════════════════════════════ */}
+        <section
+          className="relative overflow-hidden"
+          style={{
+            background: C.bg,
+            height: '100vh',
+            scrollSnapAlign: 'start',
+            scrollSnapStop: 'always',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gridTemplateRows: '1fr 1fr',
+            borderTop: `1px solid ${C.line}`,
+            isolation: 'isolate',
+          }}
+        >
+          <PcaBg />
+          {/* ── Q2 · The Problem (top-left, left-aligned) ───────────────── */}
+          <div
+            className="flex items-center"
+            style={{ gridColumn: 1, gridRow: '1 / 3', padding: '0 3.5rem' }}
+          >
+            <FadeIn className="max-w-[380px]">
+              {/* Big display header: 01 ——— The Problem */}
+              <div className="flex items-center gap-4 mb-6">
+                <span
+                  className="font-bold tabular-nums"
+                  style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}
+                >
+                  03
+                </span>
+                <span style={{ flex: '0 0 32px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
+                <span
+                  className="font-bold pg-heading"
+                  style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05, whiteSpace: 'nowrap' }}
+                >
+                  The Problem
+                </span>
+              </div>
+
+              <p className="pg-desc leading-relaxed mb-2" style={{ color: C.body, fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)' }}>
+                We are more connected than ever. and somehow more alone
+              </p>
+
+              <LearnMore isOpen={openLearn === 'problem'} onToggle={() => tog('problem')}>
+                <p>Most adults don't struggle to find content. They struggle to find community.</p>
+                <p>They have a hard time connecting with another person.<br />
+                   Awkward silences during meets. No reason to return.</p>
+                <p>We've replaced gathering with scrolling.<br />
+                   Friendship with notifications.<br />
+                   Conversation with comments.</p>
+                <p style={{ color: C.ink, fontWeight: 600 }}>
+                  Pawn's Gambit exists because we think people deserve better.
+                </p>
+              </LearnMore>
+            </FadeIn>
+          </div>
+
+          {/* ── Centre column: pawn floats here (canvas overlay handles it) ── */}
+          <div style={{ gridColumn: 2, gridRow: '1 / 3' }} />
+
+          {/* ── Q4 · Why Chess (bottom-right, right-aligned) ────────────── */}
+          <div
+            className="flex items-center justify-end"
+            style={{ gridColumn: 3, gridRow: '1 / 3', padding: '0 3.5rem' }}
+          >
+            <FadeIn delay={140} className="max-w-[380px] text-right">
+              {/* Big display header: 02 ——— Why Chess */}
+              <div className="flex items-center justify-end gap-4 mb-6">
+                <span
+                  className="font-bold pg-heading"
+                  style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 , whiteSpace: 'nowrap'}}
+                >
+                  Why Chess
+                </span>
+                <span style={{ flex: '0 0 32px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
+                <span
+                  className="font-bold tabular-nums"
+                  style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}
+                >
+                  04
+                </span>
+              </div>
+
+              <p className="pg-desc leading-relaxed mb-2" style={{ color: C.body, fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)' }}>
+                Chess creates something rare
+              </p>
+
+              <LearnMore align="right" isOpen={openLearn === 'chess'} onToggle={() => tog('chess')}>
+                <p>A reason for strangers to sit together.</p>
+                <p>A reason to think together.</p>
+                <p>A reason to return.</p>
+                <p>The board starts the conversation.<br />The community keeps it going.</p>
+              </LearnMore>
+            </FadeIn>
+          </div>
+
+          {/* Hair-line dividers */}
+          <div className="absolute inset-x-0 top-1/2 pointer-events-none"
+               style={{ height: 1, background: C.line }} />
+          <div className="absolute inset-y-0 left-1/3 pointer-events-none"
+               style={{ width: 1, background: C.line }} />
+          <div className="absolute inset-y-0 right-1/3 pointer-events-none"
+               style={{ width: 1, background: C.line }} />
         </section>
 
         {/* ════════════════════════════════════════════════════════════════════
@@ -842,11 +843,11 @@ export default function Home() {
           >
             <FadeIn>
               <div className="flex items-center gap-3 mb-4">
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>05</span>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}>05</span>
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Community</span>
               </div>
-              <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
+              <p className="pg-desc mb-1 leading-relaxed" style={{ color: C.body, fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)' }}>
                 Where Chess Becomes Community.
               </p>
               <LearnMore isOpen={openLearn === 'community'} onToggle={() => tog('community')}>
@@ -904,7 +905,7 @@ export default function Home() {
         <section
           className="relative px-6"
           style={{
-            background: C.ink,
+            background: '#ffffff',
             height: '100vh',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
@@ -917,11 +918,11 @@ export default function Home() {
           <PcaBg dark />
           <div className="relative z-10 max-w-3xl mx-auto text-center">
             <FadeIn>
-              <h2 className="font-bold tracking-tight leading-[1.08] mb-8 text-white"
-                  style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', letterSpacing: '-0.02em' }}>
+              <h2 className="font-bold tracking-tight leading-[1.08] mb-8"
+                  style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', letterSpacing: '-0.02em', color: '#000000' }}>
                 Where thoughtful people gather around a chessboard — and leave with something more.
               </h2>
-              <p className="pg-desc text-lg leading-relaxed mb-12 max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,0.62)' }}>
+              <p className="pg-desc text-lg leading-relaxed mb-12 max-w-2xl mx-auto" style={{ color: '#000000' }}>
                 We believe chess deserves better than being confined to screens and score sheets.
                 It deserves laughter after a blunder, debates that continue long after the pieces are
                 packed away, and rooms filled with people who genuinely enjoy thinking together.
@@ -929,7 +930,7 @@ export default function Home() {
               </p>
               <Link to="/signup"
                 className="group inline-flex items-center gap-2.5 px-9 py-4 font-semibold rounded-full text-base transition-all duration-200 hover:brightness-95"
-                style={{ background: '#ffffff', color: C.ink }}>
+                style={{ background: '#ffffff', color: '#000000' }}>
                 Join Pawn's Gambit
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </Link>

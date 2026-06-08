@@ -15,13 +15,13 @@ function PawnMesh() {
   useEffect(() => {
     if (!obj) return
     const mat = new THREE.MeshPhysicalMaterial({
-      color:              new THREE.Color('#1a5fc0'),
-      roughness:          0.10,
-      metalness:          0.30,
-      clearcoat:          1,
-      clearcoatRoughness: 0.3,
-      reflectivity:       0,
-      envMapIntensity:    1.8,
+      color:              new THREE.Color('#f4ebeb'),
+      roughness:          1.00,
+      metalness:          1.00,
+      clearcoat:          0.4,
+      clearcoatRoughness: 0.15,
+      reflectivity:       0.3,
+      envMapIntensity:    1.0,
       transparent:        true,
       opacity:            1,
     })
@@ -76,6 +76,12 @@ function PawnRig() {
       scrollVh.current = window.scrollY / (window.innerHeight || 1)
     }
     onScroll()
+    // On reload the browser restores scroll position asynchronously — re-read
+    // after the next paint so the snap uses the correct restored scroll value.
+    requestAnimationFrame(() => {
+      onScroll()
+      initialized.current = false
+    })
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => { window.removeEventListener('scroll', onScroll); initialized.current = false }
   }, [])
@@ -96,11 +102,16 @@ function PawnRig() {
     const targY   = sp < 0.5 ? 0 : sp < 1.5 ? 1 : -0.2 + Math.max(0, sp - 2.0) * viewport.height * 2
 
     if (!initialized.current) {
-      // Snap to correct position on first frame — no lerp from (0, 0) on navigation
-      cur.current.posX  = targX
-      cur.current.posY  = targY
-      cur.current.tiltZ = targTiltZ
-      cur.current.op    = targOp
+      // Re-read scroll on first frame in case browser restored position after mount
+      scrollVh.current = window.scrollY / (window.innerHeight || 1)
+      const spNow = scrollVh.current
+      const snapX = spNow < 0.5 ? X0 : spNow < 1.5 ? -2 : -Math.min(viewport.width * 0.25, 3)
+      const snapTiltZ = spNow < 0.5 ? 0 : spNow < 1.5 ? -(Math.PI / 6) : (Math.PI / 12)
+      const snapY = spNow < 0.5 ? 0 : spNow < 1.5 ? 1 : -0.2 + Math.max(0, spNow - 2.0) * viewport.height * 2
+      cur.current.posX  = snapX
+      cur.current.posY  = snapY
+      cur.current.tiltZ = snapTiltZ
+      cur.current.op    = 1
       initialized.current = true
     } else {
       cur.current.posX  += (targX      - cur.current.posX)  * k

@@ -98,7 +98,7 @@ export default function Navbar() {
                 >
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                    style={{ background: 'linear-gradient(135deg, #1565c0, #4a9eff)' }}
+                    style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}
                   >
                     {initials}
                   </div>
@@ -143,7 +143,7 @@ export default function Navbar() {
                 </Link>
                 <Link to="/signup"
                   className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition-all duration-150 hover:brightness-110"
-                  style={{ background: 'linear-gradient(135deg, #1565c0, #4a9eff)' }}>
+                  style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}>
                   Sign Up
                 </Link>
               </>
@@ -198,7 +198,7 @@ export default function Navbar() {
             <div className="flex gap-2 pt-1">
               <Link to="/login" onClick={() => setMenuOpen(false)} className="flex-1 text-center px-3 py-2.5 text-sm border border-pg-glow/15 text-slate-300 rounded-lg">Log In</Link>
               <Link to="/signup" onClick={() => setMenuOpen(false)} className="flex-1 text-center px-3 py-2.5 text-sm text-white rounded-lg font-medium"
-                style={{ background: 'linear-gradient(135deg, #1565c0, #4a9eff)' }}>Sign Up</Link>
+                style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}>Sign Up</Link>
             </div>
           )}
         </div>
