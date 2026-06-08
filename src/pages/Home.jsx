@@ -242,7 +242,7 @@ function StoryCarousel() {
 }
 
 // ─── PCA background image ─────────────────────────────────────────────────────
-function PcaBg({ dark = false, zIndex = -1 }) {
+function PcaBg({ dark = false, zIndex = -1, opacity = 0.1 }) {
   return (
     <img
       src="/PCA.png"
@@ -255,7 +255,7 @@ function PcaBg({ dark = false, zIndex = -1 }) {
         objectFit: 'cover',
         objectPosition: 'center',
         filter: 'none',
-        opacity: 0.1,
+        opacity,
         pointerEvents: 'none',
         zIndex,
       }}
@@ -905,7 +905,7 @@ export default function Home() {
         <section
           className="relative px-6"
           style={{
-            background: '#ffffff',
+            background: '#000000',
             height: '100vh',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
@@ -915,14 +915,14 @@ export default function Home() {
             isolation: 'isolate',
           }}
         >
-          <PcaBg dark />
+          <PcaBg dark opacity={0.35} />
           <div className="relative z-10 max-w-3xl mx-auto text-center">
             <FadeIn>
               <h2 className="font-bold tracking-tight leading-[1.08] mb-8"
-                  style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', letterSpacing: '-0.02em', color: '#000000' }}>
+                  style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', letterSpacing: '-0.02em', color: '#ffffff' }}>
                 Where thoughtful people gather around a chessboard — and leave with something more.
               </h2>
-              <p className="pg-desc text-lg leading-relaxed mb-12 max-w-2xl mx-auto" style={{ color: '#000000' }}>
+              <p className="pg-desc text-lg leading-relaxed mb-12 max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 We believe chess deserves better than being confined to screens and score sheets.
                 It deserves laughter after a blunder, debates that continue long after the pieces are
                 packed away, and rooms filled with people who genuinely enjoy thinking together.
@@ -930,7 +930,7 @@ export default function Home() {
               </p>
               <Link to="/signup"
                 className="group inline-flex items-center gap-2.5 px-9 py-4 font-semibold rounded-full text-base transition-all duration-200 hover:brightness-95"
-                style={{ background: '#ffffff', color: '#000000' }}>
+                style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)', color: '#ffffff' }}>
                 Join Pawn's Gambit
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </Link>
