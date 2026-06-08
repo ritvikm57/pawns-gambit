@@ -575,7 +575,7 @@ export default function Home() {
                 <Link
                   to="/signup"
                   className="group inline-flex items-center gap-2.5 px-7 py-3.5 font-semibold text-white rounded-full text-sm transition-all duration-200 hover:brightness-110"
-                  style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}
+                  style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)' }}
                 >
                   Join Pawn's Gambit
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -637,7 +637,7 @@ export default function Home() {
               <Link
                 to="/signup"
                 className="group inline-flex items-center gap-2.5 px-6 py-3 font-semibold text-white rounded-full text-sm transition-all duration-200 hover:brightness-110"
-                style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}
+                style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)' }}
               >
                 Join Pawn's Gambit
                 <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
@@ -689,7 +689,7 @@ export default function Home() {
                     <div key={ev.title} className="py-3 flex flex-row-reverse gap-4 items-start" style={{ borderTop: `1px solid ${C.line}` }}>
                       <span
                         className="mt-0.5 text-[9px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0"
-                        style={{ color: C.blue, background: `${C.blue}12` }}
+                        style={{ color: '#FF6600', background: 'rgba(255,102,0,0.12)' }}
                       >{ev.tag}</span>
                       <div className="text-right">
                         <p className="font-semibold text-sm leading-snug" style={{ color: C.ink }}>{ev.title}</p>
@@ -750,7 +750,7 @@ export default function Home() {
               </div>
 
               <p className="pg-desc leading-relaxed mb-2" style={{ color: C.body, fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)' }}>
-                We are more connected than ever. and somehow more alone
+                We are more connected than ever, and somehow more alone.
               </p>
 
               <LearnMore isOpen={openLearn === 'problem'} onToggle={() => tog('problem')}>
@@ -794,7 +794,7 @@ export default function Home() {
               </div>
 
               <p className="pg-desc leading-relaxed mb-2" style={{ color: C.body, fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)' }}>
-                Chess creates something rare
+                Chess creates something rare.
               </p>
 
               <LearnMore align="right" isOpen={openLearn === 'chess'} onToggle={() => tog('chess')}>

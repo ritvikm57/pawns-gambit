@@ -10,10 +10,10 @@ const TABS = [
 ]
 
 const STATUS_META = {
-  upcoming:          { label: 'Upcoming',          cls: 'bg-slate-100 text-slate-500 border-slate-200' },
-  registration_open: { label: 'Registration Open', cls: 'bg-green-50 text-green-700 border-green-200' },
-  ongoing:           { label: 'Live',              cls: 'bg-amber-50 text-amber-700 border-amber-200' },
-  completed:         { label: 'Completed',         cls: 'bg-slate-100 text-slate-400 border-slate-200' },
+  upcoming:          { label: 'Upcoming',          cls: 'text-white border-white/30',     style: { background: 'rgba(255,255,255,0.15)' } },
+  registration_open: { label: 'Registration Open', cls: 'text-green-200 border-green-300', style: { background: 'rgba(34,197,94,0.2)' } },
+  ongoing:           { label: 'Live',              cls: 'text-amber-200 border-amber-300', style: { background: 'rgba(251,191,36,0.2)' } },
+  completed:         { label: 'Completed',         cls: 'text-white/50 border-white/20',  style: { background: 'rgba(255,255,255,0.08)' } },
 }
 
 // ─── Info accordion ───────────────────────────────────────────────────────────
@@ -94,11 +94,11 @@ function InfoAccordions() {
           <button
             key={sec.key}
             onClick={() => tog(sec.key)}
-            className={`flex-1 flex items-center justify-between gap-3 px-5 py-4 rounded-2xl text-left border shadow-sm transition-all text-sm font-semibold ${
-              open === sec.key
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-slate-800 border-gray-200 hover:bg-gray-50'
-            }`}
+            className="flex-1 flex items-center justify-between gap-3 px-5 py-4 rounded-2xl text-left border transition-all text-sm font-semibold text-white"
+            style={{
+              background: open === sec.key ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+              borderColor: 'rgba(255,255,255,0.2)',
+            }}
           >
             <span style={{ fontFamily: "'Times New Roman', Times, serif" }}>{sec.title}</span>
             <ChevronDown
@@ -121,7 +121,7 @@ function InfoAccordions() {
           transition: 'max-height 420ms cubic-bezier(0.22,1,0.36,1)',
         }}
       >
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+        <div className="rounded-2xl p-6" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff' }}>
           {INFO_SECTIONS.map(sec => (
             <div key={sec.key} style={{ display: open === sec.key ? 'block' : 'none' }}>
               {sec.content}
@@ -160,29 +160,29 @@ export default function Tournaments() {
   }
 
   return (
-    <div className="relative min-h-screen pt-20 pb-16 px-4" style={{ background: '#f8f9fb' }}>
+    <div className="relative min-h-screen pt-20 pb-16 px-4" style={{ background: 'transparent' }}>
       <div className="relative z-10 max-w-5xl mx-auto">
 
         {/* Header */}
         <div className="py-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900">Tournaments</h1>
-          <p className="text-slate-500 mt-2 text-lg">Compete, earn PG ratings, and be part of something bigger.</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white">Tournaments</h1>
+          <p className="mt-2 text-lg" style={{ color: 'rgba(255,255,255,0.7)' }}>Compete, earn PG ratings, and be part of something bigger.</p>
         </div>
 
         {/* Info accordions */}
         <InfoAccordions />
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mb-6 overflow-x-auto shadow-sm">
+        <div className="flex gap-1 rounded-xl p-1 mb-6 overflow-x-auto" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
           {TABS.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-1 min-w-max ${
-                activeTab === tab.key
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-gray-100'
-              }`}
+              className="px-5 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-1 min-w-max text-white"
+              style={{
+                background: activeTab === tab.key ? 'rgba(255,255,255,0.25)' : 'transparent',
+                fontWeight: activeTab === tab.key ? 700 : 400,
+              }}
             >
               {tab.label}
             </button>
@@ -193,9 +193,9 @@ export default function Tournaments() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white border border-gray-200 rounded-2xl p-5 animate-pulse">
-                <div className="h-5 bg-gray-200 rounded w-1/3 mb-3" />
-                <div className="h-3 bg-gray-100 rounded w-2/3" />
+              <div key={i} className="rounded-2xl p-5 animate-pulse" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                <div className="h-5 rounded w-1/3 mb-3" style={{ background: 'rgba(255,255,255,0.2)' }} />
+                <div className="h-3 rounded w-2/3" style={{ background: 'rgba(255,255,255,0.1)' }} />
               </div>
             ))}
           </div>
@@ -204,9 +204,9 @@ export default function Tournaments() {
             {tournaments.map(t => <TournamentRow key={t.id} tournament={t} />)}
           </div>
         ) : (
-          <div className="text-center py-20 text-slate-400">
-            <Trophy size={52} className="mx-auto mb-4 opacity-20" />
-            <p className="text-xl text-slate-700 font-medium">No {activeTab} tournaments</p>
+          <div className="text-center py-20" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <Trophy size={52} className="mx-auto mb-4 opacity-30" />
+            <p className="text-xl font-medium text-white">No {activeTab} tournaments</p>
             <p className="text-sm mt-2">
               {activeTab === 'upcoming' ? 'Check back soon for upcoming events!'
                 : activeTab === 'ongoing' ? 'No tournaments are currently in progress.'
@@ -241,13 +241,13 @@ function TournamentRow({ tournament }) {
   const spots = max_players != null ? max_players - registered_count : null
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl hover:border-gray-300 transition-all hover:shadow-sm overflow-hidden">
+    <div className="rounded-2xl overflow-hidden transition-all" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
       <div className="flex items-stretch gap-0">
 
         {/* Left accent bar */}
-        <div className={`w-1 flex-shrink-0 ${
-          isOpen ? 'bg-green-400' : status === 'ongoing' ? 'bg-amber-400' : isCompleted ? 'bg-slate-200' : 'bg-blue-300'
-        }`} />
+        <div className="w-1 flex-shrink-0" style={{
+          background: isOpen ? '#4ade80' : status === 'ongoing' ? '#fbbf24' : isCompleted ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)'
+        }} />
 
         {/* Main content */}
         <div className="flex-1 px-5 py-4 min-w-0">
@@ -255,14 +255,14 @@ function TournamentRow({ tournament }) {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap mb-1">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${meta.cls}`}>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${meta.cls}`} style={meta.style}>
                   {meta.label}
                 </span>
-                <h3 className="font-semibold text-slate-900 text-base leading-snug">{name}</h3>
+                <h3 className="font-semibold text-white text-base leading-snug">{name}</h3>
               </div>
 
               {/* Meta row */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 mt-1.5">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs mt-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 <span className="flex items-center gap-1">
                   <Calendar size={11} />
                   {formattedDate}
@@ -284,7 +284,7 @@ function TournamentRow({ tournament }) {
                   <Users size={11} />
                   {registered_count}{max_players != null ? `/${max_players}` : ''} players
                   {spots != null && spots <= 10 && spots > 0 && (
-                    <span className="text-amber-600 font-medium">· {spots} spots left</span>
+                    <span className="text-amber-300 font-medium">· {spots} spots left</span>
                   )}
                 </span>
               </div>
@@ -295,21 +295,24 @@ function TournamentRow({ tournament }) {
               {isOpen ? (
                 <Link
                   to={`/tournaments/${id}/register`}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-lg transition-all hover:brightness-110"
+                  style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)' }}
                 >
                   Register <ChevronRight size={14} />
                 </Link>
               ) : isCompleted ? (
                 <Link
                   to={`/tournaments/${id}/results`}
-                  className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 hover:border-gray-400 text-slate-600 hover:text-slate-900 text-sm font-medium rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors"
+                  style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)' }}
                 >
                   Results <ChevronRight size={14} />
                 </Link>
               ) : (
                 <Link
                   to={`/tournaments/${id}`}
-                  className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 hover:border-gray-400 text-slate-600 hover:text-slate-900 text-sm font-medium rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors"
+                  style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)' }}
                 >
                   Details <ChevronRight size={14} />
                 </Link>

@@ -33,8 +33,8 @@ button, .pg-ui {
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #ffffff;
-  color: #0f1115;
+  background-color: #069494;
+  color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -77,3 +77,4 @@ body {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+

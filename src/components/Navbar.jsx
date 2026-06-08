@@ -46,9 +46,7 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? isHome
-            ? 'bg-white/95 backdrop-blur-md border-b border-slate-200/70 shadow-sm'
-            : 'bg-pg-bg/95 backdrop-blur-md border-b border-pg-glow/10 shadow-[0_1px_40px_rgba(7,15,36,0.9)]'
+          ? 'bg-[#057a7a]/95 backdrop-blur-md border-b border-white/10 shadow-[0_1px_20px_rgba(0,0,0,0.3)]'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
@@ -58,9 +56,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
             <Logo size={34} />
-            <span className={`font-bold text-sm tracking-wide hidden sm:block transition-colors ${
-              isHome ? 'text-slate-900 group-hover:text-pg-blue' : 'text-white group-hover:text-pg-glow'
-            }`}>
+            <span className="font-bold text-sm tracking-wide hidden sm:block text-white transition-colors group-hover:opacity-80">
               Pawn's Gambit
             </span>
           </Link>
@@ -71,14 +67,10 @@ export default function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 text-white ${
                   isActive(link.path)
-                    ? isHome
-                      ? 'text-blue-700 bg-blue-50 border border-blue-200'
-                      : 'text-white bg-pg-blue/20 border border-pg-glow/20'
-                    : isHome
-                      ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-white/20 border border-white/30'
+                    : 'hover:bg-white/10'
                 }`}
               >
                 {link.label}
@@ -98,12 +90,12 @@ export default function Navbar() {
                 >
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                    style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}
+                    style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)' }}
                   >
                     {initials}
                   </div>
                   <span className="font-medium">{profile?.name?.split(' ')[0] ?? 'Account'}</span>
-                  <ChevronDown size={13} className={`text-slate-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={13} className={`text-white/60 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {dropdownOpen && (
@@ -137,13 +129,13 @@ export default function Navbar() {
               <>
                 <Link to="/login"
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    isHome ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
+                    'text-white hover:opacity-80'
                   }`}>
                   Log In
                 </Link>
                 <Link to="/signup"
                   className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition-all duration-150 hover:brightness-110"
-                  style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}>
+                  style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)' }}>
                   Sign Up
                 </Link>
               </>
@@ -152,9 +144,7 @@ export default function Navbar() {
 
           {/* Mobile hamburger */}
           <button
-            className={`md:hidden transition-colors p-1 ${
-              isHome ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
-            }`}
+            className="md:hidden transition-colors p-1 text-white hover:opacity-80"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
@@ -198,7 +188,7 @@ export default function Navbar() {
             <div className="flex gap-2 pt-1">
               <Link to="/login" onClick={() => setMenuOpen(false)} className="flex-1 text-center px-3 py-2.5 text-sm border border-pg-glow/15 text-slate-300 rounded-lg">Log In</Link>
               <Link to="/signup" onClick={() => setMenuOpen(false)} className="flex-1 text-center px-3 py-2.5 text-sm text-white rounded-lg font-medium"
-                style={{ background: 'linear-gradient(135deg, #1a7a3c, #2ecc71)' }}>Sign Up</Link>
+                style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)' }}>Sign Up</Link>
             </div>
           )}
         </div>

@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom'
 import { Mail, MapPin, ArrowRight, Send } from 'lucide-react'
 
 const C = {
-  ink:   '#0f1115',
-  body:  '#454b57',
-  faint: '#8a909c',
-  blue:  '#1565c0',
-  glow:  '#4a9eff',
-  line:  'rgba(15,17,21,0.08)',
-  bg:    '#ffffff',
-  bgAlt: '#f6f7f9',
+  ink:   '#ffffff',
+  body:  'rgba(255,255,255,0.8)',
+  faint: 'rgba(255,255,255,0.5)',
+  blue:  '#FF6600',
+  glow:  '#FF6600',
+  line:  'rgba(255,255,255,0.2)',
+  bg:    'rgba(255,255,255,0.1)',
+  bgAlt: 'rgba(0,0,0,0.15)',
 }
 
 export default function Contact() {
@@ -28,7 +28,7 @@ export default function Contact() {
 
   if (status === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: C.bgAlt }}>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'transparent' }}>
         <div className="text-center max-w-sm">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
@@ -53,12 +53,12 @@ export default function Contact() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: C.bgAlt }}>
+    <div className="min-h-screen flex" style={{ background: 'transparent' }}>
 
       {/* LEFT: all content */}
       <div
         className="flex flex-col justify-center"
-        style={{ width: '50%', padding: '6rem 4rem 4rem 6rem', background: C.bg, borderRight: `1px solid ${C.line}` }}
+        style={{ width: '50%', padding: '6rem 4rem 4rem 6rem', background: 'rgba(0,0,0,0.15)', borderRight: `1px solid ${C.line}` }}
       >
         {/* Header */}
         <div className="mb-12">
@@ -138,7 +138,7 @@ export default function Contact() {
       {/* RIGHT: form */}
       <div
         className="flex flex-col justify-center"
-        style={{ width: '50%', padding: '6rem 6rem 4rem 4rem', background: C.bgAlt }}
+        style={{ width: '50%', padding: '6rem 6rem 4rem 4rem', background: 'transparent' }}
       >
         <p className="text-[11px] font-semibold tracking-[0.26em] uppercase mb-6" style={{ color: C.faint }}>
           Send a message
@@ -187,7 +187,7 @@ export default function Contact() {
             type="submit"
             disabled={status === 'loading'}
             className="w-full flex items-center justify-center gap-2.5 py-3 font-semibold text-white rounded-xl text-sm transition-all hover:brightness-110 disabled:opacity-60"
-            style={{ background: 'linear-gradient(135deg, #1565c0, #4a9eff)' }}
+            style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)' }}
           >
             {status === 'loading' ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
