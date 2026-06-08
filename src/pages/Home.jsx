@@ -267,10 +267,10 @@ function PcaBg({ dark = false, zIndex = -1 }) {
 const SHOW_SPONSORS = false
 
 const TEAM = [
-  { name: 'Sairam Kolaganti', piece: 'King',   symbol: '♔', role: 'Founder',     quote: '"The game was always about the people around the board."',    description: "The visionary behind Pawn's Gambit, building a community where chess is the beginning of something much bigger.", initials: 'SK' },
-  { name: 'Parth Thakkar',   piece: 'Rook',   symbol: '♖', role: 'Co-Founder',  quote: '"Steady, reliable — the kind of presence every team needs."', description: 'The operational backbone ensuring every event and every experience runs exactly as it should.',               initials: 'PT' },
-  { name: 'Anirudh',         piece: 'Knight', symbol: '♘', role: 'Team Member', quote: '"Sometimes the best move is the one no one expects."',         description: 'Creative and unpredictable in the best way — always finding the angle others miss.',                         initials: 'A'  },
-  { name: 'Sai Teja',        piece: 'Bishop', symbol: '♗', role: 'Team Member', quote: '"Long-range thinking, one diagonal at a time."',               description: "Strategic and forward-looking, focused on where the community is headed rather than where it's been.",       initials: 'ST' },
+  { name: 'Sairam Kolaganti', piece: 'King',   symbol: '♔', role: 'Founder',     quote: '"The game was always about the people around the board."',    description: "The visionary behind Pawn's Gambit, building a community where chess is the beginning of something much bigger.", initials: 'SK', photo: '/sairam.jpeg'  },
+  { name: 'Parth Thakkar',   piece: 'Rook',   symbol: '♖', role: 'Co-Founder',  quote: '"Steady, reliable — the kind of presence every team needs."', description: 'The operational backbone ensuring every event and every experience runs exactly as it should.',               initials: 'PT', photo: null            },
+  { name: 'Anirudh',         piece: 'Knight', symbol: '♘', role: 'Team Member', quote: '"Sometimes the best move is the one no one expects."',         description: 'Creative and unpredictable in the best way — always finding the angle others miss.',                         initials: 'A',  photo: '/anirudh.jpeg' },
+  { name: 'Sai Teja',        piece: 'Bishop', symbol: '♗', role: 'Team Member', quote: '"Long-range thinking, one diagonal at a time."',               description: "Strategic and forward-looking, focused on where the community is headed rather than where it's been.",       initials: 'ST', photo: null            },
 ]
 
 function TeamSection() {
@@ -330,134 +330,81 @@ function TeamSection() {
           scrollSnapStop: 'always',
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gridTemplateRows: '1fr 1fr',
+          gridTemplateRows: '7fr 3fr',
           borderTop: `1px solid ${C.line}`,
           isolation: 'isolate',
         }}
       >
         <PcaBg />
-        {/* Left: team carousel, full height */}
+
+        {/* Top-left: team photo + content */}
         <div
           style={{
-            gridColumn: 1, gridRow: '1 / 3',
+            gridColumn: 1, gridRow: 1,
             background: C.bg,
             display: 'flex', flexDirection: 'column', justifyContent: 'center',
             gap: '1.25rem',
-            padding: '5rem 3.5rem 2.5rem',
+            padding: '3rem 3.5rem',
             overflow: 'hidden',
           }}
         >
-          <div className="flex items-center gap-3" style={{ flexShrink: 0 }}>
-            <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>06</span>
-            <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-            <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Team</span>
-          </div>
+          {/* Left + Right columns */}
+          <div style={{ display: 'flex', gap: '1.5rem', flex: 1, alignItems: 'center' }}>
 
-          {/* Photo */}
-          <div
-            style={{
-              height: '18rem', borderRadius: '1rem 0 0 1rem', overflow: 'hidden', flexShrink: 0,
-              marginRight: '-3.5rem',
+            {/* LEFT: header + name/role/quote/description — vertically centered */}
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1rem' }}>
+              <div className="flex items-center gap-3" style={{ paddingBottom: '0.75rem' }}>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>06</span>
+                <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
+                <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Team</span>
+              </div>
+
+              <div style={{ opacity: visible ? 1 : 0, transition: 'opacity 280ms ease' }}>
+                <div className="flex items-center gap-2.5 mb-2" style={{ flexWrap: 'wrap' }}>
+                  <p className="font-bold" style={{ fontSize: '1.05rem', color: C.ink, letterSpacing: '-0.01em' }}>{m.name}</p>
+                  <span style={{ fontSize: '0.62rem', fontWeight: 700, color: C.blue, background: `${C.blue}14`, padding: '0.2rem 0.6rem', borderRadius: '999px', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{m.role}</span>
+                </div>
+                <p className="pg-desc" style={{ fontSize: '0.85rem', color: C.blue, fontStyle: 'italic', marginBottom: '0.5rem', lineHeight: 1.55 }}>{m.quote}</p>
+                <p style={{ fontSize: '0.8rem', color: C.body, lineHeight: 1.75 }}>{m.description}</p>
+              </div>
+            </div>
+
+            {/* RIGHT: photo */}
+            <div style={{
+              width: '45%', height: '80%', borderRadius: '1rem', overflow: 'hidden', flexShrink: 0,
               background: C.bgAlt, border: `1px solid ${C.line}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               opacity: visible ? 1 : 0, transition: 'opacity 280ms ease',
-            }}
-          >
-            <div style={{ textAlign: 'center', color: C.faint }}>
-              <div style={{
-                width: '4.5rem', height: '4.5rem', borderRadius: '50%',
-                background: `linear-gradient(135deg, ${C.blue}, ${C.glow})`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1.5rem', fontWeight: 700, color: 'white', margin: '0 auto 0.75rem',
-              }}>{m.initials}</div>
-              <p style={{ fontSize: '0.7rem', opacity: 0.55, letterSpacing: '0.05em' }}>Photo coming soon</p>
+            }}>
+              {m.photo ? (
+                <img src={m.photo} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+              ) : (
+                <div style={{ textAlign: 'center', color: C.faint }}>
+                  <div style={{
+                    width: '4rem', height: '4rem', borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${C.blue}, ${C.glow})`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.4rem', fontWeight: 700, color: 'white', margin: '0 auto 0.5rem',
+                  }}>{m.initials}</div>
+                  <p style={{ fontSize: '0.65rem', opacity: 0.5 }}>Photo coming soon</p>
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Name, role, quote, description */}
-          <div style={{ opacity: visible ? 1 : 0, transition: 'opacity 280ms ease' }}>
-            <div className="flex items-center gap-2.5 mb-2">
-              <p className="font-bold" style={{ fontSize: 'clamp(1rem, 1.5vw, 1.4rem)', color: C.ink, letterSpacing: '-0.02em' }}>{m.name}</p>
-              <span style={{ fontSize: '0.65rem', fontWeight: 700, color: C.blue, background: `${C.blue}14`, padding: '0.2rem 0.65rem', borderRadius: '999px', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{m.role}</span>
-            </div>
-            <p className="pg-desc" style={{ fontSize: '0.875rem', color: C.blue, fontStyle: 'italic', marginBottom: '0.6rem', lineHeight: 1.55 }}>{m.quote}</p>
-            <p style={{ fontSize: '0.8rem', color: C.body, lineHeight: 1.75 }}>{m.description}</p>
-          </div>
-
-          {/* Dot navigation */}
-          <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
-            {TEAM.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i)}
-                style={{
-                  height: '0.375rem', width: i === idx ? '1.5rem' : '0.375rem',
-                  borderRadius: '9999px', background: i === idx ? C.blue : C.line,
-                  transition: 'all 300ms', border: 'none', cursor: 'pointer', padding: 0,
-                }}
-              />
-            ))}
           </div>
         </div>
 
-        {/* Top right: Sponsors (toggleable) + Partners (always) */}
-        <div
-          style={{
-            gridColumn: 2, gridRow: 1,
-            background: C.bgAlt,
-            padding: '2rem 2.5rem',
-            display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            gap: '1.25rem',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Sponsors — toggle the SHOW_SPONSORS constant to show/hide */}
-          {SHOW_SPONSORS && (
-            <>
-              <div>
-                <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.faint, marginBottom: '0.75rem' }}>
-                  Sponsors
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem' }}>
-                  {/* Add sponsor logo cards here */}
-                  <div style={{ borderRadius: '0.75rem', padding: '0.75rem 1rem', background: C.bg, border: `1px dashed ${C.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '5rem', minHeight: '3rem' }}>
-                    <p style={{ fontSize: '0.6rem', color: C.faint }}>Sponsor logo</p>
-                  </div>
-                </div>
-              </div>
-              <div style={{ height: 1, background: C.line }} />
-            </>
-          )}
-
-          {/* Partners — always visible */}
-          <div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem', marginBottom: '0.75rem' }}>
-              <div style={{ borderRadius: '0.875rem', padding: '0.75rem 1.25rem', background: C.bg, border: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-                <span style={{ fontSize: '1.5rem' }}>🐼</span>
-                <div>
-                  <p style={{ fontWeight: 600, fontSize: '0.75rem', color: C.ink }}>Panda Chess Academy</p>
-                  <p style={{ fontSize: '0.65rem', color: C.faint, marginTop: '0.1rem' }}>Official Coaching Partner</p>
-                </div>
-              </div>
-            </div>
-            <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.faint }}>
-              Partners
-            </p>
-          </div>
-        </div>
-
-        {/* Chess piece wheel — always bottom-right */}
+        {/* Bottom-left: chess piece wheel */}
         <div
           ref={pieceContainerRef}
           style={{
-            gridColumn: 2,
+            gridColumn: 1,
             gridRow: 2,
             background: `linear-gradient(145deg, ${C.blue} 0%, ${C.glow} 100%)`,
             position: 'relative',
             overflow: 'hidden',
           }}
         >
-          {/* Wheel pivot — centered horizontally, offset below container center by wheelR */}
           <div
             style={{
               position: 'absolute',
@@ -484,21 +431,57 @@ function TeamSection() {
                     textAlign: 'center',
                   }}
                 >
-                  <div style={{ fontSize: 'clamp(6rem, 10vw, 9rem)', color: 'rgba(255,255,255,0.92)', lineHeight: 1, marginBottom: '0.5rem', userSelect: 'none' }}>
+                  <div style={{ fontSize: 'clamp(6rem, 10vw, 9rem)', color: 'rgba(255,255,255,0.92)', lineHeight: 1, userSelect: 'none' }}>
                     {member.symbol}
                   </div>
-                  <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap' }}>
-                    {member.piece}
-                  </p>
                 </div>
               )
             })}
           </div>
         </div>
 
-        {/* Dividers — vertical always, horizontal always (right column always split) */}
+        {/* Right column (full height): Partners */}
+        <div
+          style={{
+            gridColumn: 2, gridRow: '1 / 3',
+            background: C.bgAlt,
+            padding: '3rem 3.5rem',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            gap: '2rem',
+            overflow: 'hidden',
+          }}
+        >
+          <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.faint, flexShrink: 0 }}>
+            Partners
+          </p>
+
+          {[
+            { role: 'Coaching Partner', name: 'Panda Chess Academy', logo: '/panda-chess.png', dark: true  },
+            { role: 'Venue Partner',    name: 'RMZ',                 logo: '/rmz.png',         dark: false },
+          ].map(p => (
+            <div key={p.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.faint }}>{p.role}</p>
+              <div style={{
+                borderRadius: '1rem',
+                background: p.dark ? '#111' : C.bg,
+                border: `1px solid ${C.line}`,
+                padding: '1.25rem 1.5rem',
+                display: 'flex', alignItems: 'center', gap: '1rem',
+              }}>
+                <img
+                  src={p.logo}
+                  alt={p.name}
+                  style={{ width: '3.5rem', height: '3.5rem', objectFit: 'contain', borderRadius: '0.5rem', flexShrink: 0 }}
+                />
+                <p style={{ fontWeight: 600, fontSize: '0.875rem', color: p.dark ? '#fff' : C.ink, lineHeight: 1.3 }}>{p.name}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dividers — vertical centre, horizontal splits left column only */}
         <div className="absolute inset-y-0 left-1/2 pointer-events-none" style={{ width: 1, background: C.line }} />
-        <div className="absolute right-0 top-1/2 pointer-events-none" style={{ left: '50%', height: 1, background: C.line }} />
+        <div className="absolute left-0 pointer-events-none" style={{ top: '70%', width: '50%', height: 1, background: C.line }} />
       </section>
     </>
   )
@@ -778,9 +761,9 @@ export default function Home() {
             {/* 03 · What Is Pawn's Gambit */}
             <FadeIn>
               <div className="flex items-center justify-end gap-3 mb-4">
-                <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>What Is Pawn's Gambit</span>
+                <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>What Is Pawn's Gambit</span>
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>03</span>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>03</span>
               </div>
               <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
                 We're building more than just a community.
@@ -797,9 +780,9 @@ export default function Home() {
             {/* 04 · Experiences */}
             <FadeIn delay={140}>
               <div className="flex items-center justify-end gap-3 mb-4">
-                <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Experiences</span>
+                <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Experiences</span>
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>04</span>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>04</span>
               </div>
               <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
                 Something for everyone.
@@ -848,6 +831,7 @@ export default function Home() {
             gridTemplateRows: '1fr 1fr',
             borderTop: `1px solid ${C.line}`,
             isolation: 'isolate',
+            paddingTop: '4rem',
           }}
         >
           <PcaBg />
@@ -858,9 +842,9 @@ export default function Home() {
           >
             <FadeIn>
               <div className="flex items-center gap-3 mb-4">
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(2rem, 3vw, 2.8rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>05</span>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: C.blue, letterSpacing: '-0.04em', lineHeight: 1 }}>05</span>
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-                <span className="font-bold pg-heading" style={{ fontSize: 'clamp(1.2rem, 1.8vw, 2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Community</span>
+                <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Community</span>
               </div>
               <p className="pg-desc mb-1 text-base leading-relaxed" style={{ color: C.body }}>
                 Where Chess Becomes Community.
@@ -905,7 +889,7 @@ export default function Home() {
           </div>
 
           {/* Hair-line dividers */}
-          <div className="absolute inset-x-0 top-1/2 pointer-events-none" style={{ height: 1, background: C.line }} />
+          <div className="absolute inset-x-0 pointer-events-none" style={{ top: 'calc(50% + 2rem)', height: 1, background: C.line }} />
           <div className="absolute inset-y-0 left-1/2 pointer-events-none" style={{ width: 1, background: C.line }} />
         </section>
 

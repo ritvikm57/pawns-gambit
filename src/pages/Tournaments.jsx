@@ -100,7 +100,7 @@ function InfoAccordions() {
                 : 'bg-white text-slate-800 border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <span>{sec.title}</span>
+            <span style={{ fontFamily: "'Times New Roman', Times, serif" }}>{sec.title}</span>
             <ChevronDown
               size={15}
               className="flex-shrink-0 transition-transform duration-300"

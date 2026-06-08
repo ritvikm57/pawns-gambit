@@ -1,5 +1,14 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
+
+// Reset scroll to top on every navigation except Home (Home restores its own position)
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    if (pathname !== '/') window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [pathname])
+  return null
+}
 import { AuthProvider } from './context/AuthContext'
 import { autoUpdateTournamentStatuses } from './lib/autoUpdateTournaments'
 import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute'
@@ -41,6 +50,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <div className="flex flex-col min-h-screen">
+          <ScrollToTop />
           <Navbar />
           <div className="flex-1">
             <Routes>
