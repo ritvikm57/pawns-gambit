@@ -1,5 +1,92 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import carouselPic1 from './assets/carousel-home-s3/pic1.jpeg'
+import carouselPic2 from './assets/carousel-home-s3/pic2.jpeg'
+import carouselPic3 from './assets/carousel-home-s3/pic3.jpeg'
+
+const DARK_PHOTOS = [
+  carouselPic1,
+  carouselPic2,
+  carouselPic3,
+  '/sairam.jpeg',
+  '/anirudh.jpeg',
+]
+
+const SQ   = 120
+const COLS = 50
+const ROWS = 30
+
+function IntroAnimation({ onDone }) {
+  const [zoom,      setZoom]      = useState(false)
+  const [blackOut,  setBlackOut]  = useState(false)
+  const [boardFade, setBoardFade] = useState(false)
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setZoom(true),      30)
+    const t2 = setTimeout(() => setBlackOut(true),  500)
+    const t3 = setTimeout(() => setBoardFade(true), 2600)
+    const t4 = setTimeout(onDone,                   3000)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4) }
+  }, [onDone])
+
+  const cells = useMemo(() => {
+    let darkIdx = 0
+    return Array.from({ length: ROWS * COLS }, (_, i) => {
+      const row = Math.floor(i / COLS)
+      const col = i % COLS
+      const isDark = (row + col) % 2 === 1
+      return { isDark, photo: isDark ? DARK_PHOTOS[darkIdx++ % DARK_PHOTOS.length] : null }
+    })
+  }, [])
+
+  const boardTransition = [
+    zoom      ? 'transform 3s cubic-bezier(0.4,0,0.2,1)' : '',
+    boardFade ? 'opacity 0.4s ease-in'                   : '',
+  ].filter(Boolean).join(', ')
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 99999, overflow: 'hidden', pointerEvents: 'none' }}>
+
+      {/* Centering wrapper */}
+      <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}>
+        {/* Zoom wrapper */}
+        <div style={{
+          width: COLS * SQ, height: ROWS * SQ,
+          transformOrigin: 'center center',
+          transform:  zoom      ? 'scale(5)' : 'scale(1)',
+          opacity:    boardFade ? 0          : 1,
+          transition: boardTransition || 'none',
+          position: 'relative',
+        }}>
+          {/* Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${COLS}, ${SQ}px)`,
+            gridTemplateRows:    `repeat(${ROWS}, ${SQ}px)`,
+          }}>
+            {cells.map(({ isDark, photo }, i) => (
+              <div key={i} style={{
+                width: SQ, height: SQ,
+                background: isDark
+                  ? `url(${photo}) center/cover no-repeat`
+                  : '#ffffff',
+              }} />
+            ))}
+          </div>
+
+        </div>
+      </div>
+
+      {/* Black overlay — lifts at 0.5s */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: '#000',
+        opacity:    blackOut ? 0 : 1,
+        transition: blackOut ? 'opacity 0.4s ease-out' : 'none',
+      }} />
+    </div>
+  )
+}
 
 // Reset scroll to top on every navigation except Home (Home restores its own position)
 function ScrollToTop() {
@@ -43,12 +130,20 @@ function NotFound() {
 }
 
 export default function App() {
-  // Silently promote any tournament whose start time has passed → ongoing
   useEffect(() => { autoUpdateTournamentStatuses() }, [])
+
+  const [showIntro, setShowIntro] = useState(
+    () => !sessionStorage.getItem('pg-intro-seen')
+  )
+  const handleIntroDone = useCallback(() => {
+    sessionStorage.setItem('pg-intro-seen', '1')
+    setShowIntro(false)
+  }, [])
 
   return (
     <BrowserRouter>
       <AuthProvider>
+        {showIntro && <IntroAnimation onDone={handleIntroDone} />}
         <div className="flex flex-col min-h-screen" style={{ position: 'relative', background: '#069494' }}>
           {/* Global PCA chess background */}
           <img src="/PCA.png" alt="" style={{
