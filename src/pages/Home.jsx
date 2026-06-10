@@ -494,18 +494,19 @@ export default function Home() {
   const [openLearn, setOpenLearn] = useState(null)
   const tog = (key) => setOpenLearn(prev => prev === key ? null : key)
 
+  // Home always opens at the top. ScrollToTop in App.jsx deliberately skips
+  // Home, so without this the scroll position carries over from whatever page
+  // you navigated from — Home would mount scrolled down and the pawn would
+  // render a mid-scroll position. useLayoutEffect runs before paint = no flash.
   useLayoutEffect(() => {
-    const saved = sessionStorage.getItem('pg-home-scroll')
-    if (saved) window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+    history.scrollRestoration = 'manual'
+    window.scrollTo(0, 0)
   }, [])
 
   useEffect(() => {
     const html = document.documentElement
     html.style.scrollSnapType = 'y mandatory'
-    return () => {
-      sessionStorage.setItem('pg-home-scroll', String(window.scrollY))
-      html.style.scrollSnapType = ''
-    }
+    return () => { html.style.scrollSnapType = '' }
   }, [])
 
   useEffect(() => {
@@ -522,7 +523,7 @@ export default function Home() {
         <ChessPawn3D />
       </Suspense>
 
-      <main style={{ background: C.bg, color: C.ink }}>
+      <main id="pg-home-content" style={{ background: C.bg, color: C.ink }}>
 
         {/* ════════════════════════════════════════════════════════════════════
             1 · HERO  —  white, full-viewport, pawn floats right
@@ -559,7 +560,7 @@ export default function Home() {
                   Chess is never
                 </span><br />
                 the point.<br />
-                <span style={{ color: '#000000' }}>People are.</span>
+                <span style={{ color: '#FF8502' }}>People are.</span>
               </h1>
             </FadeIn>
 
@@ -655,7 +656,7 @@ export default function Home() {
               <div className="flex items-center justify-end gap-3 mb-4">
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>What Is Pawn's Gambit</span>
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}>01</span>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 4.5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}>01</span>
               </div>
               <p className="pg-desc mb-1 leading-relaxed" style={{ color: C.body, fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)' }}>
                 We're building more than just a community.
@@ -674,7 +675,7 @@ export default function Home() {
               <div className="flex items-center justify-end gap-3 mb-4">
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Experiences</span>
                 <span style={{ flex: '0 0 24px', height: 2, background: C.blue, opacity: 0.35, borderRadius: 2 }} />
-                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}>02</span>
+                <span className="font-bold tabular-nums" style={{ fontSize: 'clamp(3rem, 4.5vw, 4.5rem)', color: '#ffffff', letterSpacing: '-0.04em', lineHeight: 1 }}>02</span>
               </div>
               <p className="pg-desc mb-1 leading-relaxed" style={{ color: C.body, fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)' }}>
                 Something for everyone.
@@ -922,7 +923,7 @@ export default function Home() {
                   style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', letterSpacing: '-0.02em', color: '#ffffff' }}>
                 Where thoughtful people gather around a chessboard — and leave with something more.
               </h2>
-              <p className="pg-desc text-lg leading-relaxed mb-12 max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,0.8)' }}>
+              <p className="font-semibold pg-desc text-lg leading-relaxed mb-12 max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,1)' }}>
                 We believe chess deserves better than being confined to screens and score sheets.
                 It deserves laughter after a blunder, debates that continue long after the pieces are
                 packed away, and rooms filled with people who genuinely enjoy thinking together.

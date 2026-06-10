@@ -89,8 +89,8 @@ export default function Signup() {
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
           <Logo size={48} className="mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
-          <p className="text-slate-400 mt-1">Join Hyderabad's largest chess club</p>
+          <h1 className="text-2xl font-bold text-white-400">Create your account</h1>
+          <p className="text-white-400 mt-1">Join Hyderabad's largest chess club</p>
         </div>
 
         {/* Step indicator */}
@@ -98,16 +98,16 @@ export default function Signup() {
           {[1, 2].map(s => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors ${
-                s < step ? 'bg-blue-600 border-blue-600 text-white'
-                  : s === step ? 'border-blue-500 text-blue-400'
-                  : 'border-navy-600 text-slate-500'
+                s < step ? 'bg-white-600 border-white-600 text-white'
+                  : s === step ? 'border-white-500 text-white-400'
+                  : 'border-white-600 text-white-500'
               }`}>
                 {s < step ? <CheckCircle size={16} /> : s}
               </div>
-              <span className={`text-xs ${s === step ? 'text-slate-900' : 'text-slate-500'}`}>
+              <span className={`text-xs ${s === step ? 'text-white-900' : 'text-white-500'}`}>
                 {s === 1 ? 'Account Details' : 'Skill Level'}
               </span>
-              {s < 2 && <div className="w-12 h-px bg-navy-600 mx-1" />}
+              {s < 2 && <div className="w-12 h-px bg-gray-900 mx-1" />}
             </div>
           ))}
         </div>

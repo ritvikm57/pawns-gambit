@@ -55,8 +55,8 @@ export default function Gallery() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="py-10 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">Gallery</h1>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold text-white-900 mb-3">Gallery</h1>
+          <p className="text-white-900 text-lg max-w-xl mx-auto">
             Snapshots from our tournaments, events, and chess community in Hyderabad
           </p>
         </div>

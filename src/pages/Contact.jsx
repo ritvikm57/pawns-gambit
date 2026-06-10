@@ -62,7 +62,7 @@ export default function Contact() {
       >
         {/* Header */}
         <div className="mb-12">
-          <p className="text-[11px] font-semibold tracking-[0.26em] uppercase mb-4" style={{ color: C.glow }}>
+          <p className="text-[20px] font-semibold tracking-[0.26em] uppercase mb-4" style={{ color: C.glow }}>
             Get in touch
           </p>
           <h1

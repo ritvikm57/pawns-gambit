@@ -145,15 +145,18 @@ export default function App() {
       <AuthProvider>
         {showIntro && <IntroAnimation onDone={handleIntroDone} />}
         <div className="flex flex-col min-h-screen" style={{ position: 'relative', background: '#069494' }}>
-          {/* Global PCA chess background */}
+          {/* Global PCA chess background — behind all content */}
           <img src="/PCA.png" alt="" style={{
             position: 'fixed', inset: 0, width: '100%', height: '100%',
             objectFit: 'cover', objectPosition: 'center',
-            opacity: 0.1, pointerEvents: 'none', zIndex: 0,
+            opacity: 0.1, pointerEvents: 'none', zIndex: -1,
           }} />
           <ScrollToTop />
           <Navbar />
-          <div className="flex-1" style={{ position: 'relative', zIndex: 1 }}>
+          {/* No z-index here: keeps page content in the ROOT stacking context so
+              the hero photo (z-index 11) can paint OVER the fixed pawn canvas
+              (z-index 10), while the pawn still floats above section backgrounds. */}
+          <div className="flex-1" style={{ position: 'relative' }}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/tournaments" element={<Tournaments />} />
