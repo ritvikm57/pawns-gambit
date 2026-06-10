@@ -173,8 +173,8 @@ export default function TournamentRegister() {
           ← All Tournaments
         </Link>
 
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Register</h1>
-        <p className="text-slate-400 mb-8">Confirm your spot in this tournament</p>
+        <h1 className="text-3xl font-bold text-white mb-2">Register</h1>
+        <p className="text-white/70 mb-8">Confirm your spot in this tournament</p>
 
         {/* Tournament Summary */}
         <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 mb-6">

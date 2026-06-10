@@ -107,7 +107,7 @@ export default function Signup() {
               <span className={`text-xs ${s === step ? 'text-white-900' : 'text-white-500'}`}>
                 {s === 1 ? 'Account Details' : 'Skill Level'}
               </span>
-              {s < 2 && <div className="w-12 h-px bg-gray-900 mx-1" />}
+              {s < 2 && <div className="w-12 h-px bg-slate-300 mx-1" />}
             </div>
           ))}
         </div>

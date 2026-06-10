@@ -84,6 +84,21 @@ function IntroAnimation({ onDone }) {
         opacity:    blackOut ? 0 : 1,
         transition: blackOut ? 'opacity 0.4s ease-out' : 'none',
       }} />
+
+      {/* Centered logo — fades in once the black lifts, out as the board zooms away */}
+      <img
+        src="/logo.png"
+        alt=""
+        style={{
+          position: 'absolute', left: '50%', top: '50%',
+          width: 160, height: 160, objectFit: 'contain',
+          transform: 'translate(-50%, -50%)',
+          opacity:    blackOut ? (boardFade ? 0 : 1) : 0,
+          transition: 'opacity 0.5s ease',
+          filter: 'drop-shadow(0 8px 36px rgba(0,0,0,0.6))',
+          pointerEvents: 'none',
+        }}
+      />
     </div>
   )
 }

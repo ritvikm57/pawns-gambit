@@ -22,8 +22,8 @@ const INFO_SECTIONS = [
     key: 'about',
     title: 'About Pawn\'s Gambit',
     content: (
-      <div className="space-y-4 text-sm leading-relaxed text-slate-600">
-        <p className="text-base font-semibold text-slate-800">More Than a Tournament</p>
+      <div className="space-y-4 text-sm leading-relaxed text-white/80">
+        <p className="text-base font-semibold text-white">More Than a Tournament</p>
         <p>Every Pawn's Gambit tournament is an opportunity to compete, learn, and become part of something that extends beyond a single day.</p>
         <p>Of course, people come to test themselves. They come for the challenge, the thrill of a well-played game, and the satisfaction of performing under pressure.</p>
         <p>But what keeps players returning isn't just the competition.</p>
@@ -36,14 +36,14 @@ const INFO_SECTIONS = [
     key: 'rating',
     title: 'What is PG Rating?',
     content: (
-      <div className="space-y-5 text-sm leading-relaxed text-slate-600">
+      <div className="space-y-5 text-sm leading-relaxed text-white/80">
         <div>
-          <p className="text-base font-semibold text-slate-800 mb-2">A Rating That Lives Inside Pawn's Gambit</p>
+          <p className="text-base font-semibold text-white mb-2">A Rating That Lives Inside Pawn's Gambit</p>
           <p>PG Rating is our own rating system, designed to connect every Pawn's Gambit tournament into a single ongoing record. Every event contributes to your standing, giving players a way to track their presence within the community over time.</p>
         </div>
         <div>
-          <p className="text-base font-semibold text-slate-800 mb-2">Why PG Rating?</p>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Because Tournaments Shouldn't Exist In Isolation</p>
+          <p className="text-base font-semibold text-white mb-2">Why PG Rating?</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-2">Because Tournaments Shouldn't Exist In Isolation</p>
           <p>A great game is memorable. A great rivalry is unforgettable.</p>
           <p className="mt-2">PG Rating gives players a reason to follow familiar names, celebrate milestones, and return for the next chapter. It transforms separate tournaments into a living competitive culture that grows with every event.</p>
         </div>
@@ -54,7 +54,7 @@ const INFO_SECTIONS = [
     key: 'benefits',
     title: 'What do you get from each tournament?',
     content: (
-      <div className="text-sm leading-relaxed text-slate-600">
+      <div className="text-sm leading-relaxed text-white/80">
         <p className="mb-4">Every tournament is something to look forward to.</p>
         <ol className="space-y-2.5">
           {[
@@ -70,7 +70,7 @@ const INFO_SECTIONS = [
             'Every tournament offers a chance to compete. We aim to offer something worth looking forward to.',
           ].map((item, i) => (
             <li key={i} className="flex gap-3 items-start">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-[11px] font-bold flex items-center justify-center mt-0.5">
+              <span className="flex-shrink-0 w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center mt-0.5" style={{ background: 'rgba(255,102,0,0.15)', border: '1px solid rgba(255,102,0,0.35)', color: '#FF8C42' }}>
                 {i + 1}
               </span>
               <span>{item}</span>
