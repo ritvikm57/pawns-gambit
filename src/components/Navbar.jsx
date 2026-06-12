@@ -24,6 +24,8 @@ export default function Navbar() {
 
   // On the white-background home page use dark ink; elsewhere use light text
   const isHome = location.pathname === '/'
+  // Tournament detail pages have a light background — give the navbar a solid teal bg
+  const isTournamentDetail = /^\/tournaments\/.+/.test(location.pathname)
 
   // Transparent → frosted-glass on scroll
   useEffect(() => {
@@ -47,7 +49,9 @@ export default function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-[#057a7a]/95 backdrop-blur-md border-b border-white/10 shadow-[0_1px_20px_rgba(0,0,0,0.3)]'
-          : 'bg-transparent border-b border-transparent'
+          : isTournamentDetail
+            ? 'bg-[#069494] border-b border-white/10'
+            : 'bg-transparent border-b border-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

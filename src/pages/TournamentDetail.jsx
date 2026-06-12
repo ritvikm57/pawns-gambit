@@ -10,6 +10,7 @@ const STATUS_STYLES = {
   completed:         'bg-slate-100 text-slate-600 border border-slate-200',
 }
 
+
 const STATUS_LABELS = {
   upcoming:          'Upcoming',
   registration_open: 'Registration Open',

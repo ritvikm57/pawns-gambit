@@ -224,7 +224,6 @@ export default function Admin() {
         <div className="flex items-center justify-between py-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Admin Panel</h1>
-            <p className="text-slate-400 text-sm mt-1">Manage tournaments, results, and ratings</p>
           </div>
           <div className="flex gap-2">
             {['tournaments', 'create'].map(v => (
@@ -232,8 +231,9 @@ export default function Admin() {
                 key={v}
                 onClick={() => setView(v)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  view === v ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100'
+                  view === v ? 'text-white' : 'text-white hover:bg-white/10'
                 }`}
+                style={view === v ? { background: 'linear-gradient(135deg, #FF4500, #FF9900)' } : {}}
               >
                 {v === 'tournaments' ? 'All Tournaments' : '+ New Tournament'}
               </button>
@@ -364,7 +364,7 @@ export default function Admin() {
           <div>
             <button
               onClick={() => setView('tournaments')}
-              className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1 mb-6"
+              className="text-sm text-white hover:text-white/70 flex items-center gap-1 mb-6"
             >
               ← All Tournaments
             </button>

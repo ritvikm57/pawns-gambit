@@ -1,104 +1,138 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import carouselPic1 from './assets/carousel-home-s3/pic1.jpeg'
 import carouselPic2 from './assets/carousel-home-s3/pic2.jpeg'
 import carouselPic3 from './assets/carousel-home-s3/pic3.jpeg'
 
-const DARK_PHOTOS = [
-  carouselPic1,
-  carouselPic2,
-  carouselPic3,
-  '/sairam.jpeg',
-  '/anirudh.jpeg',
-]
-
-const SQ   = 120
-const COLS = 50
-const ROWS = 30
+const INTRO_PHOTOS = [carouselPic1, carouselPic2, carouselPic3, '/sairam.jpeg', '/anirudh.jpeg']
 
 function IntroAnimation({ onDone }) {
-  const [zoom,      setZoom]      = useState(false)
-  const [blackOut,  setBlackOut]  = useState(false)
-  const [boardFade, setBoardFade] = useState(false)
+  const canvasRef = useRef(null)
+  const [showLogo, setShowLogo] = useState(false)
+  const [fadeOut,  setFadeOut]  = useState(false)
 
   useEffect(() => {
-    const t1 = setTimeout(() => setZoom(true),      30)
-    const t2 = setTimeout(() => setBlackOut(true),  500)
-    const t3 = setTimeout(() => setBoardFade(true), 2600)
-    const t4 = setTimeout(onDone,                   3000)
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4) }
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const setSize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight }
+    setSize()
+    window.addEventListener('resize', setSize)
+
+    const TILE = 45  // tile size — small enough to show lots of photos at once
+
+    // Preload all photos
+    const imgs = INTRO_PHOTOS.map(src => {
+      const img = new Image()
+      img.src = src
+      return img
+    })
+
+    // Deterministically assign a photo to each tile position
+    function tileImg(r, c) {
+      return imgs[Math.abs(r * 7 + c * 13 + r * c * 3) % imgs.length]
+    }
+
+    let startMs = null, raf
+
+    function frame(now) {
+      if (!startMs) startMs = now
+      const elapsed = now - startMs
+
+      const t    = Math.min(elapsed / 4000, 1)
+      const ease = 1 - Math.pow(1 - t, 3)  // cubic ease-out
+      const zoom = 1 + ease * 5             // 1× → 6× over 4 s
+
+      const W = canvas.width, H = canvas.height
+      const ctx = canvas.getContext('2d')
+
+      ctx.fillStyle = '#000'
+      ctx.fillRect(0, 0, W, H)
+
+      ctx.save()
+      ctx.translate(W / 2, H / 2)
+      ctx.scale(zoom, zoom)
+
+      const halfCols = Math.ceil(W / (2 * zoom * TILE)) + 1
+      const halfRows = Math.ceil(H / (2 * zoom * TILE)) + 1
+
+      // Pass 1 — chessboard base
+      for (let r = -halfRows; r <= halfRows; r++) {
+        for (let c = -halfCols; c <= halfCols; c++) {
+          ctx.fillStyle = (r + c) % 2 === 0 ? '#ffffff' : '#069494'
+          ctx.fillRect(c * TILE, r * TILE, TILE, TILE)
+        }
+      }
+
+      // Pass 2 — photos on their own grid, offset & rotated so they don't align with tiles
+      const PGRID = 160   // world-space spacing between photo centers
+      const PSIZE = 80    // world-space photo size
+
+      const phHalfC = Math.ceil(W / (2 * zoom * PGRID)) + 1
+      const phHalfR = Math.ceil(H / (2 * zoom * PGRID)) + 1
+
+      for (let pr = -phHalfR; pr <= phHalfR; pr++) {
+        for (let pc = -phHalfC; pc <= phHalfC; pc++) {
+          const img = tileImg(pr, pc)
+          if (!img.complete || !img.naturalWidth) continue
+
+          // Nudge each photo off the perfect grid so they cross tile boundaries
+          const offX  = ((pr * 47 + pc * 23) % 60) - 30
+          const offY  = ((pr * 31 + pc * 67) % 60) - 30
+          const cx    = pc * PGRID + offX
+          const cy    = pr * PGRID + offY
+
+          // Small per-photo rotation (±8°)
+          const angle = (((pr * 13 + pc * 17) % 17) - 8) * Math.PI / 180
+
+          const s  = Math.min(img.naturalWidth, img.naturalHeight)
+          const sx = (img.naturalWidth  - s) / 2
+          const sy = (img.naturalHeight - s) / 2
+
+          ctx.save()
+          ctx.translate(cx, cy)
+          ctx.rotate(angle)
+          ctx.drawImage(img, sx, sy, s, s, -PSIZE / 2, -PSIZE / 2, PSIZE, PSIZE)
+          ctx.strokeStyle = 'rgba(255,255,255,0.85)'
+          ctx.lineWidth   = 3 / zoom
+          ctx.strokeRect(-PSIZE / 2, -PSIZE / 2, PSIZE, PSIZE)
+          ctx.restore()
+        }
+      }
+
+      ctx.restore()
+
+      raf = requestAnimationFrame(frame)
+    }
+
+    raf = requestAnimationFrame(frame)
+
+    const t0 = setTimeout(() => setShowLogo(true), 100)
+    const t1 = setTimeout(() => setFadeOut(true),  4000)
+    const t2 = setTimeout(onDone,                  4600)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      clearTimeout(t0); clearTimeout(t1); clearTimeout(t2)
+      window.removeEventListener('resize', setSize)
+    }
   }, [onDone])
 
-  const cells = useMemo(() => {
-    let darkIdx = 0
-    return Array.from({ length: ROWS * COLS }, (_, i) => {
-      const row = Math.floor(i / COLS)
-      const col = i % COLS
-      const isDark = (row + col) % 2 === 1
-      return { isDark, photo: isDark ? DARK_PHOTOS[darkIdx++ % DARK_PHOTOS.length] : null }
-    })
-  }, [])
-
-  const boardTransition = [
-    zoom      ? 'transform 3s cubic-bezier(0.4,0,0.2,1)' : '',
-    boardFade ? 'opacity 0.4s ease-in'                   : '',
-  ].filter(Boolean).join(', ')
-
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 99999, overflow: 'hidden', pointerEvents: 'none' }}>
-
-      {/* Centering wrapper */}
-      <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}>
-        {/* Zoom wrapper */}
-        <div style={{
-          width: COLS * SQ, height: ROWS * SQ,
-          transformOrigin: 'center center',
-          transform:  zoom      ? 'scale(5)' : 'scale(1)',
-          opacity:    boardFade ? 0          : 1,
-          transition: boardTransition || 'none',
-          position: 'relative',
-        }}>
-          {/* Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${COLS}, ${SQ}px)`,
-            gridTemplateRows:    `repeat(${ROWS}, ${SQ}px)`,
-          }}>
-            {cells.map(({ isDark, photo }, i) => (
-              <div key={i} style={{
-                width: SQ, height: SQ,
-                background: isDark
-                  ? `url(${photo}) center/cover no-repeat`
-                  : '#ffffff',
-              }} />
-            ))}
-          </div>
-
-        </div>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 99999, pointerEvents: 'none',
+      opacity: fadeOut ? 0 : 1, transition: 'opacity 0.6s ease',
+    }}>
+      <canvas ref={canvasRef} style={{ display: 'block' }} />
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img src="/logo.png" alt="" style={{
+          width: 380, height: 380, objectFit: 'contain',
+          opacity:   showLogo ? 1 : 0,
+          transform: showLogo ? 'scale(1)' : 'scale(0.5)',
+          transition: 'opacity 0.9s ease 0.2s, transform 0.9s cubic-bezier(0.34,1.56,0.64,1) 0.2s',
+          filter: 'drop-shadow(0 10px 40px rgba(0,0,0,0.85))',
+        }} />
       </div>
-
-      {/* Black overlay — lifts at 0.5s */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: '#000',
-        opacity:    blackOut ? 0 : 1,
-        transition: blackOut ? 'opacity 0.4s ease-out' : 'none',
-      }} />
-
-      {/* Centered logo — fades in once the black lifts, out as the board zooms away */}
-      <img
-        src="/logo.png"
-        alt=""
-        style={{
-          position: 'absolute', left: '50%', top: '50%',
-          width: 160, height: 160, objectFit: 'contain',
-          transform: 'translate(-50%, -50%)',
-          opacity:    blackOut ? (boardFade ? 0 : 1) : 0,
-          transition: 'opacity 0.5s ease',
-          filter: 'drop-shadow(0 8px 36px rgba(0,0,0,0.6))',
-          pointerEvents: 'none',
-        }}
-      />
     </div>
   )
 }

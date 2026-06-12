@@ -148,7 +148,7 @@ function LearnMore({ children, align = 'left', isOpen = false, onToggle }) {
         maxHeight: isOpen ? '600px' : '0px',
         transition: 'max-height 480ms cubic-bezier(0.22,1,0.36,1)',
       }}>
-        <div className="pg-desc pt-5 space-y-3 text-base leading-[1.85]" style={{ color: C.body }}>
+        <div className="pg-desc pt-5 space-y-3 text-xl leading-[1.85]" style={{ color: C.body }}>
           {children}
         </div>
       </div>
@@ -170,56 +170,141 @@ const MEMBER_STORIES = [
   },
 ]
 
-// ─── Member stories carousel ──────────────────────────────────────────────────
-function StoryCarousel() {
+// ─── Story pop-up modal ───────────────────────────────────────────────────────
+function StoryModal({ story, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(0,0,0,0.65)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '2rem',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: C.bg,
+          border: `1px solid ${C.line}`,
+          borderRadius: '1.5rem',
+          padding: '2.5rem',
+          maxWidth: '540px', width: '100%',
+          position: 'relative',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
+        }}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'none', border: 'none', cursor: 'pointer', color: C.faint, fontSize: '1.2rem', lineHeight: 1 }}
+        >✕</button>
+
+        <div style={{ fontSize: '3.5rem', lineHeight: 1, color: `${C.blue}50`, fontFamily: 'Georgia, serif', userSelect: 'none', marginBottom: '0.75rem' }}>"</div>
+
+        <p className="pg-desc" style={{ color: C.body, lineHeight: 1.85, fontSize: '1.05rem', marginBottom: '1.75rem' }}>
+          {story.story}
+        </p>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', paddingTop: '1.25rem', borderTop: `1px solid ${C.line}` }}>
+          <div style={{
+            width: '2.75rem', height: '2.75rem', borderRadius: '50%', flexShrink: 0,
+            background: `linear-gradient(135deg, ${C.blue}, ${C.glow})`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '0.8rem', fontWeight: 700, color: 'white',
+          }}>{story.initials}</div>
+          <div>
+            <p style={{ fontWeight: 600, color: C.ink, fontSize: '0.95rem' }}>{story.name}</p>
+            <p style={{ fontSize: '0.75rem', color: C.faint }}>Pawn's Gambit Member</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Story preview carousel (2-line preview, click → full modal) ─────────────
+function StoryCards({ onOpen }) {
   const [idx, setIdx] = useState(0)
   useEffect(() => {
     const id = setInterval(() => setIdx(i => (i + 1) % MEMBER_STORIES.length), 5200)
     return () => clearInterval(id)
   }, [])
+
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
+      {/* Cards */}
+      <div style={{ position: 'relative' }}>
         {MEMBER_STORIES.map((m, i) => (
           <div
             key={m.name}
             style={{
-              position: 'absolute',
-              inset: 0,
               opacity: i === idx ? 1 : 0,
-              transition: 'opacity 700ms ease',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
+              pointerEvents: i === idx ? 'auto' : 'none',
+              transition: 'opacity 600ms ease',
+              position: i === 0 ? 'relative' : 'absolute',
+              top: 0, left: 0, right: 0,
             }}
           >
-            <div style={{ fontSize: '3rem', lineHeight: 1, marginBottom: '0.5rem', color: `${C.blue}40`, fontFamily: 'Georgia, serif', userSelect: 'none', flexShrink: 0 }}>"</div>
-            <p
-              className="pg-desc text-sm leading-relaxed"
+            <button
+              onClick={() => onOpen(m)}
               style={{
-                color: C.body,
-                flex: 1,
+                display: 'block', width: '100%', textAlign: 'left',
+                background: 'rgba(255,255,255,0.07)',
+                border: `1px solid ${C.line}`,
+                borderRadius: '1.25rem',
+                padding: '1.25rem 1.5rem',
+                cursor: 'pointer',
+                transition: 'background 200ms, border-color 200ms',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.13)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = C.line }}
+            >
+              {/* Opening quote */}
+              <div style={{ fontSize: '2rem', lineHeight: 1, color: `${C.blue}60`, fontFamily: 'Georgia, serif', marginBottom: '0.4rem', userSelect: 'none' }}>"</div>
+
+              {/* 2-line preview */}
+              <p className="pg-desc" style={{
+                color: C.body, fontSize: '0.9rem', lineHeight: 1.7,
                 overflow: 'hidden',
                 display: '-webkit-box',
-                WebkitLineClamp: 6,
+                WebkitLineClamp: 3,
                 WebkitBoxOrient: 'vertical',
-              }}
-            >
-              {m.story}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${C.line}`, flexShrink: 0 }}>
-              <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'white', flexShrink: 0, background: `linear-gradient(135deg, ${C.blue}, ${C.glow})` }}>
-                {m.initials}
+                marginBottom: '1rem',
+              }}>
+                {m.story}
+              </p>
+
+              {/* Footer: name + read more hint */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.875rem', borderTop: `1px solid ${C.line}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <div style={{
+                    width: '2rem', height: '2rem', borderRadius: '50%', flexShrink: 0,
+                    background: 'linear-gradient(135deg, #FF4500, #FF9900)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.65rem', fontWeight: 700, color: 'white',
+                  }}>{m.initials}</div>
+                  <div>
+                    <p style={{ fontWeight: 600, fontSize: '0.85rem', color: C.ink }}>{m.name}</p>
+                    <p style={{ fontSize: '0.7rem', color: C.faint }}>Pawn's Gambit Member</p>
+                  </div>
+                </div>
+                <span style={{ fontSize: '1rem', color: C.faint, fontWeight: 600 }}>Read more →</span>
               </div>
-              <div>
-                <p style={{ fontWeight: 600, fontSize: '0.875rem', color: C.ink }}>{m.name}</p>
-                <p style={{ fontSize: '0.75rem', color: C.faint }}>Pawn's Gambit Member</p>
-              </div>
-            </div>
+            </button>
           </div>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: '0.375rem', marginTop: '1rem', flexShrink: 0 }}>
+
+      {/* Dots */}
+      <div style={{ display: 'flex', gap: '0.375rem', paddingLeft: '0.25rem' }}>
         {MEMBER_STORIES.map((_, i) => (
           <button
             key={i}
@@ -230,9 +315,7 @@ function StoryCarousel() {
               borderRadius: '9999px',
               background: i === idx ? C.blue : C.line,
               transition: 'all 300ms',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
+              border: 'none', cursor: 'pointer', padding: 0,
             }}
           />
         ))}
@@ -364,8 +447,8 @@ function TeamSection() {
                   <p className="font-bold" style={{ fontSize: '1.05rem', color: C.ink, letterSpacing: '-0.01em' }}>{m.name}</p>
                   <span style={{ fontSize: '0.62rem', fontWeight: 700, color: C.blue, background: `${C.blue}14`, padding: '0.2rem 0.6rem', borderRadius: '999px', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{m.role}</span>
                 </div>
-                <p className="pg-desc" style={{ fontSize: '0.85rem', color: '#ffffff', fontStyle: 'italic', marginBottom: '0.5rem', lineHeight: 1.55 }}>{m.quote}</p>
-                <p style={{ fontSize: '0.8rem', color: C.body, lineHeight: 1.75 }}>{m.description}</p>
+                <p className="pg-desc" style={{ fontSize: '1rem', color: '#ffffff', fontStyle: 'italic', marginBottom: '0.5rem', lineHeight: 1.55 }}>{m.quote}</p>
+                <p style={{ fontSize: '0.95rem', color: C.body, lineHeight: 1.75 }}>{m.description}</p>
               </div>
             </div>
 
@@ -451,7 +534,7 @@ function TeamSection() {
             overflow: 'hidden',
           }}
         >
-          <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.faint, flexShrink: 0 }}>
+          <p style={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#ffffff', flexShrink: 0 }}>
             Partners
           </p>
 
@@ -460,7 +543,7 @@ function TeamSection() {
             { role: 'Venue Partner',    name: 'RMZ Real Estate Developers and Investment Experts',                 logo: '/rmz.png',         dark: false },
           ].map(p => (
             <div key={p.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.faint }}>{p.role}</p>
+              <p style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#ffffff' }}>{p.role}</p>
               <div style={{
                 borderRadius: '1rem',
                 background: p.dark ? '#111' : '#ffffff',
@@ -490,6 +573,7 @@ function TeamSection() {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Home() {
   const [upcoming, setUpcoming] = useState([])
+  const [openStory, setOpenStory] = useState(null)
   // Only one "Learn more" can be open at a time across the whole page
   const [openLearn, setOpenLearn] = useState(null)
   const tog = (key) => setOpenLearn(prev => prev === key ? null : key)
@@ -519,6 +603,8 @@ export default function Home() {
 
   return (
     <>
+      {openStory && <StoryModal story={openStory} onClose={() => setOpenStory(null)} />}
+
       <Suspense fallback={null}>
         <ChessPawn3D />
       </Suspense>
@@ -556,16 +642,16 @@ export default function Home() {
                 className="font-bold"
                 style={{ fontSize: 'clamp(3rem, 5vw, 5.5rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}
               >
-                <span style={{ whiteSpace: 'nowrap' }}>
+                <span style={{ color: '#FF8502' }}>
                   Chess is never
-                </span><br />
-                the point.<br />
-                <span style={{ color: '#FF8502' }}>People are.</span>
+                </span ><br />
+                <span style={{ color: '#FF8502' }}>the point.</span><br />
+                <span style={{ whiteSpace: 'nowrap' }}>People are.</span>
               </h1>
             </FadeIn>
 
             <FadeIn delay={160}>
-              <p className="pg-desc mt-9 text-lg leading-relaxed" style={{ color: C.body }}>
+              <p className="pg-desc mt-9 text-2xl leading-relaxed" style={{ color: C.body }}>
                 A community for thoughtful people who want meaningful connections,
                 healthy competition, and great conversations — through chess.
               </p>
@@ -652,6 +738,13 @@ export default function Home() {
             style={{ gridColumn: 2, gridRow: '1 / 3', padding: '2.5rem 3.5rem' }}
           >
             {/* 03 · What Is Pawn's Gambit */}
+            <div style={{
+              opacity: openLearn === 'exp' ? 0 : 1,
+              maxHeight: openLearn === 'exp' ? '0px' : '600px',
+              overflow: 'hidden',
+              pointerEvents: openLearn === 'exp' ? 'none' : 'auto',
+              transition: 'opacity 400ms ease, max-height 500ms cubic-bezier(0.22,1,0.36,1)',
+            }}>
             <FadeIn>
               <div className="flex items-center justify-end gap-3 mb-4">
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>What Is Pawn's Gambit</span>
@@ -666,11 +759,26 @@ export default function Home() {
                 <p>We host events that give strangers a reason to sit together, think together, and return.</p>
               </LearnMore>
             </FadeIn>
+            </div>
 
             {/* Divider between 03 and 04 */}
-            <div style={{ height: 1, background: C.line, margin: '2.5rem 0' }} />
+            <div style={{
+              overflow: 'hidden',
+              maxHeight: (openLearn === 'pg' || openLearn === 'exp') ? '0px' : '80px',
+              opacity: (openLearn === 'pg' || openLearn === 'exp') ? 0 : 1,
+              transition: 'opacity 400ms ease, max-height 500ms cubic-bezier(0.22,1,0.36,1)',
+            }}>
+              <div style={{ height: 1, background: C.line, margin: '2.5rem 0' }} />
+            </div>
 
             {/* 04 · Experiences */}
+            <div style={{
+              opacity: openLearn === 'pg' ? 0 : 1,
+              maxHeight: openLearn === 'pg' ? '0px' : '600px',
+              overflow: 'hidden',
+              pointerEvents: openLearn === 'pg' ? 'none' : 'auto',
+              transition: 'opacity 400ms ease, max-height 500ms cubic-bezier(0.22,1,0.36,1)',
+            }}>
             <FadeIn delay={140}>
               <div className="flex items-center justify-end gap-3 mb-4">
                 <span className="font-bold pg-heading" style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: C.ink, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Experiences</span>
@@ -701,6 +809,7 @@ export default function Home() {
                 </div>
               </LearnMore>
             </FadeIn>
+            </div>
           </div>
 
           {/* Only the vertical divider between left and right columns */}
@@ -876,7 +985,7 @@ export default function Home() {
           {/* BR · Member Stories */}
           <div
             className="overflow-hidden"
-            style={{ gridColumn: 2, gridRow: 2, padding: '2rem 3rem', display: 'flex', flexDirection: 'column' }}
+            style={{ gridColumn: 2, gridRow: 2, padding: '2rem 3rem', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}
           >
             <p
               className="text-[11px] font-semibold tracking-[0.22em] uppercase flex items-center gap-3"
@@ -885,9 +994,7 @@ export default function Home() {
               <span className="h-px w-8 inline-block" style={{ background: C.line }} />
               From the community
             </p>
-            <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-              <StoryCarousel />
-            </div>
+            <StoryCards onOpen={setOpenStory} />
           </div>
 
           {/* Hair-line dividers */}
@@ -916,14 +1023,16 @@ export default function Home() {
             isolation: 'isolate',
           }}
         >
-          <PcaBg dark opacity={0.35} />
-          <div className="relative z-10 max-w-3xl mx-auto text-center">
+          <PcaBg dark opacity={0.3} />
+          {/* Black tint overlay to subdue the background drawing */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(0,0,0,0.4)', zIndex: 0 }} />
+          <div className="relative z-10 max-w-4xl mx-auto text-center">
             <FadeIn>
               <h2 className="font-bold tracking-tight leading-[1.08] mb-8"
                   style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', letterSpacing: '-0.02em', color: '#ffffff' }}>
                 Where thoughtful people gather around a chessboard — and leave with something more.
               </h2>
-              <p className="font-semibold pg-desc text-lg leading-relaxed mb-12 max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,1)' }}>
+              <p className="font-semibold pg-desc leading-relaxed mb-12 max-w-2xl mx-auto" style={{ fontSize: 'clamp(1.1rem, 1.8vw, 1.4rem)', color: 'rgba(255,255,255,0.9)' }}>
                 We believe chess deserves better than being confined to screens and score sheets.
                 It deserves laughter after a blunder, debates that continue long after the pieces are
                 packed away, and rooms filled with people who genuinely enjoy thinking together.

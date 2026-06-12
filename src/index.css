@@ -16,8 +16,8 @@ main {
   box-sizing: border-box;
 }
 
-h1, h2, h3, .pg-heading {
-  font-family: 'Palatino Linotype', 'Book Antiqua', cursive;
+h1, h2, h3, h4, h5, h6, .pg-heading {
+  font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif;
   font-style: normal;
   font-weight: 400;
 }
