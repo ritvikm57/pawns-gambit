@@ -51,6 +51,53 @@ const INFO_SECTIONS = [
     ),
   },
   {
+    key: 'rules',
+    title: 'Tournament Rules & Etiquette',
+    content: (
+      <div className="space-y-5 text-sm leading-relaxed text-white/80">
+        {[
+          { n: '1', title: 'Respect Your Opponent', items: ['Shake hands, fist bump, or greet your opponent before the game.', 'Win with humility and lose with grace.', 'No trash talk, taunting, or unsportsmanlike behavior.'] },
+          { n: '2', title: 'Silence During Games', items: ['Keep conversations away from playing tables.', 'Spectators must remain silent.', 'Avoid distracting players in any way.'] },
+          { n: '3', title: 'Touch-Move Rule', items: ['If you deliberately touch one of your pieces, you must move it if a legal move exists.', 'If you deliberately touch an opponent\'s piece, you must capture it if legally possible.', 'To adjust pieces on the board, clearly say "Adjust" before touching them.'] },
+          { n: '4', title: 'One Hand Rule', items: ['Use only one hand when making a move.', 'The same hand used to move the piece must be used to press the clock.'] },
+          { n: '5', title: 'Mobile Phones', items: ['Phones must be on silent mode.', 'No calls, texting, browsing, or analysis during games.', 'Repeated violations may result in penalties.'] },
+          { n: '6', title: 'No External Assistance', items: ['No engines, analysis boards, books, notes, or advice from others.', 'Players may not discuss ongoing games with anyone.'] },
+          { n: '7', title: 'Spectator Conduct', items: ['Spectators may watch but may not comment on positions, suggest moves, react visibly to blunders or tactics, or interfere with games in any way.'] },
+          { n: '8', title: 'Illegal Moves', items: ['An illegal move must be corrected immediately when noticed.', 'Tournament-specific penalties will be announced before the event.', 'Repeated illegal moves may result in loss of the game.'] },
+          { n: '9', title: 'Recording Results', items: ['Both players must verify the result before reporting it.', 'Once submitted, results are considered final unless a clear error is found.'] },
+          { n: '10', title: 'Respect the Equipment', items: ['Handle boards, pieces, and clocks carefully.', 'Do not slam pieces or clocks.', 'Any intentional damage may result in disqualification.'] },
+          { n: '11', title: 'Disputes', items: ['If a dispute arises: pause the clock if necessary, call the arbiter or organizer, and do not argue loudly at the board.', 'The organizer\'s decision is final.'] },
+          { n: '12', title: 'Fair Play Above All', items: ['Pawn\'s Gambit exists to bring people together through chess.', 'Play hard. Play fair. Leave every opponent feeling respected.'] },
+        ].map(rule => (
+          <div key={rule.n}>
+            <p className="font-semibold text-white mb-1">{rule.n}. {rule.title}</p>
+            <ul className="space-y-1 pl-3">
+              {rule.items.map((item, i) => (
+                <li key={i} className="flex gap-2 items-start">
+                  <span className="mt-1.5 w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'rgba(255,102,0,0.8)' }} />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <div className="pt-3 border-t border-white/15">
+          <p className="font-semibold text-white mb-2">The PG Code</p>
+          <p className="italic mb-2">Come to compete. Stay to connect.</p>
+          <ul className="space-y-1 pl-3">
+            {['Be kind to beginners.', 'Congratulate good moves.', 'Introduce yourself after the game.', 'Analysis is encouraged after both games have finished.', 'Help make the tournament welcoming for everyone.'].map((item, i) => (
+              <li key={i} className="flex gap-2 items-start">
+                <span className="mt-1.5 w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'rgba(255,102,0,0.8)' }} />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-white/60 italic text-xs">A good tournament is remembered for more than who won it. It's remembered for the people who made it enjoyable to attend. ♟❤</p>
+        </div>
+      </div>
+    ),
+  },
+  {
     key: 'benefits',
     title: 'What do you get from each tournament?',
     content: (
@@ -88,13 +135,13 @@ function InfoAccordions() {
 
   return (
     <div className="mb-8">
-      {/* Buttons — side by side on desktop, stacked on mobile */}
-      <div className="flex flex-col sm:flex-row gap-2 mb-2">
+      {/* Buttons — 2×2 grid on desktop, stacked on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
         {INFO_SECTIONS.map(sec => (
           <button
             key={sec.key}
             onClick={() => tog(sec.key)}
-            className="flex-1 flex items-center justify-between gap-3 px-5 py-4 rounded-2xl text-left border transition-all text-sm font-semibold text-white"
+            className="flex items-center justify-between gap-3 px-5 py-4 rounded-2xl text-left border transition-all text-sm font-semibold text-white"
             style={{
               background: open === sec.key ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
               borderColor: 'rgba(255,255,255,0.2)',
