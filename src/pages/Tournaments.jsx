@@ -164,7 +164,7 @@ function InfoAccordions() {
       <div
         style={{
           overflow: 'hidden',
-          maxHeight: open ? '900px' : '0px',
+          maxHeight: open ? '4000px' : '0px',
           transition: 'max-height 420ms cubic-bezier(0.22,1,0.36,1)',
         }}
       >
