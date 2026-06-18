@@ -257,7 +257,7 @@ export default function TournamentRegister() {
             : 'Register (Free)'}
         </button>
 
-        <p className="text-center text-slate-500 text-xs mt-3">
+        <p className="text-center text-white-500 text-xs mt-3">
           {tournament.entry_fee
             ? 'Payment processed securely via Razorpay. UPI, cards, and net banking accepted.'
             : 'This tournament has no entry fee.'}
