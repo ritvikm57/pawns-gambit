@@ -27,18 +27,24 @@ export default function TournamentRegister() {
 
   async function fetchTournament() {
     try {
-      const [{ data: t, error: tErr }, { data: reg, error: rErr }] = await Promise.all([
+      const [{ data: t, error: tErr }, { data: reg, error: rErr }, { count: paidCount, error: cErr }] = await Promise.all([
         supabase.from('tournaments').select('*').eq('id', id).single(),
         supabase.from('tournament_registrations')
           .select('id, payment_status')
           .eq('tournament_id', id)
           .eq('user_id', user.id)
           .maybeSingle(),
+        supabase.from('tournament_registrations')
+          .select('*', { count: 'exact', head: true })
+          .eq('tournament_id', id)
+          .eq('payment_status', 'paid'),
       ])
       if (tErr) throw tErr
       if (rErr) throw rErr
+      if (cErr) throw cErr
       setTournament(t)
       if (reg?.payment_status === 'paid') setAlreadyRegistered(true)
+      if (t?.max_players != null && paidCount >= t.max_players) setAlreadyRegistered('full')
     } catch (err) {
       setError(err.message || 'Failed to load tournament.')
     } finally {
@@ -141,6 +147,23 @@ export default function TournamentRegister() {
               My Profile
             </Link>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (alreadyRegistered === 'full') {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle size={32} className="text-red-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-3">Tournament Full</h2>
+          <p className="text-slate-500 mb-6">All spots for <strong className="text-slate-900">{tournament?.name}</strong> have been filled.</p>
+          <Link to="/tournaments" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors">
+            See Other Tournaments
+          </Link>
         </div>
       </div>
     )

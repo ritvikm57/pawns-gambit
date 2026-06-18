@@ -106,6 +106,8 @@ export default function TournamentDetail() {
     ? tournament.max_players - registeredCount
     : null
 
+  const isFull = spotsLeft !== null && spotsLeft <= 0
+
   const showResults = tournament.status === 'ongoing' || tournament.status === 'completed'
 
   // Build round-result lookup:  userId → { [roundId]: 1 | 0 | 0.5 }
@@ -174,13 +176,18 @@ export default function TournamentDetail() {
             </div>
 
             {/* CTA */}
-            {tournament.status === 'registration_open' && (
+            {tournament.status === 'registration_open' && !isFull && (
               <Link
                 to={`/tournaments/${id}/register`}
                 className="block w-full text-center py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition-colors"
               >
                 Register Now
               </Link>
+            )}
+            {tournament.status === 'registration_open' && isFull && (
+              <div className="w-full text-center py-3 bg-red-50 text-red-600 border border-red-200 font-semibold rounded-xl text-sm">
+                Tournament Full
+              </div>
             )}
             {tournament.status === 'upcoming' && (
               <div className="w-full text-center py-3 bg-gray-100 text-slate-500 font-semibold rounded-xl text-sm">
