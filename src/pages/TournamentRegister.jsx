@@ -80,7 +80,7 @@ export default function TournamentRegister() {
       const { data: order, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
         body: { amount: tournament.entry_fee * 100, tournamentId: id, registrationId: reg.id },
       })
-      if (orderError) throw orderError
+      if (orderError) throw new Error(order?.error || orderError.message)
 
       await initiatePayment({
         options: {
