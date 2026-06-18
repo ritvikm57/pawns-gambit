@@ -106,8 +106,10 @@ export default function TournamentRegister() {
           }
           setPaying(false)
         },
-        onFailure: (err) => {
-          setError(err.message || 'Payment failed. Please try again.')
+        onFailure: async (err) => {
+          // Delete the pending row so the spot isn't held and the count isn't inflated
+          await supabase.from('tournament_registrations').delete().eq('id', reg.id)
+          setError(err.message || 'Payment cancelled. You have not been charged.')
           setPaying(false)
         },
       })

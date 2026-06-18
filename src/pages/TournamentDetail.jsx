@@ -35,7 +35,8 @@ export default function TournamentDetail() {
           supabase
             .from('tournament_registrations')
             .select('*', { count: 'exact', head: true })
-            .eq('tournament_id', id),
+            .eq('tournament_id', id)
+            .eq('payment_status', 'paid'),
         ])
 
         if (tErr) throw tErr
