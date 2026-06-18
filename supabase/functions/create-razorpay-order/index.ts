@@ -1,6 +1,3 @@
-// Supabase Edge Function — creates a Razorpay order server-side
-// Deploy: supabase functions deploy create-razorpay-order
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 
 const CORS = {
@@ -12,7 +9,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
   try {
-    const { amount, tournamentId, registrationId } = await req.json()
+    const { amount, tournamentId } = await req.json()
 
     const keyId = Deno.env.get('RAZORPAY_KEY_ID')!
     const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET')!
@@ -27,8 +24,8 @@ serve(async (req) => {
       body: JSON.stringify({
         amount,
         currency: 'INR',
-        receipt: `reg_${registrationId}`,
-        notes: { tournament_id: tournamentId, registration_id: registrationId },
+        receipt: `tournament_${tournamentId}`,
+        notes: { tournament_id: tournamentId },
       }),
     })
 

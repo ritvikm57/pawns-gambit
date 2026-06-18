@@ -1,6 +1,3 @@
-// Supabase Edge Function — verifies Razorpay payment signature, confirms registration, sends emails
-// Deploy: supabase functions deploy verify-razorpay-payment
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { createHmac } from 'https://deno.land/std@0.177.0/node/crypto.ts'
@@ -17,7 +14,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
   try {
-    const { paymentId, orderId, signature, registrationId } = await req.json()
+    const { paymentId, orderId, signature, tournamentId, userId } = await req.json()
 
     // Verify Razorpay HMAC signature
     const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET')!
@@ -34,25 +31,22 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Confirm registration as paid
-    const { error } = await supabase
+    // Create registration as paid — only after payment is confirmed
+    const { data: reg, error: regError } = await supabase
       .from('tournament_registrations')
-      .update({
+      .upsert({
+        tournament_id: tournamentId,
+        user_id: userId,
         payment_status: 'paid',
         razorpay_payment_id: paymentId,
         razorpay_order_id: orderId,
-      })
-      .eq('id', registrationId)
-
-    if (error) throw error
-
-    // Fetch registration details for emails
-    const { data: reg } = await supabase
-      .from('tournament_registrations')
+      }, { onConflict: 'tournament_id,user_id' })
       .select('*, users(name, email), tournaments(name, date, venue, is_online, entry_fee)')
-      .eq('id', registrationId)
       .single()
 
+    if (regError) throw regError
+
+    // Send confirmation emails
     if (reg) {
       const tournament = reg.tournaments
       const player = reg.users
@@ -62,7 +56,6 @@ serve(async (req) => {
       })
       const venue = tournament.is_online ? 'Online' : (tournament.venue ?? 'TBD')
 
-      // Send confirmation to player and notification to admin in parallel
       await Promise.allSettled([
         sendEmail({
           to: player.email,

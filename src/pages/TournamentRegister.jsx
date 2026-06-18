@@ -51,34 +51,21 @@ export default function TournamentRegister() {
     setPaying(true)
 
     try {
-      // Create a pending registration first
-      const { data: reg, error: regError } = await supabase
-        .from('tournament_registrations')
-        .upsert({
-          tournament_id: id,
-          user_id: user.id,
-          payment_status: 'pending',
-        }, { onConflict: 'tournament_id,user_id' })
-        .select()
-        .single()
-
-      if (regError) throw regError
-      if (!reg) throw new Error('Registration failed — no data returned.')
-
-      // If entry is free, skip payment
+      // Free tournament — write registration directly, no payment needed
       if (!tournament.entry_fee || tournament.entry_fee === 0) {
-        await supabase
+        const { error: regError } = await supabase
           .from('tournament_registrations')
-          .update({ payment_status: 'paid' })
-          .eq('id', reg.id)
+          .upsert({ tournament_id: id, user_id: user.id, payment_status: 'paid' },
+            { onConflict: 'tournament_id,user_id' })
+        if (regError) throw regError
         setSuccess(true)
         setPaying(false)
         return
       }
 
-      // Create Razorpay order via Supabase Edge Function
+      // Paid tournament — create Razorpay order first, no DB write yet
       const { data: order, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
-        body: { amount: tournament.entry_fee * 100, tournamentId: id, registrationId: reg.id },
+        body: { amount: tournament.entry_fee * 100, tournamentId: id },
       })
       if (orderError) throw new Error(order?.error || orderError.message)
 
@@ -95,20 +82,18 @@ export default function TournamentRegister() {
           },
         },
         onSuccess: async (paymentId, orderId, signature) => {
-          // Verify + confirm via Edge Function
-          const { error: verifyError } = await supabase.functions.invoke('verify-razorpay-payment', {
-            body: { paymentId, orderId, signature, registrationId: reg.id },
+          // Payment done — verify signature and create registration server-side
+          const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-razorpay-payment', {
+            body: { paymentId, orderId, signature, tournamentId: id, userId: user.id },
           })
           if (verifyError) {
-            setError('Payment verification failed. Contact support.')
+            setError(verifyData?.error || 'Payment verified but registration failed. Contact support with payment ID: ' + paymentId)
           } else {
             setSuccess(true)
           }
           setPaying(false)
         },
-        onFailure: async (err) => {
-          // Delete the pending row so the spot isn't held and the count isn't inflated
-          await supabase.from('tournament_registrations').delete().eq('id', reg.id)
+        onFailure: (err) => {
           setError(err.message || 'Payment cancelled. You have not been charged.')
           setPaying(false)
         },
