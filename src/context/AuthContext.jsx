@@ -48,6 +48,7 @@ export function AuthProvider({ children }) {
       email,
       password,
       options: {
+        emailRedirectTo: 'https://www.pgchess.in',
         data: { name, city, chess_com_username: chessComUsername, fide_id: fideId, phone, skill_level: skillLevel },
       },
     })
