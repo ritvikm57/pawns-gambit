@@ -120,7 +120,7 @@ export default function TournamentRegister() {
 
   if (!tournament) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-slate-400">
+      <div className="min-h-screen flex items-center justify-center text-white/70">
         Tournament not found.{' '}
         <Link to="/tournaments" className="text-blue-400 ml-1">Go back</Link>
       </div>
@@ -134,13 +134,13 @@ export default function TournamentRegister() {
           <div className="w-20 h-20 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center mx-auto mb-6">
             <CheckCircle size={40} className="text-green-400" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">You're registered!</h2>
-          <p className="text-slate-500 mb-2">
-            You've successfully registered for <strong className="text-slate-900">{tournament.name}</strong>.
+          <h2 className="text-2xl font-bold text-white mb-3">You're registered!</h2>
+          <p className="text-white/70 mb-2">
+            You've successfully registered for <strong className="text-orange-500">{tournament.name}</strong>.
           </p>
-          <p className="text-slate-500 text-sm mb-8">A confirmation email has been sent to {user.email}.</p>
+          <p className="text-white/70 text-sm mb-8">A confirmation email has been sent to <strong className="text-orange-500">{user.email}</strong>.</p>
           <div className="flex gap-3 justify-center">
-            <Link to="/tournaments" className="px-5 py-2.5 border border-gray-300 text-slate-600 hover:text-slate-900 rounded-lg text-sm transition-colors">
+            <Link to="/tournaments" className="px-5 py-2.5 border border-white/30 text-white/80 hover:text-orange-500 hover:border-orange-500 rounded-lg text-sm transition-colors">
               All Tournaments
             </Link>
             <Link to="/profile" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors">
@@ -159,8 +159,8 @@ export default function TournamentRegister() {
           <div className="w-16 h-16 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center mx-auto mb-4">
             <AlertCircle size={32} className="text-red-400" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">Tournament Full</h2>
-          <p className="text-slate-500 mb-6">All spots for <strong className="text-slate-900">{tournament?.name}</strong> have been filled.</p>
+          <h2 className="text-2xl font-bold text-white mb-3">Tournament Full</h2>
+          <p className="text-white/70 mb-6">All spots for <strong className="text-white">{tournament?.name}</strong> have been filled.</p>
           <Link to="/tournaments" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors">
             See Other Tournaments
           </Link>
@@ -174,8 +174,8 @@ export default function TournamentRegister() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <CheckCircle size={48} className="mx-auto mb-4 text-green-400" />
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">Already registered</h2>
-          <p className="text-slate-500 mb-6">You're already registered for <strong className="text-slate-900">{tournament.name}</strong>.</p>
+          <h2 className="text-2xl font-bold text-white mb-3">Already registered</h2>
+          <p className="text-white/70 mb-6">You're already registered for <strong className="text-white">{tournament.name}</strong>.</p>
           <Link to="/profile" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors">
             View My Profile
           </Link>
@@ -197,7 +197,7 @@ export default function TournamentRegister() {
         {/* Tournament Summary */}
         <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 mb-6">
           <h2 className="text-xl font-semibold text-white mb-4">{tournament.name}</h2>
-          <div className="space-y-3 text-sm text-slate-400">
+          <div className="space-y-3 text-sm text-white/60">
             <div className="flex items-center gap-2">
               <Calendar size={14} />
               <span>
@@ -218,7 +218,7 @@ export default function TournamentRegister() {
 
           <hr className="border-navy-600 my-4" />
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-slate-400 text-sm">
+            <div className="flex items-center gap-2 text-white/60 text-sm">
               <IndianRupee size={14} />
               <span>Entry Fee</span>
             </div>
@@ -228,7 +228,7 @@ export default function TournamentRegister() {
           </div>
           {tournament.prize_pool && (
             <div className="flex items-center justify-between mt-2">
-              <span className="text-slate-400 text-sm">Prize Pool</span>
+              <span className="text-white/60 text-sm">Prize Pool</span>
               <span className="text-green-400 text-sm font-medium">{tournament.prize_pool}</span>
             </div>
           )}
@@ -243,7 +243,7 @@ export default function TournamentRegister() {
             </div>
             <div>
               <p className="text-white font-medium">{profile?.name}</p>
-              <p className="text-slate-400 text-sm">{user.email}</p>
+              <p className="text-white/60 text-sm">{user.email}</p>
             </div>
           </div>
         </div>
@@ -267,7 +267,7 @@ export default function TournamentRegister() {
             : 'Register (Free)'}
         </button>
 
-        <p className="text-center text-white-500 text-xs mt-3">
+        <p className="text-center text-white/60 text-xs mt-3">
           {tournament.entry_fee
             ? 'Payment processed securely via Razorpay. UPI, cards, and net banking accepted.'
             : 'This tournament has no entry fee.'}

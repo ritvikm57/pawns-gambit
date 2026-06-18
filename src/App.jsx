@@ -1,119 +1,119 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect, useState, useCallback, useRef } from 'react'
-import carouselPic1 from './assets/carousel-home-s3/pic1.jpeg'
-import carouselPic2 from './assets/carousel-home-s3/pic2.jpeg'
-import carouselPic3 from './assets/carousel-home-s3/pic3.jpeg'
-
-const INTRO_PHOTOS = [carouselPic1, carouselPic2, carouselPic3, '/sairam.jpeg', '/anirudh.jpeg']
+import { ShaderRings } from './components/ShaderRings'
 
 function IntroAnimation({ onDone }) {
   const canvasRef = useRef(null)
   const [showLogo, setShowLogo] = useState(false)
-  const [fadeOut,  setFadeOut]  = useState(false)
+  const [fadeOut, setFadeOut] = useState(false)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const setSize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight }
+    const setSize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
     setSize()
     window.addEventListener('resize', setSize)
-
-    const TILE = 45  // tile size — small enough to show lots of photos at once
-
-    // Preload all photos
-    const imgs = INTRO_PHOTOS.map(src => {
-      const img = new Image()
-      img.src = src
-      return img
-    })
-
-    // Deterministically assign a photo to each tile position
-    function tileImg(r, c) {
-      return imgs[Math.abs(r * 7 + c * 13 + r * c * 3) % imgs.length]
-    }
 
     let startMs = null, raf
 
     function frame(now) {
       if (!startMs) startMs = now
-      const elapsed = now - startMs
+      const elapsed = (now - startMs) / 1000
 
-      const t    = Math.min(elapsed / 4000, 1)
-      const ease = 1 - Math.pow(1 - t, 3)  // cubic ease-out
-      const zoom = 1 + ease * 5             // 1× → 6× over 4 s
-
-      const W = canvas.width, H = canvas.height
+      const W = canvas.width
+      const H = canvas.height
       const ctx = canvas.getContext('2d')
+      const TILE = Math.round(Math.min(W, H) / 10)
 
-      ctx.fillStyle = '#000'
+      // Deep dark base
+      ctx.fillStyle = '#04080f'
       ctx.fillRect(0, 0, W, H)
 
-      ctx.save()
-      ctx.translate(W / 2, H / 2)
-      ctx.scale(zoom, zoom)
+      // Two orbiting light sources that create dynamic reflections
+      const light1 = {
+        x: W / 2 + Math.sin(elapsed * 0.6) * W * 0.45,
+        y: H / 2 + Math.cos(elapsed * 0.4) * H * 0.35,
+      }
+      const light2 = {
+        x: W / 2 + Math.sin(elapsed * 0.35 + Math.PI) * W * 0.38,
+        y: H / 2 + Math.cos(elapsed * 0.55 + Math.PI * 0.7) * H * 0.42,
+      }
+      const lightR = Math.max(W, H) * 0.6
 
-      const halfCols = Math.ceil(W / (2 * zoom * TILE)) + 1
-      const halfRows = Math.ceil(H / (2 * zoom * TILE)) + 1
+      const cols = Math.ceil(W / TILE) + 2
+      const rows = Math.ceil(H / TILE) + 2
 
-      // Pass 1 — chessboard base
-      for (let r = -halfRows; r <= halfRows; r++) {
-        for (let c = -halfCols; c <= halfCols; c++) {
-          ctx.fillStyle = (r + c) % 2 === 0 ? '#ffffff' : '#069494'
-          ctx.fillRect(c * TILE, r * TILE, TILE, TILE)
+      for (let r = -1; r < rows; r++) {
+        for (let c = -1; c < cols; c++) {
+          const x = c * TILE
+          const y = r * TILE
+          const isDark = (r + c) % 2 === 0
+          const cx = x + TILE / 2
+          const cy = y + TILE / 2
+
+          // Light contribution from each source (falloff)
+          const d1 = Math.sqrt((cx - light1.x) ** 2 + (cy - light1.y) ** 2)
+          const d2 = Math.sqrt((cx - light2.x) ** 2 + (cy - light2.y) ** 2)
+          const l1 = Math.max(0, 1 - d1 / lightR) ** 1.8
+          const l2 = Math.max(0, 1 - d2 / lightR) ** 1.8
+          const light = Math.min(1, l1 * 0.75 + l2 * 0.55)
+
+          // Base fill — dark squares black, light squares white glass
+          ctx.fillStyle = isDark
+            ? `rgba(8,8,8,${0.88 + light * 0.08})`
+            : `rgba(255,255,255,${0.08 + light * 0.22})`
+          ctx.fillRect(x, y, TILE, TILE)
+
+          // Glass diagonal highlight — top-left corner streak
+          const hl = ctx.createLinearGradient(x, y, x + TILE * 0.7, y + TILE * 0.7)
+          hl.addColorStop(0, `rgba(255,255,255,${0.2 + light * 0.15})`)
+          hl.addColorStop(0.4, `rgba(255,255,255,${0.04 + light * 0.04})`)
+          hl.addColorStop(1, 'rgba(255,255,255,0)')
+          ctx.fillStyle = hl
+          ctx.fillRect(x, y, TILE, TILE)
+
+          // Glass depth shadow — bottom-right
+          const sh = ctx.createLinearGradient(x + TILE, y + TILE, x + TILE * 0.45, y + TILE * 0.45)
+          sh.addColorStop(0, 'rgba(0,0,0,0.28)')
+          sh.addColorStop(1, 'rgba(0,0,0,0)')
+          ctx.fillStyle = sh
+          ctx.fillRect(x, y, TILE, TILE)
+
+          // Glowing tile border
+          ctx.strokeStyle = isDark
+            ? `rgba(255,255,255,${0.06 + light * 0.28})`
+            : `rgba(255,255,255,${0.12 + light * 0.3})`
+          ctx.lineWidth = 0.5
+          ctx.strokeRect(x + 0.5, y + 0.5, TILE - 1, TILE - 1)
         }
       }
 
-      // Pass 2 — photos on their own grid, offset & rotated so they don't align with tiles
-      const PGRID = 160   // world-space spacing between photo centers
-      const PSIZE = 80    // world-space photo size
-
-      const phHalfC = Math.ceil(W / (2 * zoom * PGRID)) + 1
-      const phHalfR = Math.ceil(H / (2 * zoom * PGRID)) + 1
-
-      for (let pr = -phHalfR; pr <= phHalfR; pr++) {
-        for (let pc = -phHalfC; pc <= phHalfC; pc++) {
-          const img = tileImg(pr, pc)
-          if (!img.complete || !img.naturalWidth) continue
-
-          // Nudge each photo off the perfect grid so they cross tile boundaries
-          const offX  = ((pr * 47 + pc * 23) % 60) - 30
-          const offY  = ((pr * 31 + pc * 67) % 60) - 30
-          const cx    = pc * PGRID + offX
-          const cy    = pr * PGRID + offY
-
-          // Small per-photo rotation (±8°)
-          const angle = (((pr * 13 + pc * 17) % 17) - 8) * Math.PI / 180
-
-          const s  = Math.min(img.naturalWidth, img.naturalHeight)
-          const sx = (img.naturalWidth  - s) / 2
-          const sy = (img.naturalHeight - s) / 2
-
-          ctx.save()
-          ctx.translate(cx, cy)
-          ctx.rotate(angle)
-          ctx.drawImage(img, sx, sy, s, s, -PSIZE / 2, -PSIZE / 2, PSIZE, PSIZE)
-          ctx.strokeStyle = 'rgba(255,255,255,0.85)'
-          ctx.lineWidth   = 3 / zoom
-          ctx.strokeRect(-PSIZE / 2, -PSIZE / 2, PSIZE, PSIZE)
-          ctx.restore()
-        }
-      }
-
-      ctx.restore()
+      // Edge vignette — focuses the eye on the center logo
+      const vig = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.65)
+      vig.addColorStop(0, 'rgba(0,0,0,0)')
+      vig.addColorStop(0.4, 'rgba(0,0,0,0.1)')
+      vig.addColorStop(1, 'rgba(0,0,0,0.82)')
+      ctx.fillStyle = vig
+      ctx.fillRect(0, 0, W, H)
 
       raf = requestAnimationFrame(frame)
     }
 
     raf = requestAnimationFrame(frame)
 
-    const t0 = setTimeout(() => setShowLogo(true), 100)
-    const t1 = setTimeout(() => setFadeOut(true),  4000)
-    const t2 = setTimeout(onDone,                  4600)
+    const t0 = setTimeout(() => setShowLogo(true), 300)
+    const t1 = setTimeout(() => setFadeOut(true), 1800)
+    const t2 = setTimeout(onDone, 2400)
 
     return () => {
       cancelAnimationFrame(raf)
-      clearTimeout(t0); clearTimeout(t1); clearTimeout(t2)
+      clearTimeout(t0)
+      clearTimeout(t1)
+      clearTimeout(t2)
       window.removeEventListener('resize', setSize)
     }
   }, [onDone])
@@ -123,15 +123,35 @@ function IntroAnimation({ onDone }) {
       position: 'fixed', inset: 0, zIndex: 99999, pointerEvents: 'none',
       opacity: fadeOut ? 0 : 1, transition: 'opacity 0.6s ease',
     }}>
-      <canvas ref={canvasRef} style={{ display: 'block' }} />
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img src="/logo.png" alt="" style={{
-          width: 380, height: 380, objectFit: 'contain',
-          opacity:   showLogo ? 1 : 0,
-          transform: showLogo ? 'scale(1)' : 'scale(0.5)',
-          transition: 'opacity 0.9s ease 0.2s, transform 0.9s cubic-bezier(0.34,1.56,0.64,1) 0.2s',
-          filter: 'drop-shadow(0 10px 40px rgba(0,0,0,0.85))',
-        }} />
+      <style>{`
+        @keyframes pgGlow {
+          0%, 100% { filter: drop-shadow(0 0 18px rgba(255,255,255,0.3)) drop-shadow(0 0 38px rgba(255,255,255,0.15)); }
+          50%       { filter: drop-shadow(0 0 30px rgba(255,255,255,0.55)) drop-shadow(0 0 60px rgba(255,255,255,0.28)); }
+        }
+      `}</style>
+      {/* Chess board base */}
+      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+      {/* Brand teal tint — gives the B&W board identity */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,148,148,0.18)', mixBlendMode: 'color' }} />
+      {/* Shader rings — screen blend so they glow over the board */}
+      <div style={{ position: 'absolute', inset: 0, mixBlendMode: 'screen' }}>
+        <ShaderRings />
+      </div>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <img
+          src="/logo.png"
+          alt="Pawn's Gambit"
+          style={{
+            width: 'min(300px, 45vw)', height: 'auto', objectFit: 'contain',
+            opacity: showLogo ? 1 : 0,
+            transform: showLogo ? 'scale(1) translateY(0)' : 'scale(0.88) translateY(12px)',
+            transition: 'opacity 0.5s ease, transform 0.5s ease',
+            animation: showLogo ? 'pgGlow 2.2s ease-in-out infinite' : 'none',
+          }}
+        />
       </div>
     </div>
   )
