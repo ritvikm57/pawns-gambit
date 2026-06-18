@@ -1,6 +1,56 @@
 import { useEffect, useState } from 'react'
-import { Plus, Trophy, Users, Download, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+import { Plus, Trophy, Users, Download, RefreshCw, CheckCircle, AlertCircle, Shuffle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+
+// Swiss pairing algorithm — sorts by score desc / rating desc, avoids rematches,
+// balances colors. Returns array of { player1_id, player2_id, result? }
+function buildSwissPairings(players, previousPairings) {
+  const sorted = [...players].sort((a, b) => {
+    const sd = (b.score ?? 0) - (a.score ?? 0)
+    return sd !== 0 ? sd : (b.rating ?? 1500) - (a.rating ?? 1500)
+  })
+
+  // Canonical set of already-played pairs
+  const played = new Set(
+    previousPairings
+      .filter(p => p.player1_id && p.player2_id)
+      .map(p => [p.player1_id, p.player2_id].sort().join(':'))
+  )
+
+  // Color balance per player: positive = more whites, negative = more blacks
+  const colorBal = {}
+  for (const p of players) colorBal[p.user_id] = 0
+  for (const p of previousPairings) {
+    if (p.player1_id) colorBal[p.player1_id] = (colorBal[p.player1_id] ?? 0) + 1
+    if (p.player2_id) colorBal[p.player2_id] = (colorBal[p.player2_id] ?? 0) - 1
+  }
+
+  const unpaired = [...sorted]
+  const result = []
+
+  while (unpaired.length >= 2) {
+    const player = unpaired.shift()
+    // Prefer fresh opponent; fall back to first available if all are rematches
+    let idx = unpaired.findIndex(o => !played.has([player.user_id, o.user_id].sort().join(':')))
+    if (idx === -1) idx = 0
+    const opponent = unpaired.splice(idx, 1)[0]
+
+    // Assign white to whoever has been black more (lower balance = more blacks)
+    const [white, black] = colorBal[player.user_id] <= colorBal[opponent.user_id]
+      ? [player, opponent]
+      : [opponent, player]
+
+    result.push({ player1_id: white.user_id, player2_id: black.user_id })
+    played.add([player.user_id, opponent.user_id].sort().join(':'))
+  }
+
+  // Odd player out gets a bye (counts as 1 point win)
+  if (unpaired.length === 1) {
+    result.push({ player1_id: unpaired[0].user_id, player2_id: null, result: 1 })
+  }
+
+  return result
+}
 
 const INITIAL_TOURNAMENT_FORM = {
   name: '', date: '', format: '', rounds: '', venue: '',
@@ -132,6 +182,52 @@ export default function Admin() {
       .single()
     if (!error) {
       setPairings(prev => ({ ...prev, [roundId]: [...(prev[roundId] || []), data] }))
+    }
+  }
+
+  async function generateSwissPairings(roundId) {
+    const existing = pairings[roundId] || []
+    if (existing.length > 0 && !window.confirm('Replace existing pairings for this round?')) return
+
+    setLoading(true)
+    setMessage(null)
+    try {
+      // Delete any existing pairings for this round first
+      if (existing.length > 0) {
+        await supabase.from('pairings').delete().eq('round_id', roundId)
+      }
+
+      // All pairings from other rounds (to avoid rematches)
+      const prevPairings = rounds
+        .filter(r => r.id !== roundId)
+        .flatMap(r => pairings[r.id] || [])
+
+      // Paid players with score + rating
+      const players = registrations
+        .filter(r => r.payment_status === 'paid')
+        .map(r => ({
+          user_id: r.user_id,
+          score: r.score ?? 0,
+          rating: r.users?.ratings?.[0]?.rating ?? 1500,
+        }))
+
+      if (players.length < 2) throw new Error('Need at least 2 paid players to generate pairings.')
+
+      const newPairings = buildSwissPairings(players, prevPairings)
+
+      const { data, error } = await supabase
+        .from('pairings')
+        .insert(newPairings.map(p => ({ round_id: roundId, ...p, result: p.result ?? null })))
+        .select()
+
+      if (error) throw error
+
+      setPairings(prev => ({ ...prev, [roundId]: data }))
+      setMessage({ type: 'success', text: `Generated ${data.length} Swiss pairing${data.length !== 1 ? 's' : ''}.` })
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -491,6 +587,13 @@ export default function Admin() {
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-slate-900 font-medium">Round {currentRound.round_number} Pairings</h4>
                     <div className="flex gap-2">
+                      <button
+                        onClick={() => generateSwissPairings(currentRound.id)}
+                        disabled={loading}
+                        className="flex items-center gap-1 px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs rounded-lg border border-blue-200 disabled:opacity-50"
+                      >
+                        <Shuffle size={12} /> Generate Swiss
+                      </button>
                       <button
                         onClick={() => addPairing(currentRound.id)}
                         className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-slate-700 text-xs rounded-lg border border-gray-200"
