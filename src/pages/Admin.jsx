@@ -98,7 +98,11 @@ export default function Admin() {
   }
 
   async function handleStatusChange(tournamentId, newStatus) {
-    await supabase.from('tournaments').update({ status: newStatus }).eq('id', tournamentId)
+    const { error } = await supabase.from('tournaments').update({ status: newStatus }).eq('id', tournamentId)
+    if (error) {
+      setMessage({ type: 'error', text: `Status update failed: ${error.message}` })
+      return
+    }
     fetchTournaments()
     if (selectedTournament?.id === tournamentId) {
       setSelectedTournament(prev => ({ ...prev, status: newStatus }))
@@ -132,11 +136,16 @@ export default function Admin() {
   }
 
   async function updatePairingField(roundId, pairingId, field, value) {
+    const prevPairings = pairings[roundId]
     setPairings(prev => ({
       ...prev,
       [roundId]: prev[roundId].map(p => p.id === pairingId ? { ...p, [field]: value } : p),
     }))
-    await supabase.from('pairings').update({ [field]: value }).eq('id', pairingId)
+    const { error } = await supabase.from('pairings').update({ [field]: value }).eq('id', pairingId)
+    if (error) {
+      setPairings(prev => ({ ...prev, [roundId]: prevPairings }))
+      setMessage({ type: 'error', text: `Failed to save pairing: ${error.message}` })
+    }
   }
 
   async function markRoundComplete(roundId) {

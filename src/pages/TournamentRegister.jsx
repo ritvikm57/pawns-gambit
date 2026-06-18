@@ -26,17 +26,24 @@ export default function TournamentRegister() {
   }, [id, user])
 
   async function fetchTournament() {
-    const [{ data: t }, { data: reg }] = await Promise.all([
-      supabase.from('tournaments').select('*').eq('id', id).single(),
-      supabase.from('tournament_registrations')
-        .select('id, payment_status')
-        .eq('tournament_id', id)
-        .eq('user_id', user.id)
-        .maybeSingle(),
-    ])
-    setTournament(t)
-    if (reg?.payment_status === 'paid') setAlreadyRegistered(true)
-    setLoading(false)
+    try {
+      const [{ data: t, error: tErr }, { data: reg, error: rErr }] = await Promise.all([
+        supabase.from('tournaments').select('*').eq('id', id).single(),
+        supabase.from('tournament_registrations')
+          .select('id, payment_status')
+          .eq('tournament_id', id)
+          .eq('user_id', user.id)
+          .maybeSingle(),
+      ])
+      if (tErr) throw tErr
+      if (rErr) throw rErr
+      setTournament(t)
+      if (reg?.payment_status === 'paid') setAlreadyRegistered(true)
+    } catch (err) {
+      setError(err.message || 'Failed to load tournament.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function handleRegister() {
@@ -56,6 +63,7 @@ export default function TournamentRegister() {
         .single()
 
       if (regError) throw regError
+      if (!reg) throw new Error('Registration failed — no data returned.')
 
       // If entry is free, skip payment
       if (!tournament.entry_fee || tournament.entry_fee === 0) {

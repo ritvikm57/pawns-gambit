@@ -29,36 +29,43 @@ export default function TournamentDetail() {
 
   useEffect(() => {
     async function fetchData() {
-      const [{ data: t }, { count }] = await Promise.all([
-        supabase.from('tournaments').select('*').eq('id', id).single(),
-        supabase
-          .from('tournament_registrations')
-          .select('*', { count: 'exact', head: true })
-          .eq('tournament_id', id),
-      ])
-
-      setTournament(t)
-      setRegisteredCount(count ?? 0)
-
-      if (t && (t.status === 'ongoing' || t.status === 'completed')) {
-        const [{ data: roundsData }, { data: regs }] = await Promise.all([
-          supabase
-            .from('tournament_rounds')
-            .select('*, pairings(*, player1:player1_id(name), player2:player2_id(name))')
-            .eq('tournament_id', id)
-            .order('round_number', { ascending: true }),
+      try {
+        const [{ data: t, error: tErr }, { count, error: cErr }] = await Promise.all([
+          supabase.from('tournaments').select('*').eq('id', id).single(),
           supabase
             .from('tournament_registrations')
-            .select('*, users(name)')
-            .eq('tournament_id', id)
-            .eq('payment_status', 'paid')
-            .order('score', { ascending: false }),
+            .select('*', { count: 'exact', head: true })
+            .eq('tournament_id', id),
         ])
-        setRounds(roundsData || [])
-        setStandings(regs || [])
-      }
 
-      setLoading(false)
+        if (tErr) throw tErr
+        if (cErr) throw cErr
+
+        setTournament(t)
+        setRegisteredCount(count ?? 0)
+
+        if (t && (t.status === 'ongoing' || t.status === 'completed')) {
+          const [{ data: roundsData }, { data: regs }] = await Promise.all([
+            supabase
+              .from('tournament_rounds')
+              .select('*, pairings(*, player1:player1_id(name), player2:player2_id(name))')
+              .eq('tournament_id', id)
+              .order('round_number', { ascending: true }),
+            supabase
+              .from('tournament_registrations')
+              .select('*, users(name)')
+              .eq('tournament_id', id)
+              .eq('payment_status', 'paid')
+              .order('score', { ascending: false }),
+          ])
+          setRounds(roundsData || [])
+          setStandings(regs || [])
+        }
+      } catch (err) {
+        console.error('TournamentDetail fetch:', err.message)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchData()
   }, [id])
