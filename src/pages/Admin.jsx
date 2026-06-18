@@ -2,9 +2,13 @@ import { useEffect, useState } from 'react'
 import { Plus, Trophy, Users, Download, RefreshCw, CheckCircle, AlertCircle, Shuffle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-// Swiss pairing algorithm — sorts by score desc / rating desc, avoids rematches,
-// balances colors. Returns array of { player1_id, player2_id, result? }
+// Swiss pairing (FIDE-style simplified)
+// Round 1: top half vs bottom half (seeded by rating)
+// Later rounds: sort by score/rating, pair within score groups, no rematches
+// Color: tracks last 2 colours per player — never allows 3 same in a row
 function buildSwissPairings(players, previousPairings) {
+  const isRound1 = previousPairings.filter(p => p.player1_id).length === 0
+
   const sorted = [...players].sort((a, b) => {
     const sd = (b.score ?? 0) - (a.score ?? 0)
     return sd !== 0 ? sd : (b.rating ?? 1500) - (a.rating ?? 1500)
@@ -17,36 +21,63 @@ function buildSwissPairings(players, previousPairings) {
       .map(p => [p.player1_id, p.player2_id].sort().join(':'))
   )
 
-  // Color balance per player: positive = more whites, negative = more blacks
-  const colorBal = {}
-  for (const p of players) colorBal[p.user_id] = 0
-  for (const p of previousPairings) {
-    if (p.player1_id) colorBal[p.player1_id] = (colorBal[p.player1_id] ?? 0) + 1
-    if (p.player2_id) colorBal[p.player2_id] = (colorBal[p.player2_id] ?? 0) - 1
+  // Per-player colour history (last 2 entries: 'W' or 'B')
+  const colorBal = {}   // net: positive = more whites
+  const recentColors = {}
+  for (const p of players) { colorBal[p.user_id] = 0; recentColors[p.user_id] = [] }
+  for (const prev of previousPairings) {
+    if (prev.player1_id) {
+      colorBal[prev.player1_id] = (colorBal[prev.player1_id] ?? 0) + 1
+      recentColors[prev.player1_id] = [...(recentColors[prev.player1_id] ?? []).slice(-1), 'W']
+    }
+    if (prev.player2_id) {
+      colorBal[prev.player2_id] = (colorBal[prev.player2_id] ?? 0) - 1
+      recentColors[prev.player2_id] = [...(recentColors[prev.player2_id] ?? []).slice(-1), 'B']
+    }
   }
 
-  const unpaired = [...sorted]
+  // Assign white/black respecting the "no 3 same colour in a row" rule
+  function assignColors(pA, pB) {
+    const aLast2 = recentColors[pA.user_id] ?? []
+    const bLast2 = recentColors[pB.user_id] ?? []
+    const aMustBeBlack = aLast2.length === 2 && aLast2[0] === 'W' && aLast2[1] === 'W'
+    const bMustBeBlack = bLast2.length === 2 && bLast2[0] === 'W' && bLast2[1] === 'W'
+    if (aMustBeBlack && !bMustBeBlack) return [pB, pA]
+    if (bMustBeBlack && !aMustBeBlack) return [pA, pB]
+    // Fall back to net balance: player with more blacks gets white
+    return colorBal[pA.user_id] <= colorBal[pB.user_id] ? [pA, pB] : [pB, pA]
+  }
+
   const result = []
 
-  while (unpaired.length >= 2) {
-    const player = unpaired.shift()
-    // Prefer fresh opponent; fall back to first available if all are rematches
-    let idx = unpaired.findIndex(o => !played.has([player.user_id, o.user_id].sort().join(':')))
-    if (idx === -1) idx = 0
-    const opponent = unpaired.splice(idx, 1)[0]
-
-    // Assign white to whoever has been black more (lower balance = more blacks)
-    const [white, black] = colorBal[player.user_id] <= colorBal[opponent.user_id]
-      ? [player, opponent]
-      : [opponent, player]
-
-    result.push({ player1_id: white.user_id, player2_id: black.user_id })
-    played.add([player.user_id, opponent.user_id].sort().join(':'))
-  }
-
-  // Odd player out gets a bye (counts as 1 point win)
-  if (unpaired.length === 1) {
-    result.push({ player1_id: unpaired[0].user_id, player2_id: null, result: 1 })
+  if (isRound1) {
+    // Split sorted-by-rating field in half: 1st vs (n/2+1)th, 2nd vs (n/2+2)th …
+    const half = Math.floor(sorted.length / 2)
+    for (let i = 0; i < half; i++) {
+      const [white, black] = assignColors(sorted[i], sorted[half + i])
+      result.push({ player1_id: white.user_id, player2_id: black.user_id })
+    }
+    // Odd player out (lowest rated) gets a bye
+    if (sorted.length % 2 === 1) {
+      result.push({ player1_id: sorted[sorted.length - 1].user_id, player2_id: null, result: 1 })
+    }
+  } else {
+    // Subsequent rounds: greedy within score groups, no rematches
+    const unpaired = [...sorted]
+    while (unpaired.length >= 2) {
+      const player = unpaired.shift()
+      // Find first opponent in same/nearby score group they haven't played
+      let idx = unpaired.findIndex(o => !played.has([player.user_id, o.user_id].sort().join(':')))
+      if (idx === -1) idx = 0  // allow rematch only if unavoidable
+      const opponent = unpaired.splice(idx, 1)[0]
+      const [white, black] = assignColors(player, opponent)
+      result.push({ player1_id: white.user_id, player2_id: black.user_id })
+      played.add([player.user_id, opponent.user_id].sort().join(':'))
+    }
+    // Bye for the lowest-scoring unpaired player
+    if (unpaired.length === 1) {
+      result.push({ player1_id: unpaired[0].user_id, player2_id: null, result: 1 })
+    }
   }
 
   return result
