@@ -24,7 +24,7 @@ serve(async (req) => {
       body: JSON.stringify({
         amount,
         currency: 'INR',
-        receipt: `tournament_${tournamentId}`,
+        receipt: `t_${tournamentId}`,
         notes: { tournament_id: tournamentId },
       }),
     })
