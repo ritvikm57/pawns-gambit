@@ -59,7 +59,7 @@ function buildSwissPairings(players, previousPairings) {
     }
     // Odd player out (lowest rated) gets a bye
     if (sorted.length % 2 === 1) {
-      result.push({ player1_id: sorted[sorted.length - 1].user_id, player2_id: null, result: 1 })
+      result.push({ player1_id: sorted[sorted.length - 1].user_id, player2_id: null, result: 0.5 })
     }
   } else {
     // Subsequent rounds: greedy within score groups, no rematches
@@ -76,7 +76,7 @@ function buildSwissPairings(players, previousPairings) {
     }
     // Bye for the lowest-scoring unpaired player
     if (unpaired.length === 1) {
-      result.push({ player1_id: unpaired[0].user_id, player2_id: null, result: 1 })
+      result.push({ player1_id: unpaired[0].user_id, player2_id: null, result: 0.5 })
     }
   }
 
