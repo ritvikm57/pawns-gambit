@@ -105,6 +105,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // Get the tournament's time_control to know which rating bucket to update
+    const { data: tournament, error: tErr } = await supabase
+      .from('tournaments')
+      .select('time_control')
+      .eq('id', tournamentId)
+      .single()
+    if (tErr) throw tErr
+    const timeControl = tournament.time_control ?? 'rapid'
+
     // Fetch pairings for this round
     const { data: pairings, error: pErr } = await supabase
       .from('pairings')
@@ -113,16 +122,15 @@ serve(async (req) => {
       .not('player1_id', 'is', null)
       .not('player2_id', 'is', null)
       .not('result', 'is', null)
-
     if (pErr) throw pErr
 
-    // Fetch current ratings for all involved players
+    // Fetch current ratings for the correct time_control bucket
     const playerIds = [...new Set(pairings.flatMap(p => [p.player1_id, p.player2_id]))]
     const { data: ratingsData, error: rErr } = await supabase
       .from('ratings')
       .select('user_id, rating, rd, volatility, games_played')
       .in('user_id', playerIds)
-
+      .eq('time_control', timeControl)
     if (rErr) throw rErr
 
     const ratingMap = new Map(ratingsData.map(r => [r.user_id, r]))
@@ -149,7 +157,6 @@ serve(async (req) => {
         { r: current.rating, rd: current.rd, volatility: current.volatility },
         results
       )
-      const gamesThisRound = results.length
 
       await supabase
         .from('ratings')
@@ -157,30 +164,29 @@ serve(async (req) => {
           rating: newRating.r,
           rd: newRating.rd,
           volatility: newRating.volatility,
-          games_played: current.games_played + gamesThisRound,
+          games_played: current.games_played + results.length,
           last_updated: new Date().toISOString(),
         })
         .eq('user_id', userId)
+        .eq('time_control', timeControl)
 
       updates.push({ userId, ...newRating, delta: newRating.r - current.rating })
     }
 
     // Store rating_before / rating_after on each registration
-    if (tournamentId) {
-      for (const { userId, r, delta } of updates) {
-        const before = (ratingMap.get(userId)?.rating ?? r)
-        await supabase
-          .from('tournament_registrations')
-          .update({ rating_before: before, rating_after: r })
-          .eq('tournament_id', tournamentId)
-          .eq('user_id', userId)
-      }
+    for (const { userId, r, delta } of updates) {
+      const before = (ratingMap.get(userId)?.rating ?? r)
+      await supabase
+        .from('tournament_registrations')
+        .update({ rating_before: before, rating_after: r })
+        .eq('tournament_id', tournamentId)
+        .eq('user_id', userId)
     }
 
     // Mark round complete
     await supabase.from('tournament_rounds').update({ is_complete: true }).eq('id', roundId)
 
-    return new Response(JSON.stringify({ success: true, updatedPlayers: updates.length }), {
+    return new Response(JSON.stringify({ success: true, updatedPlayers: updates.length, timeControl }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     })
   } catch (error) {

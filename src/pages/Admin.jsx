@@ -86,7 +86,7 @@ function buildSwissPairings(players, previousPairings) {
 const INITIAL_TOURNAMENT_FORM = {
   name: '', date: '', format: '', rounds: '', venue: '',
   is_online: false, entry_fee: '', prize_pool: '', max_players: '',
-  status: 'upcoming', registration_deadline: '',
+  status: 'upcoming', registration_deadline: '', time_control: 'rapid',
 }
 
 export default function Admin() {
@@ -122,7 +122,7 @@ export default function Admin() {
     const [{ data: regs }, { data: roundsData }] = await Promise.all([
       supabase
         .from('tournament_registrations')
-        .select('*, users(id, name, ratings(rating, rd, volatility))')
+        .select('*, users(id, name, ratings(rating, rd, volatility, time_control))')
         .eq('tournament_id', tournament.id)
         .order('registered_at', { ascending: true }),
       supabase
@@ -165,6 +165,7 @@ export default function Admin() {
         max_players: parseInt(form.max_players) || null,
         status: form.status,
         registration_deadline: form.registration_deadline || null,
+        time_control: form.time_control,
       })
       if (error) throw error
       setMessage({ type: 'success', text: 'Tournament created successfully!' })
@@ -239,7 +240,7 @@ export default function Admin() {
         .map(r => ({
           user_id: r.user_id,
           score: r.score ?? 0,
-          rating: r.users?.ratings?.[0]?.rating ?? 1500,
+          rating: r.users?.ratings?.find(rt => rt.time_control === selectedTournament.time_control)?.rating ?? 1500,
         }))
 
       if (players.length < 2) throw new Error('Need at least 2 paid players to generate pairings.')
@@ -457,6 +458,23 @@ export default function Admin() {
                     </select>
                   </div>
                 </div>
+                {/* Time Control selector */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Time Control</label>
+                  <div className="flex gap-2">
+                    {['classical', 'rapid', 'blitz'].map(tc => (
+                      <button key={tc} type="button"
+                        onClick={() => setFormField('time_control', tc)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
+                          form.time_control === tc
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-navy-900 border border-navy-600 text-slate-300 hover:border-blue-500'
+                        }`}
+                      >{tc}</button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label="Prize Pool" value={form.prize_pool} onChange={v => setFormField('prize_pool', v)} placeholder="1st: ₹2000, 2nd: ₹1000" />
                   <div className="flex items-center gap-3 pt-5">
@@ -545,7 +563,7 @@ export default function Admin() {
                       ) : registrations.map(reg => (
                         <tr key={reg.id} className="border-b border-navy-700/40">
                           <td className="px-5 py-3 text-white">{reg.users?.name ?? '—'}</td>
-                          <td className="px-4 py-3 text-right text-slate-400 font-mono">{reg.users?.ratings?.[0]?.rating ?? '—'}</td>
+                          <td className="px-4 py-3 text-right text-slate-400 font-mono">{reg.users?.ratings?.find(rt => rt.time_control === selectedTournament.time_control)?.rating ?? '—'}</td>
                           <td className="px-4 py-3 text-right">
                             <span className={`text-xs px-2 py-0.5 rounded-full ${
                               reg.payment_status === 'paid'

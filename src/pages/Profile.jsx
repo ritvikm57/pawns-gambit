@@ -28,10 +28,9 @@ export default function Profile() {
     fetchHistory()
   }, [user])
 
-  const rating = profile?.ratings?.[0]
-  const ratingValue = rating?.rating ?? '—'
-  const rdValue = rating?.rd ?? null
-  const gamesPlayed = rating?.games_played ?? 0
+  const gamesPlayed = (profile?.ratings ?? []).reduce((acc, r) => acc + (r.games_played ?? 0), 0)
+  const ratingByType = (tc) => profile?.ratings?.find(r => r.time_control === tc)
+  const RATING_COLORS = { classical: 'text-blue-400', rapid: 'text-green-400', blitz: 'text-orange-400' }
 
   const initials = profile?.name
     ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -67,18 +66,23 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Rating Cards */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-8">
+        {/* Rating Cards — one per time control */}
+        <div className="grid sm:grid-cols-3 gap-4 mb-4">
+          {['classical', 'rapid', 'blitz'].map(tc => {
+            const r = ratingByType(tc)
+            return (
+              <div key={tc} className="bg-navy-800 border border-navy-700 rounded-xl p-6 text-center">
+                <TrendingUp size={24} className={`mx-auto mb-2 ${RATING_COLORS[tc]}`} />
+                <div className="text-4xl font-bold text-white">{r?.rating ?? '—'}</div>
+                {r?.rd && <div className="text-slate-400 text-sm mt-1">± {r.rd}</div>}
+                <div className="text-slate-500 text-xs mt-1 capitalize">{tc}</div>
+              </div>
+            )
+          })}
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4 mb-8">
           <div className="bg-navy-800 border border-navy-700 rounded-xl p-6 text-center">
-            <TrendingUp size={24} className="mx-auto mb-2 text-blue-400" />
-            <div className="text-4xl font-bold text-white">{ratingValue}</div>
-            {rdValue && (
-              <div className="text-slate-400 text-sm mt-1">± {rdValue}</div>
-            )}
-            <div className="text-slate-500 text-xs mt-1">PG Rating</div>
-          </div>
-          <div className="bg-navy-800 border border-navy-700 rounded-xl p-6 text-center">
-            <Hash size={24} className="mx-auto mb-2 text-green-400" />
+            <Hash size={24} className="mx-auto mb-2 text-slate-400" />
             <div className="text-4xl font-bold text-white">{gamesPlayed}</div>
             <div className="text-slate-500 text-xs mt-2">Rated Games</div>
           </div>
@@ -88,17 +92,6 @@ export default function Profile() {
             <div className="text-slate-500 text-xs mt-2">Tournaments</div>
           </div>
         </div>
-
-        {/* Rating Deviation Explainer */}
-        {rdValue && (
-          <div className="bg-gray-100 border border-gray-200 rounded-xl p-4 mb-8 text-sm text-slate-600">
-            <strong className="text-slate-700">Rating confidence:</strong> Your rating range is{' '}
-            <span className="text-slate-900 font-mono">
-              {ratingValue - rdValue * 2}–{ratingValue + rdValue * 2}
-            </span>
-            . The ±{rdValue} deviation decreases as you play more rated games.
-          </div>
-        )}
 
         {/* Tournament History */}
         <div className="bg-navy-800 border border-navy-700 rounded-2xl overflow-hidden">
