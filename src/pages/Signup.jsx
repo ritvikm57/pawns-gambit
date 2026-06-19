@@ -122,7 +122,7 @@ export default function Signup() {
 
           {step === 1 && (
             <form onSubmit={handleNext} className="space-y-4">
-              <InputField label="Full Name" value={form.name} onChange={set('name')} placeholder="Ritvik Mittal" />
+              <InputField label="Full Name" value={form.name} onChange={set('name')} placeholder="Magnus Carlsen" />
               <InputField label="Email" value={form.email} onChange={set('email')} type="email" placeholder="chess@example.com" />
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
@@ -152,9 +152,9 @@ export default function Signup() {
                 />
               </div>
               <InputField label="City" value={form.city} onChange={set('city')} placeholder="Hyderabad" />
-              <InputField label="Chess.com Username" value={form.chessComUsername} onChange={set('chessComUsername')} placeholder="RitvikM" optional />
+              <InputField label="Chess.com Name" value={form.chessComUsername} onChange={set('chessComUsername')} placeholder="Username" optional />
               <InputField label="FIDE ID" value={form.fideId} onChange={set('fideId')} type="text" placeholder="25048123" optional />
-              <InputField label="Phone" value={form.phone} onChange={set('phone')} type="tel" placeholder="+91 98765 43210" optional hint="For event notifications" />
+              <InputField label="Phone" value={form.phone} onChange={set('phone')} type="tel" placeholder="+91 xxxxx xxxxx" optional hint="For event notifications" />
 
               <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-sm mt-2">
                 Continue →

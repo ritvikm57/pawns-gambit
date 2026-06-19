@@ -349,7 +349,7 @@ function TournamentRow({ tournament }) {
                 </Link>
               ) : isCompleted ? (
                 <Link
-                  to={`/tournaments/${id}/results`}
+                  to={`/tournaments/${id}`}
                   className="flex items-center gap-1.5 px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors"
                   style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)' }}
                 >
