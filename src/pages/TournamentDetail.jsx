@@ -10,7 +10,6 @@ const STATUS_STYLES = {
   completed:         'bg-slate-100 text-slate-600 border border-slate-200',
 }
 
-
 const STATUS_LABELS = {
   upcoming:          'Upcoming',
   registration_open: 'Registration Open',
@@ -18,14 +17,108 @@ const STATUS_LABELS = {
   completed:         'Completed',
 }
 
+function RankBadge({ index }) {
+  if (index === 0) return (
+    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full font-bold text-xs"
+      style={{ color: '#92400e', background: '#fef3c7', border: '1px solid #fcd34d' }}>1</span>
+  )
+  if (index === 1) return (
+    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full font-bold text-xs"
+      style={{ color: '#374151', background: '#f3f4f6', border: '1px solid #d1d5db' }}>2</span>
+  )
+  if (index === 2) return (
+    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full font-bold text-xs"
+      style={{ color: '#92400e', background: '#fff7ed', border: '1px solid #fed7aa' }}>3</span>
+  )
+  return <span className="font-mono text-slate-400 text-sm">#{index + 1}</span>
+}
+
+function scoreLabel(s) {
+  if (s === 1)   return '1'
+  if (s === 0)   return '0'
+  if (s === 0.5) return '½'
+  return '–'
+}
+
+function PairingTable({ pairings, playerMap }) {
+  if (!pairings.length) {
+    return <div className="py-10 text-center text-slate-400 text-sm">No pairings for this round.</div>
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm border-collapse" style={{ minWidth: 680 }}>
+        <thead>
+          <tr className="bg-gray-50 border-b-2 border-gray-200 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            <th className="px-3 py-2.5 text-center w-10">Bo.</th>
+            <th className="px-2 py-2.5 text-center w-10">No.</th>
+            <th className="px-4 py-2.5 text-left">White</th>
+            <th className="px-3 py-2.5 text-right w-14">Rtg</th>
+            <th className="px-3 py-2.5 text-right w-12">Pts.</th>
+            <th className="px-5 py-2.5 text-center w-28 border-x border-gray-200 bg-slate-100">Result</th>
+            <th className="px-3 py-2.5 text-left w-12">Pts.</th>
+            <th className="px-4 py-2.5 text-right">Black</th>
+            <th className="px-3 py-2.5 text-left w-14">Rtg</th>
+            <th className="px-2 py-2.5 text-center w-10">No.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pairings.map((p, i) => {
+            const w = playerMap[p.player1_id] || { name: p.player1?.name || 'BYE', rating: null, score: null, no: null }
+            const b = playerMap[p.player2_id] || { name: p.player2?.name || 'BYE', rating: null, score: null, no: null }
+            const r = p.result
+            const pending = r == null
+            const wScore = scoreLabel(r)
+            const bScore = r == null ? '–' : scoreLabel(1 - r)
+            const wWon = r === 1, bWon = r === 0, isDraw = r === 0.5
+
+            return (
+              <tr key={p.id} className={`border-b border-gray-100 transition-colors ${
+                i % 2 === 0 ? 'hover:bg-blue-50/30' : 'bg-gray-50/40 hover:bg-blue-50/30'
+              }`}>
+                <td className="px-3 py-3 text-center font-mono text-xs text-slate-400 tabular-nums">{i + 1}</td>
+                <td className="px-2 py-3 text-center font-mono text-xs text-slate-500 tabular-nums">{w.no ?? '–'}</td>
+                <td className={`px-4 py-3 font-medium ${wWon ? 'text-slate-900' : bWon ? 'text-slate-400' : 'text-slate-700'}`}>
+                  {wWon && <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-2 mb-0.5" />}
+                  {w.name}
+                </td>
+                <td className="px-3 py-3 text-right font-mono text-xs text-slate-400 tabular-nums">{w.rating ?? '–'}</td>
+                <td className="px-3 py-3 text-right font-mono text-xs text-blue-600 tabular-nums font-semibold">
+                  {w.score != null ? w.score : '–'}
+                </td>
+                <td className="px-5 py-3 text-center border-x border-gray-200 bg-slate-50">
+                  <span className={`font-mono font-bold tabular-nums tracking-wider ${
+                    pending ? 'text-slate-300' : isDraw ? 'text-slate-500' : 'text-slate-900'
+                  }`}>
+                    {pending ? '? – ?' : `${wScore} – ${bScore}`}
+                  </span>
+                </td>
+                <td className="px-3 py-3 text-left font-mono text-xs text-blue-600 tabular-nums font-semibold">
+                  {b.score != null ? b.score : '–'}
+                </td>
+                <td className={`px-4 py-3 font-medium text-right ${bWon ? 'text-slate-900' : wWon ? 'text-slate-400' : 'text-slate-700'}`}>
+                  {b.name}
+                  {bWon && <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 ml-2 mb-0.5" />}
+                </td>
+                <td className="px-3 py-3 text-left font-mono text-xs text-slate-400 tabular-nums">{b.rating ?? '–'}</td>
+                <td className="px-2 py-3 text-center font-mono text-xs text-slate-500 tabular-nums">{b.no ?? '–'}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 export default function TournamentDetail() {
   const { id } = useParams()
-  const [tournament, setTournament]         = useState(null)
+  const [tournament, setTournament]           = useState(null)
   const [registeredCount, setRegisteredCount] = useState(0)
-  const [rounds, setRounds]                 = useState([])
-  const [standings, setStandings]           = useState([])
-  const [loading, setLoading]               = useState(true)
-  const [view, setView]                     = useState('standings') // 'standings' | 'rounds'
+  const [rounds, setRounds]                   = useState([])
+  const [standings, setStandings]             = useState([])
+  const [activeRound, setActiveRound]         = useState(null)
+  const [loading, setLoading]                 = useState(true)
+  const [tab, setTab]                         = useState('standings')
 
   useEffect(() => {
     async function fetchData() {
@@ -38,7 +131,6 @@ export default function TournamentDetail() {
             .eq('tournament_id', id)
             .eq('payment_status', 'paid'),
         ])
-
         if (tErr) throw tErr
         if (cErr) throw cErr
 
@@ -54,13 +146,13 @@ export default function TournamentDetail() {
               .order('round_number', { ascending: true }),
             supabase
               .from('tournament_registrations')
-              .select('*, users(name)')
+              .select('*, users(name, ratings(rating, time_control)), rating_before, rating_after')
               .eq('tournament_id', id)
-              .eq('payment_status', 'paid')
-              .order('score', { ascending: false }),
+              .eq('payment_status', 'paid'),
           ])
           setRounds(roundsData || [])
           setStandings(regs || [])
+          if (roundsData?.length) setActiveRound(roundsData[roundsData.length - 1].id)
         }
       } catch (err) {
         console.error('TournamentDetail fetch:', err.message)
@@ -70,6 +162,45 @@ export default function TournamentDetail() {
     }
     fetchData()
   }, [id])
+
+  // Compute scores and per-round results from pairings (source of truth)
+  const computedScores = {}
+  const roundResultMap = {}
+  for (const round of rounds) {
+    for (const p of round.pairings || []) {
+      if (p.result == null) continue
+      const r = Number(p.result)
+      if (p.player1_id) {
+        computedScores[p.player1_id] = (computedScores[p.player1_id] ?? 0) + r
+        if (!roundResultMap[p.player1_id]) roundResultMap[p.player1_id] = {}
+        roundResultMap[p.player1_id][round.id] = r
+      }
+      if (p.player2_id) {
+        const s2 = 1 - r
+        computedScores[p.player2_id] = (computedScores[p.player2_id] ?? 0) + s2
+        if (!roundResultMap[p.player2_id]) roundResultMap[p.player2_id] = {}
+        roundResultMap[p.player2_id][round.id] = s2
+      }
+    }
+  }
+
+  const sortedStandings = [...standings].sort((a, b) =>
+    (computedScores[b.user_id] ?? -1) - (computedScores[a.user_id] ?? -1)
+  )
+
+  const tc = tournament?.time_control ?? 'rapid'
+  const playerMap = {}
+  sortedStandings.forEach((reg, i) => {
+    playerMap[reg.user_id] = {
+      name:   reg.users?.name ?? '—',
+      rating: reg.users?.ratings?.find(r => r.time_control === tc)?.rating ?? null,
+      score:  computedScores[reg.user_id] ?? null,
+      no:     i + 1,
+    }
+  })
+
+  const activePairings = rounds.find(r => r.id === activeRound)?.pairings || []
+  const activeRoundObj = rounds.find(r => r.id === activeRound)
 
   if (loading) {
     return (
@@ -102,30 +233,9 @@ export default function TournamentDetail() {
       })
     : null
 
-  const spotsLeft = tournament.max_players != null
-    ? tournament.max_players - registeredCount
-    : null
-
+  const spotsLeft = tournament.max_players != null ? tournament.max_players - registeredCount : null
   const isFull = spotsLeft !== null && spotsLeft <= 0
-
   const showResults = tournament.status === 'ongoing' || tournament.status === 'completed'
-
-  // Build round-result lookup:  userId → { [roundId]: 1 | 0 | 0.5 }
-  // Note: Supabase may return NUMERIC columns as strings, so coerce with Number().
-  const roundResults = {}
-  standings.forEach(reg => { roundResults[reg.user_id] = {} })
-  rounds.forEach(round => {
-    round.pairings?.forEach(p => {
-      if (p.result == null) return
-      const r = Number(p.result)   // "1" → 1, "0.5" → 0.5, 1 → 1
-      const wRes = r === 1 ? 1 : r === 0 ? 0 : 0.5
-      const bRes = r === 1 ? 0 : r === 0 ? 1 : 0.5
-      if (roundResults[p.player1_id] !== undefined)
-        roundResults[p.player1_id][round.id] = wRes
-      if (roundResults[p.player2_id] !== undefined)
-        roundResults[p.player2_id][round.id] = bRes
-    })
-  })
 
   return (
     <div className="relative min-h-screen pt-20 pb-16 px-4" style={{ background: '#f8f9fb' }}>
@@ -135,12 +245,10 @@ export default function TournamentDetail() {
           <ArrowLeft size={14} /> All Tournaments
         </Link>
 
-        <div className="grid md:grid-cols-[340px_1fr] gap-8 items-start">
+        <div className="grid md:grid-cols-[320px_1fr] gap-8 items-start">
 
           {/* ══ LEFT — tournament details ════════════════════════════════ */}
           <div className="space-y-4">
-
-            {/* Status + Title */}
             <div>
               <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 ${STATUS_STYLES[tournament.status] || STATUS_STYLES.upcoming}`}>
                 {STATUS_LABELS[tournament.status] || 'Upcoming'}
@@ -148,7 +256,6 @@ export default function TournamentDetail() {
               <h1 className="text-2xl font-bold text-slate-900 leading-tight">{tournament.name}</h1>
             </div>
 
-            {/* Details card */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-3.5 shadow-sm">
               <Row icon={<Calendar size={15} />} label="Date & Time"  value={formattedDate} />
               <Row icon={<MapPin size={15} />}   label="Location"     value={tournament.is_online ? 'Online' : tournament.venue || 'TBD'} />
@@ -175,7 +282,6 @@ export default function TournamentDetail() {
               )}
             </div>
 
-            {/* CTA */}
             {tournament.status === 'registration_open' && !isFull && (
               <Link
                 to={`/tournaments/${id}/register`}
@@ -200,148 +306,152 @@ export default function TournamentDetail() {
               </div>
             )}
             {tournament.status === 'completed' && (
-              <Link
-                to={`/tournaments/${id}/results`}
-                className="block w-full text-center py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-sm transition-colors"
-              >
-                View Full Results
-              </Link>
+              <div className="w-full text-center py-3 bg-slate-100 text-slate-600 border border-slate-200 font-semibold rounded-xl text-sm">
+                Tournament completed
+              </div>
             )}
           </div>
 
-          {/* ══ RIGHT — points / round-by-round ═════════════════════════ */}
-          {showResults && standings.length > 0 ? (
+          {/* ══ RIGHT — standings / pairings ════════════════════════════ */}
+          {showResults ? (
             <div>
-              {/* View toggle */}
-              <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mb-4 shadow-sm w-fit">
-                <button
-                  onClick={() => setView('standings')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    view === 'standings'
-                      ? 'bg-blue-600 text-white shadow'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-gray-50'
-                  }`}
-                >
-                  Standings
-                </button>
-                <button
-                  onClick={() => setView('rounds')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    view === 'rounds'
-                      ? 'bg-blue-600 text-white shadow'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-gray-50'
-                  }`}
-                >
-                  Round Results
-                </button>
+              {/* Tab bar */}
+              <div className="flex gap-0 border-b border-gray-200 mb-5">
+                {[
+                  { key: 'standings', label: 'Standings' },
+                  { key: 'pairings',  label: 'Pairings'  },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setTab(key)}
+                    className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                      tab === key
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                {view === 'standings' ? (
-
-                  /* ── Standings ─────────────────────────────────────── */
+              {/* ── Standings ─────────────────────────────────────────── */}
+              {tab === 'standings' && (
+                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-200 bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                           <th className="px-5 py-3 text-left w-16">Rank</th>
                           <th className="px-4 py-3 text-left">Player</th>
-                          <th className="px-4 py-3 text-right">Points</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {standings.map((reg, i) => (
-                          <tr key={reg.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
-                            <td className="px-5 py-3.5 font-mono text-sm text-slate-500">
-                              {i < 3 ? ['🥇','🥈','🥉'][i] : `#${i + 1}`}
-                            </td>
-                            <td className="px-4 py-3.5 font-medium text-slate-900">{reg.users?.name ?? '—'}</td>
-                            <td className="px-4 py-3.5 text-right font-mono font-bold text-slate-900 tabular-nums">{reg.score ?? '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                ) : rounds.length === 0 ? (
-
-                  <div className="py-12 text-center text-slate-400 text-sm">
-                    No rounds have been created yet.
-                  </div>
-
-                ) : (
-
-                  /* ── Round-by-round ─────────────────────────────────── */
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm border-collapse">
-                      <thead>
-                        <tr className="border-b border-gray-200 bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                          <th className="px-4 py-3 text-left w-14">Rank</th>
-                          <th className="px-4 py-3 text-left">Player</th>
-                          <th className="px-4 py-3 text-center border-r border-gray-200 bg-slate-50">Points</th>
                           {rounds.map(r => (
-                            <th key={r.id} className="px-3 py-3 text-center whitespace-nowrap font-bold">
-                              Round {r.round_number}
+                            <th key={r.id} className="px-3 py-3 text-center w-12">
+                              R{r.round_number}
                               {r.is_complete && (
-                                <span className="block text-[9px] normal-case tracking-normal text-green-500 font-medium mt-0.5">complete</span>
+                                <span className="block text-[9px] text-green-500 normal-case tracking-normal font-normal">done</span>
                               )}
                             </th>
                           ))}
+                          <th className="px-4 py-3 text-right">Points</th>
+                          <th className="px-4 py-3 text-right w-16">Δ Rtg</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {standings.map((reg, i) => (
-                          <tr key={reg.id} className={`border-b border-gray-100 last:border-0 transition-colors ${
-                            i % 2 === 0 ? 'hover:bg-blue-50/20' : 'bg-gray-50/40 hover:bg-blue-50/20'
-                          }`}>
-                            <td className="px-4 py-3 font-mono text-xs text-slate-500">
-                              {i < 3 ? ['🥇','🥈','🥉'][i] : `#${i + 1}`}
+                        {sortedStandings.length === 0 ? (
+                          <tr>
+                            <td colSpan={4 + rounds.length} className="px-5 py-8 text-center text-slate-400">
+                              No players registered yet.
                             </td>
-                            <td className="px-4 py-3 font-medium text-slate-900">{reg.users?.name ?? '—'}</td>
-
-                            {/* Total points (highlighted) */}
-                            <td className="px-4 py-3 text-center border-r border-gray-200 bg-slate-50/60">
-                              <span className="font-mono font-bold text-blue-600 tabular-nums">{reg.score ?? '—'}</span>
-                            </td>
-
-                            {/* Per-round result */}
-                            {rounds.map(r => {
-                              const res = roundResults[reg.user_id]?.[r.id]
-                              const label =
-                                res === 1   ? '1'
-                                : res === 0   ? '0'
-                                : res === 0.5 ? '½'
-                                : '–'
-                              const cls =
-                                res === 1   ? 'text-green-600 font-bold'
-                                : res === 0   ? 'text-red-400 font-medium'
-                                : res === 0.5 ? 'text-slate-500'
-                                : 'text-slate-300'
-                              return (
-                                <td key={r.id} className="px-3 py-3 text-center">
-                                  <span className={`font-mono tabular-nums text-sm ${cls}`}>{label}</span>
-                                </td>
-                              )
-                            })}
                           </tr>
-                        ))}
+                        ) : sortedStandings.map((reg, index) => {
+                          const before = reg.rating_before
+                          const after  = reg.rating_after
+                          const delta  = after != null && before != null ? after - before : null
+                          const total  = computedScores[reg.user_id]
+                          return (
+                            <tr key={reg.id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index === 0 ? 'bg-yellow-50/40' : ''}`}>
+                              <td className="px-5 py-4"><RankBadge index={index} /></td>
+                              <td className="px-4 py-4 font-medium text-slate-900">{reg.users?.name ?? '—'}</td>
+                              {rounds.map(r => {
+                                const s = roundResultMap[reg.user_id]?.[r.id]
+                                return (
+                                  <td key={r.id} className="px-3 py-4 text-center font-mono text-xs tabular-nums">
+                                    {s != null
+                                      ? <span className={s === 1 ? 'text-green-600 font-bold' : s === 0 ? 'text-red-400' : 'text-slate-500'}>{scoreLabel(s)}</span>
+                                      : <span className="text-slate-300">–</span>
+                                    }
+                                  </td>
+                                )
+                              })}
+                              <td className="px-4 py-4 text-right font-mono font-bold text-slate-900">
+                                {total != null ? total : <span className="text-slate-300">—</span>}
+                              </td>
+                              <td className="px-4 py-4 text-right font-mono text-xs">
+                                {delta != null ? (
+                                  <span className={delta >= 0 ? 'text-green-600' : 'text-red-500'}>
+                                    {delta >= 0 ? '+' : ''}{delta}
+                                  </span>
+                                ) : <span className="text-slate-300">—</span>}
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>
+                </div>
+              )}
 
-                )}
-              </div>
+              {/* ── Pairings ──────────────────────────────────────────── */}
+              {tab === 'pairings' && (
+                rounds.length === 0 ? (
+                  <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center text-slate-400 shadow-sm">
+                    <Trophy size={32} className="mx-auto mb-2 opacity-20" />
+                    <p>No rounds yet.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+                      {rounds.map(round => (
+                        <button
+                          key={round.id}
+                          onClick={() => setActiveRound(round.id)}
+                          className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                            activeRound === round.id
+                              ? 'bg-blue-600 text-white shadow'
+                              : 'text-slate-500 hover:text-slate-900 hover:bg-white border border-transparent hover:border-gray-200'
+                          }`}
+                        >
+                          R{round.round_number}
+                          {round.is_complete && (
+                            <span className={`text-[10px] ${activeRound === round.id ? 'text-blue-200' : 'text-green-500'}`}>✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                      {activeRoundObj && (
+                        <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-slate-700">Round {activeRoundObj.round_number}</span>
+                          {activeRoundObj.is_complete && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 font-medium">Complete</span>
+                          )}
+                        </div>
+                      )}
+                      <PairingTable pairings={activePairings} playerMap={playerMap} />
+                    </div>
+                  </>
+                )
+              )}
             </div>
 
-          ) : !showResults ? (
-            /* Placeholder for upcoming/open tournaments */
+          ) : (
             <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
               <Trophy size={44} className="mx-auto mb-4 text-slate-200" />
               <p className="font-semibold text-slate-600">No results yet</p>
               <p className="text-sm text-slate-400 mt-1">Standings will appear once the tournament begins.</p>
             </div>
-
-          ) : null}
+          )}
 
         </div>
       </div>

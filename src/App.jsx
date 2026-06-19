@@ -174,7 +174,6 @@ import Home from './pages/Home'
 import Tournaments from './pages/Tournaments'
 import TournamentRegister from './pages/TournamentRegister'
 import TournamentDetail from './pages/TournamentDetail'
-import TournamentResults from './pages/TournamentResults'
 import Gallery from './pages/Gallery'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -231,7 +230,6 @@ export default function App() {
               <Route path="/tournaments" element={<Tournaments />} />
               <Route path="/tournaments/:id" element={<TournamentDetail />} />
               <Route path="/tournaments/:id/register" element={<TournamentRegister />} />
-              <Route path="/tournaments/:id/results" element={<TournamentResults />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
