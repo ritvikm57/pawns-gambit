@@ -314,7 +314,7 @@ export default function TournamentDetail() {
 
           {/* ══ RIGHT — standings / pairings ════════════════════════════ */}
           {showResults ? (
-            <div>
+            <div className="min-w-0">
               {/* Tab bar */}
               <div className="flex gap-0 border-b border-gray-200 mb-5">
                 {[
@@ -353,7 +353,7 @@ export default function TournamentDetail() {
                             </th>
                           ))}
                           <th className="px-4 py-3 text-right">Points</th>
-                          <th className="px-4 py-3 text-right w-16">Δ Rtg</th>
+                          <th className="px-4 py-3 text-right whitespace-nowrap">Δ Rtg</th>
                         </tr>
                       </thead>
                       <tbody>
