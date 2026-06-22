@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Calendar, MapPin, Trophy, AlertCircle, CheckCircle, IndianRupee } from 'lucide-react'
+import { Calendar, MapPin, Trophy, AlertCircle, CheckCircle, IndianRupee, Users } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { initiatePayment } from '../lib/razorpay'
@@ -14,6 +14,7 @@ export default function TournamentRegister() {
   const [loading, setLoading] = useState(true)
   const [paying, setPaying] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [players, setPlayers] = useState([])
   const [error, setError] = useState('')
   const [alreadyRegistered, setAlreadyRegistered] = useState(false)
 
@@ -52,6 +53,16 @@ export default function TournamentRegister() {
     }
   }
 
+  async function fetchPlayers() {
+    const { data } = await supabase
+      .from('tournament_registrations')
+      .select('user_id, users(name)')
+      .eq('tournament_id', id)
+      .eq('payment_status', 'paid')
+      .order('registered_at', { ascending: true })
+    setPlayers(data || [])
+  }
+
   async function handleRegister() {
     setError('')
     setPaying(true)
@@ -64,6 +75,7 @@ export default function TournamentRegister() {
           .upsert({ tournament_id: id, user_id: user.id, payment_status: 'paid' },
             { onConflict: 'tournament_id,user_id' })
         if (regError) throw regError
+        await fetchPlayers()
         setSuccess(true)
         setPaying(false)
         return
@@ -95,6 +107,7 @@ export default function TournamentRegister() {
           if (verifyError) {
             setError(verifyData?.error || 'Payment verified but registration failed. Contact support with payment ID: ' + paymentId)
           } else {
+            await fetchPlayers()
             setSuccess(true)
           }
           setPaying(false)
@@ -129,24 +142,75 @@ export default function TournamentRegister() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={40} className="text-green-400" />
+      <div className="min-h-screen pt-20 pb-12 px-4">
+        <div className="max-w-lg mx-auto">
+
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle size={30} className="text-green-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-1">You're registered!</h2>
+            <p className="text-white/50 text-sm">Confirmation sent to {user.email}</p>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">You're registered!</h2>
-          <p className="text-white/70 mb-2">
-            You've successfully registered for <strong className="text-orange-500">{tournament.name}</strong>.
-          </p>
-          <p className="text-white/70 text-sm mb-8">A confirmation email has been sent to <strong className="text-orange-500">{user.email}</strong>.</p>
-          <div className="flex gap-3 justify-center">
-            <Link to="/tournaments" className="px-5 py-2.5 border border-white/30 text-white/80 hover:text-orange-500 hover:border-orange-500 rounded-lg text-sm transition-colors">
+
+          {/* Tournament details */}
+          <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 mb-4">
+            <h3 className="text-white font-semibold text-lg mb-4">{tournament.name}</h3>
+            <div className="space-y-2.5 text-sm text-white/60">
+              <div className="flex items-center gap-2">
+                <Calendar size={14} className="flex-shrink-0" />
+                <span>{new Date(tournament.date).toLocaleDateString('en-IN', {
+                  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit',
+                })}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin size={14} className="flex-shrink-0" />
+                <span>{tournament.is_online ? 'Online' : tournament.venue || 'TBD'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Trophy size={14} className="flex-shrink-0" />
+                <span>{tournament.format}{tournament.rounds ? ` — ${tournament.rounds} rounds` : ''}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Player list */}
+          <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 mb-6">
+            <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+              <Users size={15} className="text-slate-400" />
+              Registered Players
+              <span className="ml-auto text-slate-500 text-sm font-normal">{players.length}{tournament.max_players ? ` / ${tournament.max_players}` : ''}</span>
+            </h3>
+            {players.length === 0 ? (
+              <p className="text-slate-500 text-sm">No players yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {players.map((p, i) => (
+                  <div key={p.user_id} className="flex items-center gap-3">
+                    <span className="text-slate-600 font-mono text-xs w-5 text-right">{i + 1}</span>
+                    <span className={`text-sm font-medium ${p.user_id === user.id ? 'text-green-400' : 'text-white/80'}`}>
+                      {p.users?.name ?? '—'}
+                    </span>
+                    {p.user_id === user.id && (
+                      <span className="text-[10px] text-green-500/70 bg-green-500/10 px-1.5 py-0.5 rounded">you</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3">
+            <Link to="/tournaments" className="flex-1 py-2.5 text-center border border-white/20 text-white/70 hover:text-white hover:border-white/40 rounded-xl text-sm transition-colors">
               All Tournaments
             </Link>
-            <Link to="/profile" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors">
+            <Link to="/profile" className="flex-1 py-2.5 text-center bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm transition-colors">
               My Profile
             </Link>
           </div>
+
         </div>
       </div>
     )
