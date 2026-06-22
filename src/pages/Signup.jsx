@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle, CheckCircle, Mail } from 'lucide-react'
 import Logo from '../components/Logo'
 import { useAuth } from '../context/AuthContext'
 
@@ -41,6 +41,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   const { signUp } = useAuth()
   const navigate = useNavigate()
@@ -75,13 +76,41 @@ export default function Signup() {
     setLoading(true)
     try {
       await signUp({ ...form, skillLevel })
-      navigate(from, { replace: true })
+      setEmailSent(true)
     } catch (err) {
       setError(err.message)
       setStep(1)
     } finally {
       setLoading(false)
     }
+  }
+
+  if (emailSent) {
+    return (
+      <div className="relative min-h-screen flex items-center justify-center px-4 py-12">
+        <div className="relative z-10 w-full max-w-md text-center">
+          <div className="bg-navy-800 border border-navy-700 rounded-2xl p-10">
+            <div className="w-16 h-16 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center mx-auto mb-5">
+              <Mail size={28} className="text-blue-400" />
+            </div>
+            <h2 className="text-xl font-bold text-white mb-2">Check your inbox</h2>
+            <p className="text-slate-400 text-sm mb-1">
+              We sent a confirmation link to
+            </p>
+            <p className="text-white font-medium text-sm mb-5">{form.email}</p>
+            <p className="text-slate-500 text-xs mb-7">
+              Click the link in the email to activate your account. Check your spam folder if you don't see it.
+            </p>
+            <Link
+              to="/login"
+              className="block w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-sm"
+            >
+              Go to Login
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
