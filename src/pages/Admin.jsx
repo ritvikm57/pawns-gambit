@@ -192,6 +192,16 @@ export default function Admin() {
   }
 
   async function addRound() {
+    if (rounds.length > 0) {
+      const lastRound = rounds[rounds.length - 1]
+      const lastPairings = pairings[lastRound.id] || []
+      const missing = lastPairings.filter(p => p.player1_id != null && p.result == null)
+      if (missing.length > 0) {
+        setMessage({ type: 'error', text: `Enter all results for Round ${lastRound.round_number} before adding a new round.` })
+        return
+      }
+    }
+
     const nextNum = rounds.length + 1
     const { data, error } = await supabase
       .from('tournament_rounds')
