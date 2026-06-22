@@ -44,7 +44,10 @@ export default function TournamentRegister() {
       if (rErr) throw rErr
       if (cErr) throw cErr
       setTournament(t)
-      if (reg?.payment_status === 'paid') setAlreadyRegistered(true)
+      if (reg?.payment_status === 'paid') {
+        setAlreadyRegistered(true)
+        fetchPlayers()
+      }
       if (t?.max_players != null && paidCount >= t.max_players) setAlreadyRegistered('full')
     } catch (err) {
       setError(err.message || 'Failed to load tournament.')
@@ -235,14 +238,72 @@ export default function TournamentRegister() {
 
   if (alreadyRegistered) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <CheckCircle size={48} className="mx-auto mb-4 text-green-400" />
-          <h2 className="text-2xl font-bold text-white mb-3">Already registered</h2>
-          <p className="text-white/70 mb-6">You're already registered for <strong className="text-white">{tournament.name}</strong>.</p>
-          <Link to="/profile" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors">
-            View My Profile
-          </Link>
+      <div className="min-h-screen pt-20 pb-12 px-4">
+        <div className="max-w-lg mx-auto">
+
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle size={30} className="text-green-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-1">Already registered</h2>
+            <p className="text-white/50 text-sm">You're in for {tournament.name}</p>
+          </div>
+
+          <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 mb-4">
+            <h3 className="text-white font-semibold text-lg mb-4">{tournament.name}</h3>
+            <div className="space-y-2.5 text-sm text-white/60">
+              <div className="flex items-center gap-2">
+                <Calendar size={14} className="flex-shrink-0" />
+                <span>{new Date(tournament.date).toLocaleDateString('en-IN', {
+                  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit',
+                })}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin size={14} className="flex-shrink-0" />
+                <span>{tournament.is_online ? 'Online' : tournament.venue || 'TBD'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Trophy size={14} className="flex-shrink-0" />
+                <span>{tournament.format}{tournament.rounds ? ` — ${tournament.rounds} rounds` : ''}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 mb-6">
+            <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+              <Users size={15} className="text-slate-400" />
+              Registered Players
+              <span className="ml-auto text-slate-500 text-sm font-normal">{players.length}{tournament.max_players ? ` / ${tournament.max_players}` : ''}</span>
+            </h3>
+            {players.length === 0 ? (
+              <p className="text-slate-500 text-sm">Loading...</p>
+            ) : (
+              <div className="space-y-2">
+                {players.map((p, i) => (
+                  <div key={p.user_id} className="flex items-center gap-3">
+                    <span className="text-slate-600 font-mono text-xs w-5 text-right">{i + 1}</span>
+                    <span className={`text-sm font-medium ${p.user_id === user.id ? 'text-green-400' : 'text-white/80'}`}>
+                      {p.users?.name ?? '—'}
+                    </span>
+                    {p.user_id === user.id && (
+                      <span className="text-[10px] text-green-500/70 bg-green-500/10 px-1.5 py-0.5 rounded">you</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3">
+            <Link to="/tournaments" className="flex-1 py-2.5 text-center border border-white/20 text-white/70 hover:text-white hover:border-white/40 rounded-xl text-sm transition-colors">
+              All Tournaments
+            </Link>
+            <Link to="/profile" className="flex-1 py-2.5 text-center bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm transition-colors">
+              My Profile
+            </Link>
+          </div>
+
         </div>
       </div>
     )
