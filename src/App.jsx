@@ -145,7 +145,7 @@ function IntroAnimation({ onDone }) {
           src="/logo.png"
           alt="Pawn's Gambit"
           style={{
-            width: 'min(300px, 45vw)', height: 'auto', objectFit: 'contain',
+            width: 'min(66vw, 66vh)', height: 'auto', objectFit: 'contain',
             opacity: showLogo ? 1 : 0,
             transform: showLogo ? 'scale(1) translateY(0)' : 'scale(0.88) translateY(12px)',
             transition: 'opacity 0.5s ease, transform 0.5s ease',
@@ -212,7 +212,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         {showIntro && <IntroAnimation onDone={handleIntroDone} />}
-        <div className="flex flex-col min-h-screen" style={{ position: 'relative', background: '#069494' }}>
+        <div className="flex flex-col min-h-screen" style={{ position: 'relative', background: '#005a5a' }}>
           {/* Global PCA chess background — behind all content */}
           <img src="/PCA.png" alt="" style={{
             position: 'fixed', inset: 0, width: '100%', height: '100%',

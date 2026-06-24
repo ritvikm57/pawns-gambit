@@ -80,7 +80,7 @@ export default function Contact() {
         {/* Contact info */}
         <div className="space-y-8">
           <div>
-            <p className="text-[10px] font-semibold tracking-[0.18em] uppercase mb-5" style={{ color: C.faint }}>
+            <p className="text-sm font-semibold tracking-[0.18em] uppercase mb-5" style={{ color: C.faint }}>
               Reach us directly
             </p>
             <div className="space-y-5">
@@ -89,8 +89,8 @@ export default function Contact() {
                   <Mail size={16} style={{ color: C.blue }} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: C.faint }}>Email</p>
-                  <a href="mailto:contact@pgchess.in" className="font-medium text-sm transition-opacity hover:opacity-70" style={{ color: C.ink }}>
+                  <p className="text-sm font-semibold uppercase tracking-wider mb-1" style={{ color: C.faint }}>Email</p>
+                  <a href="mailto:contact@pgchess.in" className="font-medium text-base transition-opacity hover:opacity-70" style={{ color: C.ink }}>
                     contact@pgchess.in
                   </a>
                 </div>
@@ -101,8 +101,8 @@ export default function Contact() {
                   <MapPin size={16} style={{ color: C.blue }} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: C.faint }}>Location</p>
-                  <p className="font-medium text-sm" style={{ color: C.ink }}>Hyderabad, India</p>
+                  <p className="text-sm font-semibold uppercase tracking-wider mb-1" style={{ color: C.faint }}>Location</p>
+                  <p className="font-medium text-base" style={{ color: C.ink }}>Hyderabad, India</p>
                 </div>
               </div>
             </div>
@@ -111,7 +111,7 @@ export default function Contact() {
           <div style={{ height: 1, background: C.line }} />
 
           <div>
-            <p className="text-[10px] font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: C.faint }}>
+            <p className="text-sm font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: C.faint }}>
               Follow along
             </p>
             <div className="flex gap-3">
@@ -124,7 +124,7 @@ export default function Contact() {
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-lg text-sm font-medium border transition-colors hover:text-blue-600"
+                  className="px-4 py-2 rounded-lg text-base font-medium border transition-colors hover:text-blue-600"
                   style={{ color: C.body, borderColor: C.line, background: C.bgAlt }}
                 >
                   {s.label}
@@ -140,7 +140,7 @@ export default function Contact() {
         className="flex flex-col justify-center"
         style={{ width: '50%', padding: '6rem 6rem 4rem 4rem', background: 'transparent' }}
       >
-        <p className="text-[12px] font-semibold tracking-[0.26em] uppercase mb-6" style={{ color: C.ink }}>
+        <p className="text-base font-semibold tracking-[0.26em] uppercase mb-6" style={{ color: C.ink }}>
           Send a message
         </p>
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -149,7 +149,7 @@ export default function Contact() {
             { key: 'email', label: 'Email', type: 'email', placeholder: 'your@email.com' },
           ].map(({ key, label, type, placeholder }) => (
             <div key={key}>
-              <label className="block text-[12px] font-semibold uppercase tracking-wider mb-2" style={{ color: C.ink }}>
+              <label className="block text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: C.ink }}>
                 {label}
               </label>
               <input
@@ -158,7 +158,7 @@ export default function Contact() {
                 onChange={e => set(key)(e.target.value)}
                 placeholder={placeholder}
                 required
-                className="w-full rounded-xl px-4 py-3 text-sm outline-none border transition-colors placeholder-white"
+                className="w-full rounded-xl px-4 py-3 text-base outline-none border transition-colors placeholder-white"
                 style={{ background: C.bg, borderColor: C.line, color: C.ink }}
                 onFocus={e => { e.target.style.borderColor = C.blue }}
                 onBlur={e  => { e.target.style.borderColor = C.line }}
@@ -186,7 +186,7 @@ export default function Contact() {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="w-full flex items-center justify-center gap-2.5 py-3 font-semibold text-white rounded-xl text-sm transition-all hover:brightness-110 disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2.5 py-3 font-semibold text-white rounded-xl text-base transition-all hover:brightness-110 disabled:opacity-60"
             style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)' }}
           >
             {status === 'loading' ? (

@@ -168,13 +168,21 @@ export default function TournamentRegister() {
                   hour: '2-digit', minute: '2-digit',
                 })}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={14} className="flex-shrink-0" />
-                <span>{tournament.is_online ? 'Online' : tournament.venue || 'TBD'}</span>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <MapPin size={14} className="flex-shrink-0" />
+                  <span>{tournament.is_online ? 'Online' : tournament.venue || 'TBD'}</span>
+                </div>
+                {!tournament.is_online && tournament.location_link && (
+                  <a href={tournament.location_link} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 hover:bg-blue-500/25 border border-blue-500/30 transition-colors font-medium ml-5">
+                    <MapPin size={10} /> View on Maps
+                  </a>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Trophy size={14} className="flex-shrink-0" />
-                <span>{tournament.format}{tournament.rounds ? ` — ${tournament.rounds} rounds` : ''}</span>
+                <span>{tournament.format}{tournament.registered_count > 1 ? ` — ${Math.ceil(Math.log2(tournament.registered_count))} rounds` : ''}</span>
               </div>
             </div>
           </div>
@@ -259,13 +267,21 @@ export default function TournamentRegister() {
                   hour: '2-digit', minute: '2-digit',
                 })}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={14} className="flex-shrink-0" />
-                <span>{tournament.is_online ? 'Online' : tournament.venue || 'TBD'}</span>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <MapPin size={14} className="flex-shrink-0" />
+                  <span>{tournament.is_online ? 'Online' : tournament.venue || 'TBD'}</span>
+                </div>
+                {!tournament.is_online && tournament.location_link && (
+                  <a href={tournament.location_link} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 hover:bg-blue-500/25 border border-blue-500/30 transition-colors font-medium ml-5">
+                    <MapPin size={10} /> View on Maps
+                  </a>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Trophy size={14} className="flex-shrink-0" />
-                <span>{tournament.format}{tournament.rounds ? ` — ${tournament.rounds} rounds` : ''}</span>
+                <span>{tournament.format}{tournament.registered_count > 1 ? ` — ${Math.ceil(Math.log2(tournament.registered_count))} rounds` : ''}</span>
               </div>
             </div>
           </div>
@@ -331,13 +347,21 @@ export default function TournamentRegister() {
                 })}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <MapPin size={14} />
-              <span>{tournament.is_online ? 'Online' : tournament.venue || 'TBD'}</span>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <MapPin size={14} />
+                <span>{tournament.is_online ? 'Online' : tournament.venue || 'TBD'}</span>
+              </div>
+              {!tournament.is_online && tournament.location_link && (
+                <a href={tournament.location_link} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 hover:bg-blue-500/25 border border-blue-500/30 transition-colors font-medium ml-5">
+                  <MapPin size={10} /> View on Maps
+                </a>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Trophy size={14} />
-              <span>{tournament.format} — {tournament.rounds} rounds</span>
+              <span>{tournament.format}{tournament.registered_count > 1 ? ` — ${Math.ceil(Math.log2(tournament.registered_count))} rounds` : ''}</span>
             </div>
           </div>
 

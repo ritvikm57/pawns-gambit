@@ -15,7 +15,7 @@ const SKILL_LEVELS = [
 function InputField({ label, value, onChange, type = 'text', placeholder, optional = false, hint }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">
+      <label className="block text-base font-medium text-slate-300 mb-1.5">
         {label} {optional && <span className="text-slate-500 font-normal">(optional)</span>}
       </label>
       <input
@@ -24,9 +24,9 @@ function InputField({ label, value, onChange, type = 'text', placeholder, option
         onChange={onChange}
         placeholder={placeholder}
         required={!optional}
-        className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
+        className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-base"
       />
-      {hint && <p className="text-slate-500 text-xs mt-1">{hint}</p>}
+      {hint && <p className="text-slate-500 text-sm mt-1">{hint}</p>}
     </div>
   )
 }
@@ -154,7 +154,7 @@ export default function Signup() {
               <InputField label="Full Name" value={form.name} onChange={set('name')} placeholder="Magnus Carlsen" />
               <InputField label="Email" value={form.email} onChange={set('email')} type="email" placeholder="chess@example.com" />
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                <label className="block text-base font-medium text-slate-300 mb-1.5">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -162,7 +162,7 @@ export default function Signup() {
                     onChange={set('password')}
                     required
                     placeholder="Min. 8 characters"
-                    className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 pr-11 text-white placeholder-slate-500 outline-none transition-colors text-sm"
+                    className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 pr-11 text-white placeholder-slate-500 outline-none transition-colors text-base"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -170,14 +170,14 @@ export default function Signup() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Confirm Password</label>
+                <label className="block text-base font-medium text-slate-300 mb-1.5">Confirm Password</label>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={form.confirmPassword}
                   onChange={set('confirmPassword')}
                   required
                   placeholder="Repeat password"
-                  className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
+                  className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-base"
                 />
               </div>
               <InputField label="City" value={form.city} onChange={set('city')} placeholder="Hyderabad" />
@@ -185,7 +185,7 @@ export default function Signup() {
               <InputField label="FIDE ID" value={form.fideId} onChange={set('fideId')} type="text" placeholder="25048123" optional />
               <InputField label="Phone" value={form.phone} onChange={set('phone')} type="tel" placeholder="+91 xxxxx xxxxx" optional hint="For event notifications" />
 
-              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-sm mt-2">
+              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-base mt-2">
                 Continue →
               </button>
             </form>
@@ -245,7 +245,7 @@ export default function Signup() {
             </form>
           )}
 
-          <p className="text-center text-slate-400 text-sm mt-6">
+          <p className="text-center text-slate-400 text-base mt-6">
             Already have an account?{' '}
             <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium">Log in</Link>
           </p>

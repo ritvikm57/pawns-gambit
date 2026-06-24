@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import Logo from '../components/Logo'
 import { useAuth } from '../context/AuthContext'
@@ -14,10 +14,12 @@ export default function Login() {
   const [showReset, setShowReset] = useState(false)
   const [resetEmail, setResetEmail] = useState('')
 
-  const { signIn, resetPassword } = useAuth()
+  const { signIn, resetPassword, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname || '/'
+
+  if (user) return <Navigate to="/" replace />
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -51,9 +53,9 @@ export default function Login() {
     <div className="relative min-h-screen flex items-center justify-center px-4 py-12">
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <Logo size={48} className="mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-          <p className="text-slate-400 mt-1">Log in to your Pawn's Gambit account</p>
+          <Logo size={72} className="mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
+          <p className="text-white/70 mt-1">Log in to your Pawn's Gambit account</p>
         </div>
 
         <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8">
@@ -67,18 +69,18 @@ export default function Login() {
               )}
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
+                  <label className="block text-base font-medium text-slate-300 mb-1.5">Email</label>
                   <input
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
                     placeholder="you@example.com"
-                    className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
+                    className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-base"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                  <label className="block text-base font-medium text-slate-300 mb-1.5">Password</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -86,7 +88,7 @@ export default function Login() {
                       onChange={e => setPassword(e.target.value)}
                       required
                       placeholder="••••••••"
-                      className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 pr-11 text-white placeholder-slate-500 outline-none transition-colors text-sm"
+                      className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 pr-11 text-white placeholder-slate-500 outline-none transition-colors text-base"
                     />
                     <button
                       type="button"
@@ -102,7 +104,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => { setShowReset(true); setResetEmail(email) }}
-                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                    className="text-base text-blue-400 hover:text-blue-300 transition-colors"
                   >
                     Forgot password?
                   </button>
@@ -111,13 +113,13 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors text-sm"
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors text-base"
                 >
                   {loading ? 'Logging in...' : 'Log In'}
                 </button>
               </form>
 
-              <p className="text-center text-slate-400 text-sm mt-6">
+              <p className="text-center text-slate-400 text-base mt-6">
                 Don't have an account?{' '}
                 <Link to="/signup" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
                   Sign up
@@ -147,19 +149,19 @@ export default function Login() {
                   )}
                   <form onSubmit={handleResetPassword} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Email address</label>
+                      <label className="block text-base font-medium text-slate-300 mb-1.5">Email address</label>
                       <input
                         type="email"
                         value={resetEmail}
                         onChange={e => setResetEmail(e.target.value)}
                         required
-                        className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
+                        className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-base"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold rounded-lg transition-colors text-sm"
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold rounded-lg transition-colors text-base"
                     >
                       {loading ? 'Sending...' : 'Send Reset Link'}
                     </button>

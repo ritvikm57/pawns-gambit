@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Trophy, TrendingUp, Calendar, Hash } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
 export default function Profile() {
   const { user, profile } = useAuth()
+  const navigate = useNavigate()
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -15,7 +17,7 @@ export default function Profile() {
         .from('tournament_registrations')
         .select(`
           *,
-          tournaments(name, date, format),
+          tournaments(id, name, date, format),
           rating_before,
           rating_after,
           score
@@ -124,9 +126,9 @@ export default function Profile() {
                       ? entry.rating_after - entry.rating_before
                       : null
                     return (
-                      <tr key={entry.id} className="border-b border-navy-700/50 hover:bg-navy-700/30 transition-colors">
-                        <td className="px-6 py-4 text-white font-medium">
-                          {entry.tournaments?.name ?? '—'}
+                      <tr key={entry.id} onClick={() => navigate(`/tournaments/${entry.tournament_id}`)} className="border-b border-navy-700/50 hover:bg-navy-700/30 transition-colors cursor-pointer">
+                        <td className="px-6 py-4 font-medium">
+                          <div className="text-white">{entry.tournaments?.name ?? '—'}</div>
                           <div className="text-slate-500 text-xs">{entry.tournaments?.format}</div>
                         </td>
                         <td className="px-4 py-4 text-slate-400">

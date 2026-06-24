@@ -94,24 +94,6 @@ function Carousel({ startIdx = 0 }) {
         />
       ))}
 
-      {[false, true].map(next => (
-        <button
-          key={String(next)}
-          onClick={() => setIdx(i => next
-            ? (i + 1) % CAROUSEL_SLIDES.length
-            : (i - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length
-          )}
-          className="absolute top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
-          style={{
-            [next ? 'right' : 'left']: '0.75rem',
-            background: 'rgba(255,255,255,0.88)',
-            border: `1px solid ${C.line}`,
-            zIndex: 1,
-          }}
-        >
-          <ArrowRight size={11} style={{ transform: next ? 'none' : 'rotate(180deg)', color: C.ink }} />
-        </button>
-      ))}
 
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5" style={{ zIndex: 1 }}>
         {CAROUSEL_SLIDES.map((_, i) => (

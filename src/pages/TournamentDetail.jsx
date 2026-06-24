@@ -258,8 +258,28 @@ export default function TournamentDetail() {
 
             <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-3.5 shadow-sm">
               <Row icon={<Calendar size={15} />} label="Date & Time"  value={formattedDate} />
-              <Row icon={<MapPin size={15} />}   label="Location"     value={tournament.is_online ? 'Online' : tournament.venue || 'TBD'} />
-              <Row icon={<Trophy size={15} />}   label="Format"       value={`${tournament.format}${tournament.rounds ? ` — ${tournament.rounds} rounds` : ''}`} />
+              <Row
+                icon={<MapPin size={15} />}
+                label="Location"
+                value={
+                  tournament.is_online ? 'Online' : (
+                    <span className="flex flex-col items-end gap-1">
+                      <span>{tournament.venue || 'TBD'}</span>
+                      {tournament.location_link && (
+                        <a
+                          href={tournament.location_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition-colors font-medium"
+                        >
+                          <MapPin size={10} /> View on Maps
+                        </a>
+                      )}
+                    </span>
+                  )
+                }
+              />
+              <Row icon={<Trophy size={15} />}   label="Format"       value={tournament.format} />
               <Row
                 icon={<IndianRupee size={15} />}
                 label="Entry Fee"
@@ -369,7 +389,9 @@ export default function TournamentDetail() {
                           const delta  = after != null && before != null ? after - before : null
                           const total  = computedScores[reg.user_id]
                           return (
-                            <tr key={reg.id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index === 0 ? 'bg-yellow-50/40' : ''}`}>
+                            <tr key={reg.id} className={`border-b border-gray-100 hover:bg-gray-100 transition-colors ${
+                              index === 0 ? 'bg-yellow-50/40' : index % 2 === 0 ? 'bg-white' : 'bg-gray-200'
+                            }`}>
                               <td className="px-5 py-4"><RankBadge index={index} /></td>
                               <td className="px-4 py-4 font-medium text-slate-900">{reg.users?.name ?? '—'}</td>
                               {rounds.map(r => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Trophy, Users, Download, RefreshCw, CheckCircle, AlertCircle, Shuffle } from 'lucide-react'
+import { Plus, Trophy, Users, Download, RefreshCw, CheckCircle, AlertCircle, Shuffle, UserX, UserCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 // Swiss pairing (FIDE-style simplified)
@@ -84,7 +84,7 @@ function buildSwissPairings(players, previousPairings) {
 }
 
 const INITIAL_TOURNAMENT_FORM = {
-  name: '', date: '', format: '', rounds: '', venue: '',
+  name: '', date: '', format: '', venue: '', location_link: '',
   is_online: false, entry_fee: '', prize_pool: '', max_players: '',
   status: 'upcoming', registration_deadline: '', time_control: 'rapid',
 }
@@ -157,7 +157,6 @@ export default function Admin() {
         name: form.name,
         date: form.date,
         format: form.format,
-        rounds: parseInt(form.rounds),
         venue: form.venue,
         is_online: form.is_online,
         entry_fee: parseFloat(form.entry_fee) || 0,
@@ -166,6 +165,7 @@ export default function Admin() {
         status: form.status,
         registration_deadline: form.registration_deadline || null,
         time_control: form.time_control,
+        location_link: form.location_link || null,
       })
       if (error) throw error
       setMessage({ type: 'success', text: 'Tournament created successfully!' })
@@ -244,9 +244,9 @@ export default function Admin() {
         .filter(r => r.id !== roundId)
         .flatMap(r => pairings[r.id] || [])
 
-      // Paid players with score + rating
+      // Paid, present players with score + rating (no-shows excluded)
       const players = registrations
-        .filter(r => r.payment_status === 'paid')
+        .filter(r => r.payment_status === 'paid' && (r.is_pairing_active ?? true))
         .map(r => ({
           user_id: r.user_id,
           score: r.score ?? 0,
@@ -321,6 +321,19 @@ export default function Admin() {
     }
   }
 
+  async function togglePairingActive(reg) {
+    const next = !(reg.is_pairing_active ?? true)
+    setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, is_pairing_active: next } : r))
+    const { error } = await supabase
+      .from('tournament_registrations')
+      .update({ is_pairing_active: next })
+      .eq('id', reg.id)
+    if (error) {
+      setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, is_pairing_active: reg.is_pairing_active } : r))
+      setMessage({ type: 'error', text: `Failed to update: ${error.message}` })
+    }
+  }
+
   async function exportCSV() {
     if (!selectedTournament) return
     const { data } = await supabase
@@ -362,6 +375,13 @@ export default function Admin() {
 
   const currentRound = rounds.find(r => r.id === activeRound)
   const currentPairings = activeRound ? (pairings[activeRound] || []) : []
+
+  const lastRound = rounds.length > 0 ? rounds[rounds.length - 1] : null
+  const lastRoundPairings = lastRound ? (pairings[lastRound.id] || []) : []
+  const missingResults = lastRoundPairings.filter(p => p.player1_id != null && p.result == null)
+  const canAddRound = rounds.length === 0 || missingResults.length === 0
+  const paidCount = registrations.filter(r => r.payment_status === 'paid').length
+  const recommendedRounds = paidCount > 1 ? Math.ceil(Math.log2(paidCount)) : 1
 
   const registrationOptions = registrations.map(r => ({ value: r.user_id, label: r.users?.name }))
 
@@ -452,7 +472,6 @@ export default function Admin() {
                   <Field label="Tournament Name" value={form.name} onChange={v => setFormField('name', v)} placeholder="PG Open #12" required />
                   <Field label="Date & Time" type="datetime-local" value={form.date} onChange={v => setFormField('date', v)} required min={new Date().toISOString().slice(0, 16)} />
                   <Field label="Format" value={form.format} onChange={v => setFormField('format', v)} placeholder="Swiss, Rapid 15+10" required />
-                  <Field label="Rounds" type="number" value={form.rounds} onChange={v => setFormField('rounds', v)} placeholder="5" required />
                   <Field label="Entry Fee (₹)" type="number" value={form.entry_fee} onChange={v => setFormField('entry_fee', v)} placeholder="200" />
                   <Field label="Max Players" type="number" value={form.max_players} onChange={v => setFormField('max_players', v)} placeholder="64" />
                   <Field label="Registration Deadline" type="datetime-local" value={form.registration_deadline} onChange={v => setFormField('registration_deadline', v)} min={new Date().toISOString().slice(0, 16)} />
@@ -501,6 +520,13 @@ export default function Admin() {
                 {!form.is_online && (
                   <Field label="Venue" value={form.venue} onChange={v => setFormField('venue', v)} placeholder="Chess Club, Hyderabad" />
                 )}
+                <Field
+                  label="Google Maps Link"
+                  value={form.location_link}
+                  onChange={v => setFormField('location_link', v)}
+                  placeholder="https://maps.app.goo.gl/..."
+                  required={!form.is_online}
+                />
 
                 <div className="flex gap-3 pt-2">
                   <button
@@ -565,13 +591,16 @@ export default function Admin() {
                         <th className="px-4 py-3 text-right">PG Rating</th>
                         <th className="px-4 py-3 text-right">Payment</th>
                         <th className="px-4 py-3 text-right">Score</th>
+                        <th className="px-4 py-3 text-center">Pairing</th>
                       </tr>
                     </thead>
                     <tbody>
                       {registrations.length === 0 ? (
-                        <tr><td colSpan={4} className="px-5 py-6 text-center text-slate-500">No registrations yet.</td></tr>
-                      ) : registrations.map(reg => (
-                        <tr key={reg.id} className="border-b border-navy-700/40">
+                        <tr><td colSpan={5} className="px-5 py-6 text-center text-slate-500">No registrations yet.</td></tr>
+                      ) : registrations.map(reg => {
+                        const active = reg.is_pairing_active ?? true
+                        return (
+                        <tr key={reg.id} className={`border-b border-navy-700/40 ${!active ? 'opacity-50' : ''}`}>
                           <td className="px-5 py-3 text-white">{reg.users?.name ?? '—'}</td>
                           <td className="px-4 py-3 text-right text-slate-400 font-mono">{reg.users?.ratings?.find(rt => rt.time_control === selectedTournament.time_control)?.rating ?? '—'}</td>
                           <td className="px-4 py-3 text-right">
@@ -602,8 +631,25 @@ export default function Admin() {
                               placeholder="—"
                             />
                           </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => togglePairingActive(reg)}
+                              title={active ? 'Mark as absent (won\'t be paired)' : 'Mark as present (will be paired)'}
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                                active
+                                  ? 'bg-green-500/15 text-green-300 hover:bg-red-500/15 hover:text-red-300'
+                                  : 'bg-slate-500/15 text-slate-400 hover:bg-green-500/15 hover:text-green-300'
+                              }`}
+                            >
+                              {active
+                                ? <><UserCheck size={11} /> Present</>
+                                : <><UserX size={11} /> Absent</>
+                              }
+                            </button>
+                          </td>
                         </tr>
-                      ))}
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -615,13 +661,28 @@ export default function Admin() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                   <Trophy size={18} /> Rounds
+                  <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                    Recommended: {recommendedRounds}
+                  </span>
                 </h3>
-                <button
-                  onClick={addRound}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors"
-                >
-                  <Plus size={14} /> Add Round
-                </button>
+                <div className="flex flex-col items-end gap-1">
+                  <button
+                    onClick={addRound}
+                    disabled={!canAddRound}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-white text-sm rounded-lg transition-colors ${
+                      canAddRound
+                        ? 'bg-blue-600 hover:bg-blue-500'
+                        : 'bg-blue-900 opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <Plus size={14} /> Add Round
+                  </button>
+                  {!canAddRound && (
+                    <p className="text-xs text-amber-400">
+                      Enter all results for Round {lastRound.round_number} first
+                    </p>
+                  )}
+                </div>
               </div>
 
               {rounds.length > 0 && (

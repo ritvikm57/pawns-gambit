@@ -141,7 +141,7 @@ function InfoAccordions() {
           <button
             key={sec.key}
             onClick={() => tog(sec.key)}
-            className="flex items-center justify-between gap-3 px-5 py-4 rounded-2xl text-left border transition-all text-sm font-semibold text-white"
+            className="flex items-center justify-between gap-3 px-6 py-5 rounded-2xl text-left border transition-all text-base font-semibold text-white"
             style={{
               background: open === sec.key ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
               borderColor: 'rgba(255,255,255,0.2)',
@@ -269,7 +269,7 @@ export default function Tournaments() {
 // ─── Tournament row (list item) ───────────────────────────────────────────────
 function TournamentRow({ tournament }) {
   const {
-    id, name, date, format, rounds, venue, is_online,
+    id, name, date, format, venue, is_online,
     entry_fee, prize_pool, registered_count = 0, max_players, status,
   } = tournament
 
@@ -320,7 +320,7 @@ function TournamentRow({ tournament }) {
                 </span>
                 <span className="flex items-center gap-1">
                   <Trophy size={11} />
-                  {format}{rounds ? ` · ${rounds} rounds` : ''}
+                  {format}
                 </span>
                 <span className="flex items-center gap-1">
                   <IndianRupee size={11} />
