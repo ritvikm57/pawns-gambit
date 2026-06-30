@@ -29,8 +29,8 @@ function IntroAnimation({ onDone }) {
       const ctx = canvas.getContext('2d')
       const TILE = Math.round(Math.min(W, H) / 10)
 
-      // Deep dark base
-      ctx.fillStyle = '#04080f'
+      // Light teal base
+      ctx.fillStyle = '#e0f5f5'
       ctx.fillRect(0, 0, W, H)
 
       // Two orbiting light sources that create dynamic reflections
@@ -62,41 +62,41 @@ function IntroAnimation({ onDone }) {
           const l2 = Math.max(0, 1 - d2 / lightR) ** 1.8
           const light = Math.min(1, l1 * 0.75 + l2 * 0.55)
 
-          // Base fill — dark squares black, light squares white glass
+          // Dark squares: medium teal; light squares: bright white
           ctx.fillStyle = isDark
-            ? `rgba(8,8,8,${0.88 + light * 0.08})`
-            : `rgba(255,255,255,${0.08 + light * 0.22})`
+            ? `rgba(0,160,160,${0.55 + light * 0.20})`
+            : `rgba(255,255,255,${0.75 + light * 0.22})`
           ctx.fillRect(x, y, TILE, TILE)
 
-          // Glass diagonal highlight — top-left corner streak
+          // Glass diagonal highlight
           const hl = ctx.createLinearGradient(x, y, x + TILE * 0.7, y + TILE * 0.7)
-          hl.addColorStop(0, `rgba(255,255,255,${0.2 + light * 0.15})`)
-          hl.addColorStop(0.4, `rgba(255,255,255,${0.04 + light * 0.04})`)
-          hl.addColorStop(1, 'rgba(255,255,255,0)')
+          hl.addColorStop(0, `rgba(255,255,255,${0.30 + light * 0.20})`)
+          hl.addColorStop(0.4, `rgba(220,248,248,${0.08 + light * 0.06})`)
+          hl.addColorStop(1, 'rgba(180,230,230,0)')
           ctx.fillStyle = hl
           ctx.fillRect(x, y, TILE, TILE)
 
-          // Glass depth shadow — bottom-right
+          // Depth shadow — soft
           const sh = ctx.createLinearGradient(x + TILE, y + TILE, x + TILE * 0.45, y + TILE * 0.45)
-          sh.addColorStop(0, 'rgba(0,0,0,0.28)')
-          sh.addColorStop(1, 'rgba(0,0,0,0)')
+          sh.addColorStop(0, 'rgba(0,100,100,0.18)')
+          sh.addColorStop(1, 'rgba(0,100,100,0)')
           ctx.fillStyle = sh
           ctx.fillRect(x, y, TILE, TILE)
 
-          // Glowing tile border
+          // Tile border
           ctx.strokeStyle = isDark
-            ? `rgba(255,255,255,${0.06 + light * 0.28})`
-            : `rgba(255,255,255,${0.12 + light * 0.3})`
+            ? `rgba(0,200,200,${0.15 + light * 0.35})`
+            : `rgba(255,255,255,${0.40 + light * 0.40})`
           ctx.lineWidth = 0.5
           ctx.strokeRect(x + 0.5, y + 0.5, TILE - 1, TILE - 1)
         }
       }
 
-      // Edge vignette — focuses the eye on the center logo
+      // Edge vignette — soft teal fade
       const vig = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.65)
-      vig.addColorStop(0, 'rgba(0,0,0,0)')
-      vig.addColorStop(0.4, 'rgba(0,0,0,0.1)')
-      vig.addColorStop(1, 'rgba(0,0,0,0.82)')
+      vig.addColorStop(0, 'rgba(0,120,120,0)')
+      vig.addColorStop(0.4, 'rgba(0,120,120,0.08)')
+      vig.addColorStop(1, 'rgba(0,80,80,0.55)')
       ctx.fillStyle = vig
       ctx.fillRect(0, 0, W, H)
 
@@ -104,6 +104,10 @@ function IntroAnimation({ onDone }) {
     }
 
     raf = requestAnimationFrame(frame)
+
+    // Preload the logo so it's ready before the reveal timer fires
+    const img = new Image()
+    img.src = '/logo.svg'
 
     const t0 = setTimeout(() => setShowLogo(true), 300)
     const t1 = setTimeout(() => setFadeOut(true), 1800)
@@ -125,14 +129,14 @@ function IntroAnimation({ onDone }) {
     }}>
       <style>{`
         @keyframes pgGlow {
-          0%, 100% { filter: drop-shadow(0 0 18px rgba(255,255,255,0.3)) drop-shadow(0 0 38px rgba(255,255,255,0.15)); }
-          50%       { filter: drop-shadow(0 0 30px rgba(255,255,255,0.55)) drop-shadow(0 0 60px rgba(255,255,255,0.28)); }
+          0%, 100% { filter: drop-shadow(0 0 18px rgba(0,200,200,0.4)) drop-shadow(0 0 38px rgba(255,255,255,0.15)); }
+          50%       { filter: drop-shadow(0 0 30px rgba(0,220,220,0.65)) drop-shadow(0 0 60px rgba(255,255,255,0.28)); }
         }
       `}</style>
       {/* Chess board base */}
       <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
-      {/* Brand teal tint — gives the B&W board identity */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,148,148,0.18)', mixBlendMode: 'color' }} />
+      {/* Subtle teal overlay to unify the board */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,160,160,0.06)', mixBlendMode: 'multiply' }} />
       {/* Shader rings — screen blend so they glow over the board */}
       <div style={{ position: 'absolute', inset: 0, mixBlendMode: 'screen' }}>
         <ShaderRings />
@@ -142,7 +146,7 @@ function IntroAnimation({ onDone }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <img
-          src="/logo.png"
+          src="/logo.svg"
           alt="Pawn's Gambit"
           style={{
             width: 'min(66vw, 66vh)', height: 'auto', objectFit: 'contain',
@@ -181,6 +185,8 @@ import Profile from './pages/Profile'
 import Admin from './pages/Admin'
 import ResetPassword from './pages/ResetPassword'
 import Contact from './pages/Contact'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsAndConditions from './pages/TermsAndConditions'
 
 function NotFound() {
   return (
@@ -251,6 +257,8 @@ export default function App() {
                   </AdminRoute>
                 }
               />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

@@ -275,14 +275,37 @@ export default function Admin() {
 
   async function updatePairingField(roundId, pairingId, field, value) {
     const prevPairings = pairings[roundId]
-    setPairings(prev => ({
-      ...prev,
-      [roundId]: prev[roundId].map(p => p.id === pairingId ? { ...p, [field]: value } : p),
-    }))
+    const updatedRoundPairings = prevPairings.map(p => p.id === pairingId ? { ...p, [field]: value } : p)
+    setPairings(prev => ({ ...prev, [roundId]: updatedRoundPairings }))
+
     const { error } = await supabase.from('pairings').update({ [field]: value }).eq('id', pairingId)
     if (error) {
       setPairings(prev => ({ ...prev, [roundId]: prevPairings }))
       setMessage({ type: 'error', text: `Failed to save pairing: ${error.message}` })
+      return
+    }
+
+    if (field === 'result') {
+      const updatedPairing = updatedRoundPairings.find(p => p.id === pairingId)
+      if (!updatedPairing) return
+
+      const allPairings = Object.values({ ...pairings, [roundId]: updatedRoundPairings }).flat()
+
+      const calcScore = userId => allPairings.reduce((sum, p) => {
+        if (p.result == null) return sum
+        if (p.player1_id === userId) return sum + p.result
+        if (p.player2_id === userId) return sum + (1 - p.result)
+        return sum
+      }, 0)
+
+      const affected = [updatedPairing.player1_id, updatedPairing.player2_id].filter(Boolean)
+      for (const userId of affected) {
+        const reg = registrations.find(r => r.user_id === userId)
+        if (!reg) continue
+        const newScore = calcScore(userId)
+        setRegistrations(prev => prev.map(r => r.user_id === userId ? { ...r, score: newScore } : r))
+        await supabase.from('tournament_registrations').update({ score: newScore }).eq('id', reg.id)
+      }
     }
   }
 
@@ -390,7 +413,7 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between py-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Admin Panel</h1>
+            <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
           </div>
           <div className="flex gap-2">
             {['tournaments', 'create'].map(v => (
@@ -561,7 +584,7 @@ export default function Admin() {
 
             <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">{selectedTournament.name}</h2>
+                <h2 className="text-2xl font-bold text-white">{selectedTournament.name}</h2>
                 <p className="text-slate-400 text-sm mt-0.5">
                   {new Date(selectedTournament.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
@@ -579,7 +602,7 @@ export default function Admin() {
 
             {/* Registrations */}
             <section className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                 <Users size={18} /> Registrations ({registrations.length})
               </h3>
               <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
@@ -612,24 +635,8 @@ export default function Admin() {
                               {reg.payment_status}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right">
-                            <input
-                              type="number"
-                              step="0.5"
-                              min="0"
-                              defaultValue={reg.score ?? ''}
-                              onBlur={async e => {
-                                const val = parseFloat(e.target.value)
-                                if (!isNaN(val)) {
-                                  await supabase
-                                    .from('tournament_registrations')
-                                    .update({ score: val })
-                                    .eq('id', reg.id)
-                                }
-                              }}
-                              className="w-16 bg-white border border-gray-200 text-slate-900 text-xs rounded px-2 py-1 text-right outline-none"
-                              placeholder="—"
-                            />
+                          <td className="px-4 py-3 text-right font-mono text-white">
+                            {reg.score != null ? reg.score : '—'}
                           </td>
                           <td className="px-4 py-3 text-center">
                             <button
@@ -659,9 +666,9 @@ export default function Admin() {
             {/* Rounds & Pairings */}
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                   <Trophy size={18} /> Rounds
-                  <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                  <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-white/10 text-slate-300 border border-white/20">
                     Recommended: {recommendedRounds}
                   </span>
                 </h3>
@@ -692,7 +699,7 @@ export default function Admin() {
                       key={round.id}
                       onClick={() => setActiveRound(round.id)}
                       className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
-                        activeRound === round.id ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100'
+                        activeRound === round.id ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-white/10'
                       }`}
                     >
                       Round {round.round_number}

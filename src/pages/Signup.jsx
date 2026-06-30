@@ -42,6 +42,7 @@ export default function Signup() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   const { signUp } = useAuth()
   const navigate = useNavigate()
@@ -183,9 +184,29 @@ export default function Signup() {
               <InputField label="City" value={form.city} onChange={set('city')} placeholder="Hyderabad" />
               <InputField label="Chess.com Name" value={form.chessComUsername} onChange={set('chessComUsername')} placeholder="Username" optional />
               <InputField label="FIDE ID" value={form.fideId} onChange={set('fideId')} type="text" placeholder="25048123" optional />
-              <InputField label="Phone" value={form.phone} onChange={set('phone')} type="tel" placeholder="+91 xxxxx xxxxx" optional hint="For event notifications" />
+              <InputField label="Phone" value={form.phone} onChange={set('phone')} type="tel" placeholder="+91 xxxxx xxxxx" hint="For event notifications" />
 
-              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-base mt-2">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={e => setAgreedToTerms(e.target.checked)}
+                  required
+                  className="mt-1 accent-blue-500 w-4 h-4 flex-shrink-0"
+                />
+                <span className="text-slate-300 text-sm leading-relaxed">
+                  I agree to the{' '}
+                  <Link to="/terms" target="_blank" className="text-blue-400 hover:underline">Terms &amp; Conditions</Link>
+                  {' '}and{' '}
+                  <Link to="/privacy" target="_blank" className="text-blue-400 hover:underline">Privacy Policy</Link>
+                </span>
+              </label>
+
+              <button
+                type="submit"
+                disabled={!agreedToTerms}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-900 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors text-base mt-2"
+              >
                 Continue →
               </button>
             </form>

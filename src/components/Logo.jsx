@@ -1,7 +1,7 @@
 export default function Logo({ size = 36, className = '' }) {
   return (
     <img
-      src="/logo.png"
+      src="/logo.svg"
       width={size}
       height={size}
       alt="Pawn's Gambit"

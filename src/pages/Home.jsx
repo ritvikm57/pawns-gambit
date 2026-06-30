@@ -355,9 +355,9 @@ function TeamSection() {
         idxRef.current = next
         setIdx(next)
         setVisible(true)
-      }, 280)
+      }, 420)
     }
-    const id = setInterval(advance, 4500)
+    const id = setInterval(advance, 6750)
     return () => clearInterval(id)
   }, [])
 
@@ -379,7 +379,7 @@ function TeamSection() {
       idxRef.current = i
       setIdx(i)
       setVisible(true)
-    }, 280)
+    }, 420)
   }
 
   const m = TEAM[idx]
@@ -390,7 +390,7 @@ function TeamSection() {
         className="relative"
         style={{
           background: C.bgAlt,
-          height: '100vh',
+          height: 'calc(100vh - 64px)',
           scrollSnapAlign: 'start',
           scrollSnapStop: 'always',
           display: 'grid',
@@ -432,6 +432,30 @@ function TeamSection() {
                 <p className="pg-desc" style={{ fontSize: '1rem', color: '#ffffff', fontStyle: 'italic', marginBottom: '0.5rem', lineHeight: 1.55 }}>{m.quote}</p>
                 <p style={{ fontSize: '0.95rem', color: C.body, lineHeight: 1.75 }}>{m.description}</p>
               </div>
+
+              <div className="flex items-center gap-3 mt-2">
+                <button
+                  onClick={() => goTo((idxRef.current - 1 + TEAM.length) % TEAM.length)}
+                  className="flex items-center justify-center w-9 h-9 rounded-full border transition-colors hover:bg-white/10"
+                  style={{ borderColor: `${C.line}`, color: C.body }}
+                >
+                  <ArrowRight size={15} style={{ transform: 'rotate(180deg)' }} />
+                </button>
+                <button
+                  onClick={() => goTo((idxRef.current + 1) % TEAM.length)}
+                  className="flex items-center justify-center w-9 h-9 rounded-full border transition-colors hover:bg-white/10"
+                  style={{ borderColor: `${C.line}`, color: C.body }}
+                >
+                  <ArrowRight size={15} />
+                </button>
+                <div className="flex gap-1.5 ml-1">
+                  {TEAM.map((_, i) => (
+                    <button key={i} onClick={() => goTo(i)}
+                      style={{ width: 6, height: 6, borderRadius: '50%', background: i === idx ? C.ink : C.line, transition: 'background 300ms' }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* RIGHT: photo */}
@@ -439,7 +463,7 @@ function TeamSection() {
               width: '45%', height: '80%', borderRadius: '1rem', overflow: 'hidden', flexShrink: 0,
               background: C.bgAlt, border: `1px solid ${C.line}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              opacity: visible ? 1 : 0, transition: 'opacity 280ms ease',
+              opacity: visible ? 1 : 0, transition: 'opacity 420ms ease',
             }}>
               {m.photo ? (
                 <img src={m.photo} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
@@ -477,7 +501,7 @@ function TeamSection() {
               top: `calc(50% + ${wheelR}px)`,
               width: 0, height: 0,
               transform: `rotate(${rotation}deg)`,
-              transition: 'transform 600ms cubic-bezier(0.22, 1, 0.36, 1)',
+              transition: 'transform 900ms cubic-bezier(0.22, 1, 0.36, 1)',
             }}
           >
             {TEAM.map((member, i) => {
@@ -492,7 +516,7 @@ function TeamSection() {
                     left: `${px}px`,
                     top: `${py}px`,
                     transform: `translate(-50%, -50%) rotate(${-rotation}deg)`,
-                    transition: 'transform 600ms cubic-bezier(0.22, 1, 0.36, 1)',
+                    transition: 'transform 900ms cubic-bezier(0.22, 1, 0.36, 1)',
                     textAlign: 'center',
                   }}
                 >
@@ -560,6 +584,16 @@ export default function Home() {
   const [openLearn, setOpenLearn] = useState(null)
   const tog = (key) => setOpenLearn(prev => prev === key ? null : key)
 
+  useEffect(() => {
+    const html = document.documentElement
+    html.style.scrollSnapType = 'y mandatory'
+    html.style.scrollPaddingTop = '64px'
+    return () => {
+      html.style.scrollSnapType = ''
+      html.style.scrollPaddingTop = ''
+    }
+  }, [])
+
   // Home always opens at the top. ScrollToTop in App.jsx deliberately skips
   // Home, so without this the scroll position carries over from whatever page
   // you navigated from — Home would mount scrolled down and the pawn would
@@ -569,11 +603,6 @@ export default function Home() {
     window.scrollTo(0, 0)
   }, [])
 
-  useEffect(() => {
-    const html = document.documentElement
-    html.style.scrollSnapType = 'y mandatory'
-    return () => { html.style.scrollSnapType = '' }
-  }, [])
 
   useEffect(() => {
     supabase.from('tournaments')
@@ -678,7 +707,7 @@ export default function Home() {
           className="relative"
           style={{
             background: C.bgAlt,
-            height: '100vh',
+            height: 'calc(100vh - 64px)',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
             display: 'grid',
@@ -779,12 +808,12 @@ export default function Home() {
                   ].map(ev => (
                     <div key={ev.title} className="py-3 flex flex-row-reverse gap-4 items-start" style={{ borderTop: `1px solid ${C.line}` }}>
                       <span
-                        className="mt-0.5 text-[9px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0"
+                        className="mt-0.5 text-xs font-bold tracking-widest uppercase px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0"
                         style={{ color: '#FF6600', background: 'rgba(255,102,0,0.12)' }}
                       >{ev.tag}</span>
                       <div className="text-right">
-                        <p className="font-semibold text-sm leading-snug" style={{ color: C.ink }}>{ev.title}</p>
-                        <p className="text-sm leading-relaxed mt-0.5" style={{ color: C.body }}>{ev.body}</p>
+                        <p className="font-semibold text-lg leading-snug" style={{ color: C.ink }}>{ev.title}</p>
+                        <p className="text-lg leading-relaxed mt-0.5" style={{ color: C.body }}>{ev.body}</p>
                       </div>
                     </div>
                   ))}
@@ -807,7 +836,7 @@ export default function Home() {
           className="relative overflow-hidden"
           style={{
             background: C.bg,
-            height: '100vh',
+            height: 'calc(100vh - 64px)',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
             display: 'grid',
@@ -846,14 +875,13 @@ export default function Home() {
               </p>
 
               <LearnMore isOpen={openLearn === 'problem'} onToggle={() => tog('problem')}>
-                <p>Most adults don't struggle to find content. They struggle to find community.</p>
-                <p>They have a hard time connecting with another person.<br />
-                   Awkward silences during meets. No reason to return.</p>
-                <p>We've replaced gathering with scrolling.<br />
+                <p>Most adults don't struggle to find things to do.<br />
+                   They struggle to find people to do them with.</p>
+                <p>Humans have replaced gathering with scrolling.<br />
                    Friendship with notifications.<br />
                    Conversation with comments.</p>
                 <p style={{ color: C.ink, fontWeight: 600 }}>
-                  Pawn's Gambit exists because we think people deserve better.
+                  Pawn's Gambit exists because we believe people deserve better.
                 </p>
               </LearnMore>
             </FadeIn>
@@ -916,7 +944,7 @@ export default function Home() {
           className="relative"
           style={{
             background: C.bg,
-            height: '100vh',
+            height: 'calc(100vh - 64px)',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
             display: 'grid',
@@ -924,7 +952,6 @@ export default function Home() {
             gridTemplateRows: '1fr 1fr',
             borderTop: `1px solid ${C.line}`,
             isolation: 'isolate',
-            paddingTop: '4rem',
           }}
         >
           <PcaBg />
@@ -996,7 +1023,7 @@ export default function Home() {
           className="relative px-6"
           style={{
             background: '#000000',
-            height: '100vh',
+            height: 'calc(100vh - 64px)',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
             display: 'flex',

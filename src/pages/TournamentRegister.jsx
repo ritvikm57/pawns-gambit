@@ -1,14 +1,185 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Calendar, MapPin, Trophy, AlertCircle, CheckCircle, IndianRupee, Users } from 'lucide-react'
+import { Calendar, MapPin, Trophy, AlertCircle, CheckCircle, IndianRupee, Users, ChevronDown } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { initiatePayment } from '../lib/razorpay'
+import { CITIES, AREAS_BY_CITY } from '../lib/locationData'
+
+const PROFILE_FIELDS = ['gender', 'birthday', 'city', 'area', 'pincode', 'chess_com_username', 'fide_id']
+
+const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say']
+
+function Select({ label, value, onChange, options, placeholder, optional }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-1.5">
+        {label} {optional && <span className="text-slate-500 font-normal">(optional)</span>}
+      </label>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className="w-full appearance-none bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 pr-10 text-white outline-none transition-colors text-sm"
+        >
+          <option value="">{placeholder}</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+      </div>
+    </div>
+  )
+}
+
+function TextInput({ label, value, onChange, placeholder, optional, type = 'text', maxLength }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-1.5">
+        {label} {optional && <span className="text-slate-500 font-normal">(optional)</span>}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-sm"
+      />
+    </div>
+  )
+}
+
+function ProfileStep({ profile, onDone, fetchProfile, userId }) {
+  const missing = PROFILE_FIELDS.filter(f => !profile?.[f])
+  const needs = field => missing.includes(field)
+
+  const [gender, setGender] = useState('')
+  const [birthday, setBirthday] = useState('')
+  const [city, setCity] = useState(profile?.city || '')
+  const [area, setArea] = useState('')
+  const [pincode, setPincode] = useState('')
+  const [chessComUsername, setChessComUsername] = useState('')
+  const [fideId, setFideId] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const areas = AREAS_BY_CITY[city] || []
+
+  async function handleSave(e) {
+    e.preventDefault()
+    setSaving(true)
+    setError('')
+    try {
+      const updates = {}
+      if (needs('gender') && gender) updates.gender = gender
+      if (needs('birthday') && birthday) updates.birthday = birthday
+      if (needs('city') && city) updates.city = city
+      if (needs('area') && area) updates.area = area
+      if (needs('pincode') && pincode) updates.pincode = pincode
+      if (needs('chess_com_username') && chessComUsername) updates.chess_com_username = chessComUsername
+      if (needs('fide_id') && fideId) updates.fide_id = fideId
+
+      if (Object.keys(updates).length > 0) {
+        const { error: err } = await supabase.from('users').update(updates).eq('id', userId)
+        if (err) throw err
+        await fetchProfile(userId)
+      }
+      onDone()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const hasRequired = needs('gender') || needs('birthday') || needs('city') || needs('area') || needs('pincode')
+  const hasOptional = needs('chess_com_username') || needs('fide_id')
+
+  return (
+    <div className="min-h-screen pt-20 pb-12 px-4">
+      <div className="max-w-lg mx-auto">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center mx-auto mb-4">
+            <Users size={20} className="text-blue-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-1">Complete your profile</h1>
+          <p className="text-white/50 text-sm">We need a few more details before you can register</p>
+        </div>
+
+        <form onSubmit={handleSave} className="space-y-4">
+          {hasRequired && (
+            <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 space-y-4">
+              <h3 className="text-white font-medium text-sm uppercase tracking-wider opacity-60 -mb-1">Your Details</h3>
+
+              {needs('gender') && (
+                <Select label="Gender" value={gender} onChange={setGender} options={GENDERS} placeholder="Select gender" />
+              )}
+              {needs('birthday') && (
+                <TextInput label="Date of Birth" value={birthday} onChange={setBirthday} type="date" placeholder="" />
+              )}
+              {needs('city') && (
+                <Select label="City" value={city} onChange={v => { setCity(v); setArea('') }} options={CITIES} placeholder="Select city" />
+              )}
+              {needs('area') && (
+                areas.length > 0 ? (
+                  <Select label="Area / Locality" value={area} onChange={setArea} options={areas} placeholder="Select area" />
+                ) : (
+                  <TextInput label="Area / Locality" value={area} onChange={setArea} placeholder="Your area or locality" />
+                )
+              )}
+              {needs('pincode') && (
+                <TextInput label="Pincode" value={pincode} onChange={v => setPincode(v.replace(/\D/g, '').slice(0, 6))} placeholder="6-digit pincode" maxLength={6} />
+              )}
+            </div>
+          )}
+
+          {hasOptional && (
+            <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 space-y-4">
+              <h3 className="text-white font-medium text-sm uppercase tracking-wider opacity-60 -mb-1">Chess Profile</h3>
+              {needs('chess_com_username') && (
+                <TextInput label="Chess.com Username" value={chessComUsername} onChange={setChessComUsername} placeholder="Your Chess.com handle" optional />
+              )}
+              {needs('fide_id') && (
+                <TextInput label="FIDE ID" value={fideId} onChange={setFideId} placeholder="e.g. 25048123" optional />
+              )}
+            </div>
+          )}
+
+          {error && (
+            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-300 text-sm">
+              <AlertCircle size={14} className="flex-shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onDone}
+              className="flex-1 py-3 border border-white/20 text-white/60 hover:text-white hover:border-white/40 font-medium rounded-xl text-sm transition-colors"
+            >
+              Skip for now
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold rounded-xl text-sm transition-colors"
+            >
+              {saving ? 'Saving…' : 'Save & Continue'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
 
 export default function TournamentRegister() {
   const { id } = useParams()
-  const { user, profile } = useAuth()
+  const { user, profile, fetchProfile } = useAuth()
   const navigate = useNavigate()
+  const [showProfileStep, setShowProfileStep] = useState(false)
+  const profileStepDismissed = useRef(false)
 
   const [tournament, setTournament] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -25,6 +196,13 @@ export default function TournamentRegister() {
     }
     fetchTournament()
   }, [id, user])
+
+  useEffect(() => {
+    if (profile && !profileStepDismissed.current) {
+      const anyMissing = PROFILE_FIELDS.some(f => !profile[f])
+      setShowProfileStep(anyMissing)
+    }
+  }, [profile])
 
   async function fetchTournament() {
     try {
@@ -131,6 +309,17 @@ export default function TournamentRegister() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
       </div>
+    )
+  }
+
+  if (showProfileStep) {
+    return (
+      <ProfileStep
+        profile={profile}
+        userId={user.id}
+        fetchProfile={fetchProfile}
+        onDone={() => { profileStepDismissed.current = true; setShowProfileStep(false) }}
+      />
     )
   }
 

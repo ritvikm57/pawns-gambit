@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown, User, LogOut, Settings } from 'lucide-react'
 import Logo from './Logo'
@@ -8,6 +9,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen]       = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [scrolled, setScrolled]       = useState(false)
+  const [logoOpen, setLogoOpen]       = useState(false)
   const { user, profile, isAdmin, signOut } = useAuth()
   const navigate  = useNavigate()
   const location  = useLocation()
@@ -45,6 +47,7 @@ export default function Navbar() {
     : user?.email?.[0]?.toUpperCase() ?? '?'
 
   return (
+    <>
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
@@ -58,12 +61,12 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
+          <button onClick={() => setLogoOpen(true)} className="flex items-center gap-2.5 flex-shrink-0 group">
             <Logo size={34} />
             <span className="font-bold text-sm tracking-wide hidden sm:block text-white transition-colors group-hover:opacity-80">
               Pawn's Gambit
             </span>
-          </Link>
+          </button>
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-0.5">
@@ -89,7 +92,7 @@ export default function Navbar() {
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                    isHome ? 'text-slate-700 hover:bg-slate-100' : 'text-white hover:bg-white/5'
+                    isHome ? 'text-white hover:bg-white/10' : 'text-white hover:bg-white/5'
                   }`}
                 >
                   <div
@@ -202,5 +205,38 @@ export default function Navbar() {
         <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
       )}
     </nav>
+
+    {logoOpen && createPortal(
+      <div className="fixed inset-0 z-[999] flex items-center justify-center px-4" onClick={() => setLogoOpen(false)}>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div
+          className="relative z-10 max-w-xl w-full rounded-3xl p-12 flex flex-col items-center text-center gap-8 shadow-2xl border border-sky-200"
+          style={{ background: '#e0f2fe' }}
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            onClick={() => setLogoOpen(false)}
+            className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 transition-colors"
+          >
+            <X size={20} />
+          </button>
+          <Logo size={272} />
+          <p className="text-slate-700 text-lg leading-relaxed">
+            A pawn is never meant to stand alone. A single pawn has limited strength, but a community of pawns can defend, support, and advance together. Pawn's Gambit is built on that belief: every member helps another move forward.
+          </p>
+          {location.pathname !== '/' && (
+            <button
+              onClick={() => { setLogoOpen(false); navigate('/') }}
+              className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all hover:brightness-110"
+              style={{ background: 'linear-gradient(135deg, #FF4500, #FF9900)' }}
+            >
+              Go to Homepage
+            </button>
+          )}
+        </div>
+      </div>,
+      document.body
+    )}
+    </>
   )
 }
