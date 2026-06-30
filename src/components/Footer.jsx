@@ -1,23 +1,6 @@
 import { Link } from 'react-router-dom'
 import Logo from './Logo'
-
-function InstagramIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function YouTubeIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.3 2.8 12 2.8 12 2.8s-4.3 0-6.8.1c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.2.7 11.3v2c0 2.2.3 4.3.3 4.3s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.3 21.9 12 22 12 22s4.3 0 6.8-.3c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.3v-2C23.3 9.2 23 7 23 7zM9.7 15.5V8.4l6.6 3.6-6.6 3.5z" />
-    </svg>
-  )
-}
+import { SOCIALS } from '../lib/socials'
 
 const BORDER = 'rgba(74,158,255,0.1)'
 const MUTED  = 'rgba(200,216,237,0.45)'
@@ -36,16 +19,13 @@ export default function Footer() {
             <p className="text-sm leading-relaxed" style={{ color: MUTED }}>
               Hyderabad's chess community — where the board starts the conversation.
             </p>
-            <div className="flex items-center gap-3">
-              {[
-                { href: 'https://instagram.com', label: 'Instagram', icon: <InstagramIcon /> },
-                { href: 'https://youtube.com',   label: 'YouTube',   icon: <YouTubeIcon />   },
-              ].map(s => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                   aria-label={s.label}
+            <div className="flex items-center gap-3 flex-wrap">
+              {SOCIALS.map(({ label, href, icon: Icon }) => (
+                <a key={label} href={href} target="_blank" rel="noopener noreferrer"
+                   aria-label={label}
                    className="transition-colors hover:text-white"
                    style={{ color: MUTED }}>
-                  {s.icon}
+                  <Icon size={20} />
                 </a>
               ))}
             </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, MapPin, ArrowRight, Send } from 'lucide-react'
+import { SOCIALS } from '../lib/socials'
 
 const C = {
   ink:   '#ffffff',
@@ -114,20 +115,18 @@ export default function Contact() {
             <p className="text-sm font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: C.faint }}>
               Follow along
             </p>
-            <div className="flex gap-3">
-              {[
-                { label: 'Instagram', href: 'https://instagram.com' },
-                { label: 'YouTube',   href: 'https://youtube.com' },
-              ].map(s => (
+            <div className="flex gap-3 flex-wrap">
+              {SOCIALS.map(({ label, href, icon: Icon }) => (
                 <a
-                  key={s.label}
-                  href={s.href}
+                  key={label}
+                  href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-lg text-base font-medium border transition-colors hover:text-blue-600"
+                  aria-label={label}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center border transition-all hover:border-white/40 hover:text-white"
                   style={{ color: C.body, borderColor: C.line, background: C.bgAlt }}
                 >
-                  {s.label}
+                  <Icon size={20} />
                 </a>
               ))}
             </div>
