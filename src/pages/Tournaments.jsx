@@ -208,12 +208,7 @@ export default function Tournaments() {
 
   return (
     <div className="relative min-h-screen pt-20 pb-16 px-4" style={{ background: 'transparent' }}>
-      {/* Decorative grid lines — mirrors the cross pattern from Home page sections */}
-      <div className="pointer-events-none" style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
-        <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 1, background: 'rgba(255,255,255,0.2)' }} />
-        <div style={{ position: 'absolute', top: 0, bottom: 0, left: '33.333%', width: 1, background: 'rgba(255,255,255,0.2)' }} />
-        <div style={{ position: 'absolute', top: 0, bottom: 0, right: '33.333%', width: 1, background: 'rgba(255,255,255,0.2)' }} />
-      </div>
+      <img src="/PCA.png" alt="" style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.1, pointerEvents: 'none', zIndex: 0 }} />
       <div className="relative z-10 max-w-5xl mx-auto">
 
         {/* Header */}
