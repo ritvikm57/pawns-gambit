@@ -223,6 +223,7 @@ export default function TournamentDetail() {
     ? new Date(tournament.date).toLocaleDateString('en-IN', {
         weekday: 'long', day: 'numeric', month: 'long',
         year: 'numeric', hour: '2-digit', minute: '2-digit',
+        timeZone: 'Asia/Kolkata',
       })
     : '—'
 
@@ -230,6 +231,7 @@ export default function TournamentDetail() {
     ? new Date(tournament.registration_deadline).toLocaleDateString('en-IN', {
         day: 'numeric', month: 'short', year: 'numeric',
         hour: '2-digit', minute: '2-digit',
+        timeZone: 'Asia/Kolkata',
       })
     : null
 

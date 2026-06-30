@@ -463,7 +463,7 @@ export default function Admin() {
                     <tr key={t.id} className="border-b border-navy-700/50 hover:bg-navy-700/20 transition-colors">
                       <td className="px-6 py-4 text-white font-medium">{t.name}</td>
                       <td className="px-4 py-4 text-slate-400 text-xs">
-                        {new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                       </td>
                       <td className="px-4 py-4 text-slate-400">{t.registered_count}</td>
                       <td className="px-4 py-4">
@@ -493,11 +493,11 @@ export default function Admin() {
               <form onSubmit={handleCreateTournament} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label="Tournament Name" value={form.name} onChange={v => setFormField('name', v)} placeholder="PG Open #12" required />
-                  <Field label="Date & Time" type="datetime-local" value={form.date} onChange={v => setFormField('date', v)} required min={new Date().toISOString().slice(0, 16)} />
+                  <Field label="Date & Time" type="datetime-local" value={form.date} onChange={v => setFormField('date', v)} required min={new Date(Date.now() + 19800000).toISOString().slice(0, 16)} />
                   <Field label="Format" value={form.format} onChange={v => setFormField('format', v)} placeholder="Swiss, Rapid 15+10" required />
                   <Field label="Entry Fee (₹)" type="number" value={form.entry_fee} onChange={v => setFormField('entry_fee', v)} placeholder="200" />
                   <Field label="Max Players" type="number" value={form.max_players} onChange={v => setFormField('max_players', v)} placeholder="64" />
-                  <Field label="Registration Deadline" type="datetime-local" value={form.registration_deadline} onChange={v => setFormField('registration_deadline', v)} min={new Date().toISOString().slice(0, 16)} />
+                  <Field label="Registration Deadline" type="datetime-local" value={form.registration_deadline} onChange={v => setFormField('registration_deadline', v)} min={new Date(Date.now() + 19800000).toISOString().slice(0, 16)} />
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1.5">Initial Status</label>
                     <select
@@ -586,7 +586,7 @@ export default function Admin() {
               <div>
                 <h2 className="text-2xl font-bold text-white">{selectedTournament.name}</h2>
                 <p className="text-slate-400 text-sm mt-0.5">
-                  {new Date(selectedTournament.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                  {new Date(selectedTournament.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                 </p>
               </div>
               <div className="flex gap-2 flex-wrap">

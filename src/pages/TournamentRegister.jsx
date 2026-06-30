@@ -354,7 +354,7 @@ export default function TournamentRegister() {
                 <Calendar size={14} className="flex-shrink-0" />
                 <span>{new Date(tournament.date).toLocaleDateString('en-IN', {
                   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-                  hour: '2-digit', minute: '2-digit',
+                  hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata',
                 })}</span>
               </div>
               <div className="flex flex-col gap-1">
@@ -453,7 +453,7 @@ export default function TournamentRegister() {
                 <Calendar size={14} className="flex-shrink-0" />
                 <span>{new Date(tournament.date).toLocaleDateString('en-IN', {
                   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-                  hour: '2-digit', minute: '2-digit',
+                  hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata',
                 })}</span>
               </div>
               <div className="flex flex-col gap-1">

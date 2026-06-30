@@ -123,7 +123,7 @@ export default function Gallery() {
                   )}
                   {photo.date && (
                     <p className="text-slate-400 text-xs mt-0.5">
-                      {new Date(photo.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {new Date(photo.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                     </p>
                   )}
                   {photo.caption && (

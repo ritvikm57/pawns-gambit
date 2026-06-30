@@ -133,7 +133,7 @@ export default function Profile() {
                         </td>
                         <td className="px-4 py-4 text-slate-400">
                           {entry.tournaments?.date
-                            ? new Date(entry.tournaments.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                            ? new Date(entry.tournaments.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })
                             : '—'}
                         </td>
                         <td className="px-4 py-4 text-right text-white">
