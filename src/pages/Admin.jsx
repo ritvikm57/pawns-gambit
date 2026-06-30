@@ -152,10 +152,11 @@ export default function Admin() {
     e.preventDefault()
     setLoading(true)
     setMessage(null)
+    const toIST = v => v ? v + ':00+05:30' : null
     try {
       const { error } = await supabase.from('tournaments').insert({
         name: form.name,
-        date: form.date,
+        date: toIST(form.date),
         format: form.format,
         venue: form.venue,
         is_online: form.is_online,
@@ -163,7 +164,7 @@ export default function Admin() {
         prize_pool: form.prize_pool,
         max_players: parseInt(form.max_players) || null,
         status: form.status,
-        registration_deadline: form.registration_deadline || null,
+        registration_deadline: toIST(form.registration_deadline),
         time_control: form.time_control,
         location_link: form.location_link || null,
       })
@@ -493,11 +494,11 @@ export default function Admin() {
               <form onSubmit={handleCreateTournament} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label="Tournament Name" value={form.name} onChange={v => setFormField('name', v)} placeholder="PG Open #12" required />
-                  <Field label="Date & Time" type="datetime-local" value={form.date} onChange={v => setFormField('date', v)} required min={new Date(Date.now() + 19800000).toISOString().slice(0, 16)} />
+                  <Field label="Date & Time" type="datetime-local" value={form.date} onChange={v => setFormField('date', v)} required min={new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Kolkata' }).slice(0, 16)} />
                   <Field label="Format" value={form.format} onChange={v => setFormField('format', v)} placeholder="Swiss, Rapid 15+10" required />
                   <Field label="Entry Fee (₹)" type="number" value={form.entry_fee} onChange={v => setFormField('entry_fee', v)} placeholder="200" />
                   <Field label="Max Players" type="number" value={form.max_players} onChange={v => setFormField('max_players', v)} placeholder="64" />
-                  <Field label="Registration Deadline" type="datetime-local" value={form.registration_deadline} onChange={v => setFormField('registration_deadline', v)} min={new Date(Date.now() + 19800000).toISOString().slice(0, 16)} />
+                  <Field label="Registration Deadline" type="datetime-local" value={form.registration_deadline} onChange={v => setFormField('registration_deadline', v)} min={new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Kolkata' }).slice(0, 16)} />
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1.5">Initial Status</label>
                     <select
