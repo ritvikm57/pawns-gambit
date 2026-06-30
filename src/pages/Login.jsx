@@ -53,7 +53,7 @@ export default function Login() {
     <div className="relative min-h-screen flex items-center justify-center px-4 py-12">
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <Logo size={72} className="mx-auto mb-4" />
+          <Logo size={144} className="mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white">Welcome back</h1>
           <p className="text-white/70 mt-1">Log in to your Pawn's Gambit account</p>
         </div>
