@@ -62,12 +62,26 @@ export default function Signup() {
     return null
   }
 
-  function handleNext(e) {
+  function validateStep2() {
+    if (!form.phone.trim()) return 'Phone number is required'
+    if (!agreedToTerms) return 'Please agree to the Terms & Conditions'
+    return null
+  }
+
+  function handleNext1(e) {
     e.preventDefault()
     const err = validateStep1()
     if (err) { setError(err); return }
     setError('')
     setStep(2)
+  }
+
+  function handleNext2(e) {
+    e.preventDefault()
+    const err = validateStep2()
+    if (err) { setError(err); return }
+    setError('')
+    setStep(3)
   }
 
   async function handleSubmit(e) {
@@ -118,26 +132,28 @@ export default function Signup() {
     <div className="relative min-h-screen flex items-center justify-center px-4 py-12">
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <Logo size={48} className="mx-auto mb-4" />
+          <Logo size={96} className="mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white-400">Create your account</h1>
           <p className="text-white-400 mt-1">Join Hyderabad's largest chess club</p>
         </div>
 
         {/* Step indicator */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          {[1, 2].map(s => (
-            <div key={s} className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          {[
+            { n: 1, label: 'Account' },
+            { n: 2, label: 'Profile' },
+            { n: 3, label: 'Skill Level' },
+          ].map(({ n, label }) => (
+            <div key={n} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors ${
-                s < step ? 'bg-white-600 border-white-600 text-white'
-                  : s === step ? 'border-white-500 text-white-400'
-                  : 'border-white-600 text-white-500'
+                n < step ? 'bg-blue-600 border-blue-600 text-white'
+                  : n === step ? 'border-white text-white'
+                  : 'border-slate-400 text-slate-400'
               }`}>
-                {s < step ? <CheckCircle size={16} /> : s}
+                {n < step ? <CheckCircle size={15} /> : n}
               </div>
-              <span className={`text-xs ${s === step ? 'text-white-900' : 'text-white-500'}`}>
-                {s === 1 ? 'Account Details' : 'Skill Level'}
-              </span>
-              {s < 2 && <div className="w-12 h-px bg-slate-300 mx-1" />}
+              <span className={`text-xs ${n === step ? 'text-white' : 'text-slate-400'}`}>{label}</span>
+              {n < 3 && <div className="w-8 h-px bg-slate-400 mx-1" />}
             </div>
           ))}
         </div>
@@ -151,7 +167,7 @@ export default function Signup() {
           )}
 
           {step === 1 && (
-            <form onSubmit={handleNext} className="space-y-4">
+            <form onSubmit={handleNext1} className="space-y-4">
               <InputField label="Full Name" value={form.name} onChange={set('name')} placeholder="Magnus Carlsen" />
               <InputField label="Email" value={form.email} onChange={set('email')} type="email" placeholder="chess@example.com" />
               <div>
@@ -181,17 +197,24 @@ export default function Signup() {
                   className="w-full bg-navy-900 border border-navy-600 focus:border-blue-500 rounded-lg px-4 py-3 text-white placeholder-slate-500 outline-none transition-colors text-base"
                 />
               </div>
+              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-base mt-2">
+                Continue →
+              </button>
+            </form>
+          )}
+
+          {step === 2 && (
+            <form onSubmit={handleNext2} className="space-y-4">
               <InputField label="City" value={form.city} onChange={set('city')} placeholder="Hyderabad" />
-              <InputField label="Chess.com Name" value={form.chessComUsername} onChange={set('chessComUsername')} placeholder="Username" optional />
-              <InputField label="FIDE ID" value={form.fideId} onChange={set('fideId')} type="text" placeholder="25048123" optional />
               <InputField label="Phone" value={form.phone} onChange={set('phone')} type="tel" placeholder="+91 xxxxx xxxxx" hint="For event notifications" />
+              <InputField label="Chess.com Username" value={form.chessComUsername} onChange={set('chessComUsername')} placeholder="Your handle" optional />
+              <InputField label="FIDE ID" value={form.fideId} onChange={set('fideId')} placeholder="25048123" optional />
 
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={agreedToTerms}
                   onChange={e => setAgreedToTerms(e.target.checked)}
-                  required
                   className="mt-1 accent-blue-500 w-4 h-4 flex-shrink-0"
                 />
                 <span className="text-slate-300 text-sm leading-relaxed">
@@ -202,17 +225,20 @@ export default function Signup() {
                 </span>
               </label>
 
-              <button
-                type="submit"
-                disabled={!agreedToTerms}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-900 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors text-base mt-2"
-              >
-                Continue →
-              </button>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => { setStep(1); setError('') }}
+                  className="flex-1 py-3 border border-navy-600 text-slate-300 hover:text-white font-semibold rounded-lg transition-colors text-sm">
+                  ← Back
+                </button>
+                <button type="submit"
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-sm">
+                  Continue →
+                </button>
+              </div>
             </form>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <h2 className="text-white font-semibold mb-1">What's your playing level?</h2>
@@ -248,18 +274,12 @@ export default function Signup() {
               </div>
 
               <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => { setStep(1); setError('') }}
-                  className="flex-1 py-3 border border-navy-600 text-slate-300 hover:text-white font-semibold rounded-lg transition-colors text-sm"
-                >
+                <button type="button" onClick={() => { setStep(2); setError('') }}
+                  className="flex-1 py-3 border border-navy-600 text-slate-300 hover:text-white font-semibold rounded-lg transition-colors text-sm">
                   ← Back
                 </button>
-                <button
-                  type="submit"
-                  disabled={loading || !skillLevel}
-                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors text-sm"
-                >
+                <button type="submit" disabled={loading || !skillLevel}
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors text-sm">
                   {loading ? 'Creating account...' : 'Create Account'}
                 </button>
               </div>
