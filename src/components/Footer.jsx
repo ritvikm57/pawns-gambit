@@ -39,6 +39,8 @@ export default function Footer() {
                 { label: 'Home',        path: '/' },
                 { label: 'Tournaments', path: '/tournaments' },
                 { label: 'Gallery',     path: '/gallery' },
+                { label: 'Terms & Conditions', path: '/terms' },
+                { label: 'Privacy Policy',     path: '/privacy' },
               ].map(link => (
                 <li key={link.path}>
                   <Link to={link.path} className="text-sm transition-colors hover:text-white"
@@ -62,10 +64,18 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 text-center" style={{ borderTop: `1px solid ${BORDER}` }}>
+        <div className="mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: `1px solid ${BORDER}` }}>
           <p className="text-xs" style={{ color: `${MUTED.slice(0, -4)}0.3)` }}>
             © 2026 Pawn's Gambit. All rights reserved.
           </p>
+          <div className="flex items-center gap-4">
+            <Link to="/terms" className="text-xs transition-colors hover:text-white" style={{ color: `${MUTED.slice(0, -4)}0.3)` }}>
+              Terms &amp; Conditions
+            </Link>
+            <Link to="/privacy" className="text-xs transition-colors hover:text-white" style={{ color: `${MUTED.slice(0, -4)}0.3)` }}>
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
