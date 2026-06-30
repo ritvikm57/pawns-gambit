@@ -576,6 +576,94 @@ function TeamSection() {
   )
 }
 
+// ─── FAQ ──────────────────────────────────────────────────────────────────────
+const FAQS = [
+  { q: "What is Pawn's Gambit?", a: "Pawn's Gambit (PG) is Hyderabad's largest social chess club, bringing together chess enthusiasts through tournaments, meetups, community events, and unique player progression systems. We believe chess is more than a game—it's a way to connect, compete, learn, and build lasting friendships." },
+  { q: "What makes Pawn's Gambit different from other chess clubs?", a: "Unlike traditional chess clubs that focus only on tournaments, Pawn's Gambit combines competitive chess with social experiences. From Chess & Chill meetups and café events to city-wide tournaments and community challenges, PG creates an environment where players can improve their chess while becoming part of a vibrant community." },
+  { q: "Who can join Pawn's Gambit?", a: "Everyone is welcome. Whether you're a complete beginner, a casual player, a college student, a working professional, or a seasoned tournament competitor, you'll find events and opportunities tailored to your level." },
+  { q: "What kind of events does Pawn's Gambit organize?", a: "Pawn's Gambit hosts a variety of chess experiences throughout Hyderabad, including Rapid and Blitz tournaments, Chess & Chill social meetups, themed events and special formats, college and corporate events, and workshops and learning sessions. Our goal is to make chess engaging both on and off the board." },
+  { q: "What is the Pawn's Gambit Rating (PGR)?", a: "The Pawn's Gambit Rating (PGR) is our official community rating system that tracks player performance across PG events. It helps create local leaderboards, friendly rivalries, seasonal rankings, and a sense of progression within the community." },
+  { q: "How does the PG Rating system work?", a: "Players gain or lose rating points based on their performance in Pawn's Gambit events. Strong results against highly-rated opponents lead to greater rating gains. The system rewards competitive performance while encouraging regular participation in community events." },
+  { q: "Why does Pawn's Gambit have a rating system if it's a social chess club?", a: "Because friendly competition makes communities stronger. Our ratings aren't meant to replace FIDE, Chess.com, or Lichess ratings. Instead, they help tell your story within the Pawn's Gambit ecosystem—showing how you've grown, competed, and contributed as a member of Hyderabad's largest social chess club." },
+  { q: "What are PG Badges and Achievements?", a: "Badges and Achievements are milestones that celebrate a player's journey within Pawn's Gambit. While ratings measure competitive strength, badges recognize participation, consistency, improvement, community involvement, and memorable accomplishments." },
+  { q: "How can I earn badges?", a: "Members can unlock badges by participating in events, winning games and tournaments, reaching rating milestones, maintaining attendance streaks, volunteering at events, contributing to the community, and completing special challenges. Each badge represents a unique chapter in your PG journey." },
+  { q: "Do badges and achievements unlock rewards?", a: "Yes. Certain badges and achievements may unlock exclusive benefits such as merchandise, discounts, priority registrations, special event access, community recognition, and seasonal rewards. The more active you are, the more opportunities you unlock." },
+  { q: "Why should I join Pawn's Gambit?", a: "Because Pawn's Gambit is more than a chess club—it's a community. As Hyderabad's largest social chess club, we provide a place where players can compete, improve, make friends, earn recognition, and be part of a growing chess movement. Whether you're chasing ratings, collecting badges, or simply looking for great people to play chess with, there's a place for you at PG." },
+]
+
+function FaqSection() {
+  const [open, setOpen] = useState(null)
+
+  return (
+    <section
+      className="relative overflow-hidden"
+      style={{
+        background: C.bg,
+        height: 'calc(100vh - 64px)',
+        scrollSnapAlign: 'start',
+        scrollSnapStop: 'always',
+        display: 'grid',
+        gridTemplateColumns: '1fr 2fr',
+        borderTop: `1px solid ${C.line}`,
+      }}
+    >
+      <PcaBg />
+
+      {/* Left: heading */}
+      <div className="relative z-10 flex flex-col justify-center px-12 py-16" style={{ borderRight: `1px solid ${C.line}` }}>
+        <FadeIn>
+          <Eyebrow n="06">FAQ</Eyebrow>
+          <h2
+            className="font-bold leading-tight mb-6"
+            style={{ fontSize: 'clamp(2rem, 3.5vw, 3rem)', color: C.ink, letterSpacing: '-0.02em' }}
+          >
+            Frequently Asked Questions
+          </h2>
+          <p className="text-base leading-relaxed" style={{ color: C.body, maxWidth: '30ch' }}>
+            Everything you need to know about Pawn's Gambit, our rating system, badges, and community.
+          </p>
+        </FadeIn>
+      </div>
+
+      {/* Right: accordion (scrollable) */}
+      <div className="relative z-10 overflow-y-auto py-10 px-10" style={{ scrollbarWidth: 'none' }}>
+        {FAQS.map((faq, i) => (
+          <div key={i} style={{ borderBottom: `1px solid ${C.line}` }}>
+            <button
+              onClick={() => setOpen(open === i ? null : i)}
+              className="w-full flex items-center justify-between gap-4 py-5 text-left transition-opacity hover:opacity-80"
+            >
+              <span className="font-semibold text-sm leading-snug" style={{ color: C.ink }}>
+                <span style={{ color: C.blue, marginRight: '0.75rem', fontFamily: 'monospace', fontSize: '0.7rem' }}>
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                {faq.q}
+              </span>
+              <span
+                className="flex-shrink-0 text-base transition-transform duration-300"
+                style={{ color: C.faint, transform: open === i ? 'rotate(45deg)' : 'rotate(0deg)', display: 'inline-block' }}
+              >
+                +
+              </span>
+            </button>
+            <div
+              style={{
+                overflow: 'hidden',
+                maxHeight: open === i ? '300px' : '0px',
+                transition: 'max-height 350ms cubic-bezier(0.22,1,0.36,1)',
+              }}
+            >
+              <p className="pb-5 text-sm leading-relaxed" style={{ color: C.body }}>
+                {faq.a}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Home() {
   const [upcoming, setUpcoming] = useState([])
@@ -1015,6 +1103,11 @@ export default function Home() {
             5 · TEAM  (Partners toggleable via SHOW_SPONSORS constant above)
         ════════════════════════════════════════════════════════════════════ */}
         <TeamSection />
+
+        {/* ════════════════════════════════════════════════════════════════════
+            6 · FAQ
+        ════════════════════════════════════════════════════════════════════ */}
+        <FaqSection />
 
         {/* ════════════════════════════════════════════════════════════════════
             9 · CTA
