@@ -325,8 +325,9 @@ function TournamentRow({ tournament }) {
                   {format}
                 </span>
                 <span className="flex items-center gap-1">
-                  {entry_fee ? `₹${entry_fee.toLocaleString('en-IN')} entry` : 'Free'}
-                  {prize_pool ? ` · ₹${prize_pool.toLocaleString('en-IN')} pool` : 'No Prize Pool'}
+                  <IndianRupee size={11} />
+                  {entry_fee ? `${entry_fee.toLocaleString('en-IN')} entry` : 'Free'}
+                  {prize_pool ? ` · ₹${prize_pool.toLocaleString('en-IN')} pool` : ''}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users size={11} />
